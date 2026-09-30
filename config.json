@@ -1,0 +1,24 @@
+{
+  "colores": {
+    "negro": "#1A1A1A",
+    "blanco": "#FFFFFF",
+    "gris": "#9A9A9A",
+    "beige": "#D8C3A2",
+    "crema": "#EFE3C8",
+    "marron": "#8B5A3C",
+    "camel": "#C19A6B",
+    "rosa": "#F2B8C6",
+    "rojo": "#C0392B",
+    "azul": "#2F5D9B",
+    "celeste": "#9CCBEA",
+    "verde": "#4F8A5B",
+    "morado": "#A58BD0",
+    "lila": "#C4A8E0",
+    "amarillo": "#F2C94C",
+    "naranja": "#E8833A",
+    "dorado": "#C9A24B",
+    "plateado": "#C0C0C0"
+  },
+
+  "modelos": {}
+}
