@@ -1,0 +1,46 @@
+name: Publicar catálogo
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  publicar:
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Descargar el repositorio (con historial, para las fechas de las fotos)
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Generar productos.json
+        run: node scripts/generar-productos.js
+
+      - name: Armar el sitio
+        run: |
+          mkdir -p _site/fotos
+          cp index.html config.json productos.json _site/
+          if [ -d fotos ]; then cp -r fotos/. _site/fotos/; fi
+
+      - uses: actions/configure-pages@v5
+
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: _site
+
+      - name: Publicar
+        id: deployment
+        uses: actions/deploy-pages@v4
