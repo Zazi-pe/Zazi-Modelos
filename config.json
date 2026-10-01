@@ -20,5 +20,7 @@
     "plateado": "#C0C0C0"
   },
 
-  "modelos": {}
+  "modelos": {
+    "botines/botin-pasador": { "precio": 79.90, "tallas": [35, 39] }
+  }
 }
