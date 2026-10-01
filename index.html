@@ -822,6 +822,7 @@ const DIAS_NUEVO = 14;
     const boton = soloConsulta
       ? `<a class="btn btn-solid" href="${esc(wa("Hola " + TIENDA.nombre + ", quiero consultar por el modelo " + p.nombre + " (" + p.linea + ")."))}" target="_blank" rel="noopener">Consultar por WhatsApp</a>`
       : `<button class="btn btn-solid" type="button" id="m-agregar" disabled>${textoBoton}</button>`;
+    if (!opciones.mantenerScroll) $("#m-cuerpo").style.paddingBottom = "";   // producto nuevo: sin espacio extra
     $("#m-cuerpo").innerHTML = `
       <h2 class="m-nombre" id="m-nombre">${esc(p.nombre)}</h2>
       <p class="m-marca">${esc(p.linea)}</p>
@@ -883,8 +884,14 @@ const DIAS_NUEVO = 14;
     const hueco = parseFloat(getComputedStyle(barra.parentElement).rowGap) || 0;
     const centroGrupo = (b.top + b.bottom + hueco + barra.offsetHeight) / 2;
     const mover = centroGrupo - (caja.top + caja.bottom) / 2;
+    // Este catálogo no tiene descripción debajo del botón (en el otro catálogo, es lo que da espacio para centrar).
+    // Si falta espacio para llegar al centro, se agrega ese espacio abajo; si no, el botón queda justo bajo el dedo.
+    const cuerpo = $("#m-cuerpo");
+    const falta = mover - (modal.scrollHeight - modal.clientHeight - modal.scrollTop);
+    if (falta > 0) cuerpo.style.paddingBottom = (parseFloat(getComputedStyle(cuerpo).paddingBottom) + falta) + "px";
     const sinMovimiento = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-    modal.scrollBy({ top: Math.max(mover, 0), behavior: sinMovimiento ? "auto" : "smooth" });
+    // destino fijo (no "baja X más"): tocar varias veces durante la animación no lo empuja más allá
+    modal.scrollTo({ top: modal.scrollTop + Math.max(mover, 0), behavior: sinMovimiento ? "auto" : "smooth" });
     const elegida = $("#m-cuerpo .m-talla[aria-checked=\"true\"]");
     if (elegida) elegida.focus({ preventScroll: true });
   }
