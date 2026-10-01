@@ -90,12 +90,16 @@ h2{font-size:clamp(2rem,4.2vw,2.75rem)}
 .hero-texto h1{font-size:clamp(3.2rem,8.6vw,7.75rem);font-weight:700;line-height:.9;letter-spacing:0;margin-bottom:28px}
 .lead{font-size:1.0625rem;line-height:1.6;color:var(--gris);max-width:46ch;margin-bottom:28px}
 .acciones{display:flex;gap:12px;flex-wrap:wrap}
-.hero-in.hero-solo{grid-template-columns:1fr}
 .hero-foto{position:relative;margin:0;justify-self:end;width:100%;max-width:470px;aspect-ratio:4/5;background:var(--piedra);overflow:hidden}
 .hero-foto img{width:100%;height:100%;object-fit:cover}
 .hero-etiqueta{position:absolute;left:16px;bottom:16px;display:flex;flex-direction:column;align-items:flex-start;gap:3px;max-width:calc(100% - 32px);padding:12px 16px;background:#fff;border:0;border-radius:var(--radio);text-align:left;box-shadow:0 2px 10px rgba(0,0,0,.08)}
 .hero-etiqueta span{font-size:.66rem;letter-spacing:.14em;color:var(--fucsia);font-weight:600;text-transform:uppercase}
 .hero-etiqueta b{font-family:var(--f-vitrina);font-style:italic;font-weight:600;font-size:1.15rem;line-height:1.25}
+.hero-datos{grid-column:1/-1;margin-top:24px;display:grid;grid-template-columns:repeat(3,1fr);border-top:1px solid var(--linea);border-bottom:1px solid var(--linea)}
+.hero-datos li{padding:24px 24px 26px 0;display:flex;flex-direction:column;gap:6px}
+.hero-datos li+li{padding-left:24px;border-left:1px solid var(--linea)}
+.hero-datos b{font-family:var(--f-titulo);font-weight:500;font-size:2.1rem;line-height:1}
+.hero-datos span{font-size:.875rem;color:var(--gris)}
 
 /* ---------- Secciones y catálogo ---------- */
 .seccion{max-width:var(--ancho);margin:0 auto;padding:88px 24px}
@@ -164,6 +168,8 @@ select.input{appearance:none;padding-right:40px;background-image:url("data:image
 /* ---------- WhatsApp flotante y aviso ---------- */
 .wa-flotante{position:fixed;right:16px;bottom:16px;z-index:40;display:inline-flex;align-items:center;gap:8px;min-height:48px;padding:0 20px;border-radius:999px;background:var(--tinta);color:#fff;font-weight:600;font-size:.9375rem;text-decoration:none;box-shadow:0 6px 18px rgba(0,0,0,.18)}
 .wa-flotante:hover{background:#333}
+#aviso{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);z-index:2000;display:flex;align-items:center;gap:16px;padding:12px 18px;border-radius:8px;background:var(--tinta);color:#fff;font-weight:500;box-shadow:0 6px 18px rgba(0,0,0,.2);max-width:calc(100vw - 32px)}
+#aviso button{background:none;border:0;color:#fff;font-weight:600;text-decoration:underline;text-underline-offset:3px;padding:6px 0;white-space:nowrap}
 
 /* ---------- Diálogos ---------- */
 dialog{padding:0;border:0;background:var(--papel);color:var(--tinta);max-width:none;max-height:none;overscroll-behavior:contain}
@@ -176,8 +182,8 @@ dialog::backdrop{background:rgba(0,0,0,.45)}
 .modal-media img,.modal-media .sin-foto{width:100%;height:100%;aspect-ratio:4/5;object-fit:cover}
 .modal-cuerpo{padding:48px 32px 0;display:flex;flex-direction:column;gap:22px;min-width:0;align-self:stretch}
 .m-nombre{font-size:clamp(1.6rem,3vw,2.1rem);padding-right:36px}
-.m-precio{margin-top:-10px;font-size:1.125rem;font-weight:600;font-variant-numeric:tabular-nums}
 .m-marca{margin-top:-14px;font-size:.875rem;font-weight:500;letter-spacing:.08em;text-transform:uppercase;color:var(--gris)}
+.m-desc{color:var(--gris);line-height:1.65;max-width:48ch}
 .m-nota{font-size:.875rem;padding:10px 12px;background:var(--piedra);border-radius:var(--radio)}
 .m-acciones{position:sticky;bottom:0;z-index:2;margin:auto -32px 0;padding:14px 32px 20px;background:#fff;border-top:1px solid var(--linea);display:flex;flex-direction:column;gap:10px}
 .m-acciones .btn{min-height:52px}
@@ -189,32 +195,48 @@ dialog::backdrop{background:rgba(0,0,0,.45)}
 .m-colores{display:flex;flex-wrap:wrap;gap:8px}
 .m-color{width:34px;height:34px;padding:3px;border:1px solid var(--linea);border-radius:0;background:#fff;display:grid}
 .m-color span{display:block;width:100%;height:100%;border:1px solid rgba(0,0,0,.08)}
-.m-color.texto{width:auto;min-width:34px;padding:0 12px;place-items:center;font-size:.8125rem;font-weight:500}
 .m-color:hover{border-color:#9a9a9a}
 .m-color[aria-checked="true"]{border:1.5px solid var(--tinta)}
 
 /* Tallas dentro de la ficha: 3 por fila */
 .m-tallas{display:flex;flex-direction:column;gap:12px;padding-bottom:20px}
 .m-tallas-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
-.m-talla{position:relative;min-height:42px;padding:0 6px;border:1px solid var(--linea);border-radius:var(--radio);background:#fff;font-size:.9375rem;font-weight:500;font-variant-numeric:tabular-nums;transition:border-color .12s,background-color .12s,color .12s}
+.m-talla{min-height:42px;padding:0 6px;border:1px solid var(--linea);border-radius:var(--radio);background:#fff;font-size:.9375rem;font-weight:500;font-variant-numeric:tabular-nums;transition:border-color .12s,background-color .12s,color .12s}
 .m-talla:hover{border-color:var(--tinta)}
 .m-talla[aria-checked="true"]{background:var(--tinta);border-color:var(--tinta);color:#fff}
-/* Talla sin stock: se ve, pero difuminada y con una línea encima */
-.m-talla.agotada{background:var(--piedra);border-color:var(--piedra);color:#6f6f6f;cursor:not-allowed;overflow:hidden}
-.m-talla.agotada span{display:inline-block;filter:blur(1.3px);opacity:.8}
-.m-talla.agotada::after{content:"";position:absolute;left:12%;right:12%;top:50%;height:1px;background:#6f6f6f}
+.m-talla.agotada{background:var(--piedra);border-color:var(--piedra);color:#9a9a9a;text-decoration:line-through;text-decoration-thickness:1px;cursor:not-allowed}
 .m-talla.agotada:hover{border-color:var(--piedra)}
 .m-tallas-ayuda{font-size:.875rem;color:var(--gris)}
 
 
-/* Panel del carrito (desde abajo) */
-#carrito{position:fixed;inset:auto 0 0 0;margin:0 auto;width:min(560px,100vw);max-height:85dvh;border-radius:14px 14px 0 0;box-shadow:0 -12px 32px rgba(0,0,0,.18);background:#fff}
+/* Paneles desde abajo: "Add to bag" y carrito */
+#hoja,#carrito{position:fixed;inset:auto 0 0 0;margin:0 auto;width:min(560px,100vw);max-height:85dvh;border-radius:14px 14px 0 0;box-shadow:0 -12px 32px rgba(0,0,0,.18);background:#fff}
+#hoja{height:auto;overflow-y:auto}
 #carrito{height:min(85dvh,780px)}
 #carrito[open]{display:flex;flex-direction:column}
-.cajon-cab h2{font-size:1.4rem;letter-spacing:.03em;line-height:1.1}
+.hoja-cab{position:relative;display:flex;align-items:center;justify-content:center;padding:16px 60px 8px}
+.hoja-cab h2,.cajon-cab h2{font-size:1.4rem;letter-spacing:.03em;line-height:1.1}
 .hoja-x{position:absolute;right:8px;top:50%;transform:translateY(-50%);width:46px;height:46px;display:grid;place-items:center;background:none;border:0;border-radius:999px;color:var(--tinta)}
 .hoja-x svg{width:24px;height:24px}
 .hoja-x:hover{background:var(--piedra)}
+.hoja-prod{display:grid;grid-template-columns:110px 1fr;gap:16px;padding:12px 20px 20px}
+.h-foto{aspect-ratio:4/5;background:var(--piedra);overflow:hidden}
+.h-foto img{width:100%;height:100%;object-fit:cover}
+.h-datos{display:flex;flex-direction:column;align-items:flex-start;gap:5px}
+.h-nombre{font-size:1.0625rem;font-weight:400;line-height:1.35}
+.h-linea{font-size:1rem;color:var(--gris)}
+.h-precio{font-size:1.0625rem;font-weight:500;font-variant-numeric:tabular-nums}
+.hoja-sub{font-family:var(--f-titulo);font-weight:600;font-size:1.3rem;letter-spacing:.03em;text-transform:uppercase;padding:0 20px 12px;border-bottom:1px solid var(--linea)}
+.hoja-tallas{padding-bottom:12px}
+.hoja-tallas li{border-bottom:1px solid var(--linea)}
+.h-talla{width:100%;display:flex;align-items:center;justify-content:space-between;min-height:52px;padding:14px 20px;background:none;border:0;font-size:1.0625rem;text-align:left}
+.h-talla:hover,.h-talla:focus-visible{background:#fafafa}
+.h-talla.agotada{color:#5f5f5f;cursor:not-allowed}
+.h-talla.agotada span{text-decoration:line-through;text-decoration-thickness:1px}
+.h-talla.agotada .h-add{color:#9a9a9a}
+.h-talla.agotada:hover{background:none}
+.h-add{display:inline-flex;align-items:center;gap:8px}
+.h-add b{font-weight:300;font-size:1.35rem;line-height:1}
 
 /* Carrito */
 .cajon-cab{position:relative;display:flex;align-items:center;padding:16px 60px 12px 20px;border-bottom:1px solid var(--linea)}
@@ -263,7 +285,7 @@ dialog::backdrop{background:rgba(0,0,0,.45)}
 /* ---------- Movimiento: solo como respuesta a una acción ---------- */
 @media (prefers-reduced-motion:no-preference){
   #modal[open]{animation:subir .22s ease-out}
-  #carrito[open]{animation:hoja-sube .34s cubic-bezier(.2,.8,.2,1)}
+  #carrito[open],#hoja[open]{animation:hoja-sube .34s cubic-bezier(.2,.8,.2,1)}
   @keyframes subir{from{transform:translateY(16px);opacity:0}}
   @keyframes hoja-sube{from{transform:translateY(100%)}}
 }
@@ -273,6 +295,9 @@ dialog::backdrop{background:rgba(0,0,0,.45)}
 @media (max-width:960px){
   .hero-in{grid-template-columns:1fr;gap:32px;padding-top:40px}
   .hero-foto{justify-self:stretch;max-width:none;aspect-ratio:1/1}
+  .hero-datos{grid-template-columns:1fr;margin-top:8px}
+  .hero-datos li,.hero-datos li+li{padding:18px 0;border-left:0}
+  .hero-datos li+li{border-top:1px solid var(--linea)}
   .pasos{grid-template-columns:1fr}
   .pasos li,.pasos li+li{padding:24px 0;border-left:0}
   .pasos li+li{border-top:1px solid var(--linea)}
@@ -301,9 +326,15 @@ dialog::backdrop{background:rgba(0,0,0,.45)}
   .m-acciones{margin:auto -20px 0;padding:12px 20px calc(16px + env(safe-area-inset-bottom,0px))}
 }
 @media (max-width:420px){
+  .hoja-prod{grid-template-columns:96px 1fr;gap:14px}
   .c-item{grid-template-columns:88px 1fr}
   .c-foto{width:88px;height:110px}
 }
+
+/* ---------- Solo para el catálogo con fotos automáticas ---------- */
+.hero-in.hero-solo{grid-template-columns:1fr}
+.m-color.texto{width:auto;min-width:34px;padding:0 12px;place-items:center;font-size:.8125rem;font-weight:500}
+.m-precio{margin-top:-10px;font-size:1.125rem;font-weight:600;font-variant-numeric:tabular-nums}
 </style>
 </head>
 <body>
@@ -745,7 +776,8 @@ const DIAS_NUEVO = 14;
       : p.estado === "proximamente" ? '<p class="m-nota">Este modelo llega pronto.</p>'
       : soloConsulta ? '<p class="m-nota">Escríbenos por WhatsApp y te confirmamos tallas y disponibilidad.</p>' : "";
 
-    const variantes = PRODUCTOS.filter((v) => v.claveModelo === p.claveModelo && v.color);
+    // los colores salen en el orden en que subiste las fotos (la más antigua primero)
+    const variantes = PRODUCTOS.filter((v) => v.claveModelo === p.claveModelo && v.color).sort((a, b) => a.fecha - b.fecha || (a.id < b.id ? -1 : 1));
     const botonColor = (v) => {
       const fondo = fondoColor(v);
       const attrs = `type="button" class="m-color${fondo ? "" : " texto"}" role="radio" aria-checked="${v.id === p.id}" data-variante="${esc(v.id)}" aria-label="${esc(v.color)}" title="${esc(v.color)}"`;
@@ -757,17 +789,15 @@ const DIAS_NUEVO = 14;
         <div class="m-colores" role="radiogroup" aria-labelledby="m-color-t">${variantes.map(botonColor).join("")}</div>
       </div>`;
 
-    // Tallas sin stock: se ven tachadas y difuminadas. Si el modelo entero está agotado, todas lo están.
-    const sinStockLista = p.estado === "agotado" ? p.tallas : p.agotadas;
     const unica = esUnica(p);
-    const bloqueTallas = (!hayTallas || p.estado === "proximamente") ? "" : `
+    const bloqueTallas = !puedeAgregar ? "" : `
       <div class="m-opcion m-tallas">
         <p class="m-etq" id="m-tallas-t">Talla<span id="m-talla-elegida">${unica && puedeAgregar ? ": Única" : ""}</span></p>
         <div class="m-tallas-grid" role="radiogroup" aria-labelledby="m-tallas-t">
           ${p.tallas.map((t) => {
-            const sinStock = sinStockLista.includes(t);
+            const sinStock = p.agotadas.includes(t);
             const txt = t === "Único" ? "Única" : esc(t);
-            return `<button type="button" class="m-talla${sinStock ? " agotada" : ""}" role="radio" aria-checked="${unica && !sinStock ? "true" : "false"}" data-talla="${esc(t)}"${sinStock ? ` disabled aria-label="Talla ${txt}, sin stock"` : ` aria-label="Talla ${txt}"`}><span>${txt}</span></button>`;
+            return `<button type="button" class="m-talla${sinStock ? " agotada" : ""}" role="radio" aria-checked="${unica && !sinStock ? "true" : "false"}" data-talla="${esc(t)}"${sinStock ? ` disabled aria-label="Talla ${txt}, sin stock"` : ` aria-label="Talla ${txt}"`}>${txt}</button>`;
           }).join("")}
         </div>
       </div>`;
