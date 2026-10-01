@@ -21,6 +21,11 @@
   },
 
   "modelos": {
-    "botines/botin-pasador": { "precio": 79.90, "tallas": [35, 39] }
+    "botines/botin-pasador": {
+  "precio": 79.90,
+  "tallas": [35, 39],
+  "colores": { "marron": { "agotadas": ["36","38","39"] } }
+    }
+    
   }
 }
