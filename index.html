@@ -667,7 +667,6 @@ const DIAS_NUEVO = 14;
     const items = [["all", "Todos", PRODUCTOS.length], ...CATEGORIAS.map(([c, n]) => [c, n, cuenta(c)])];
     $("#filtros").innerHTML = items.map(([f, n, c]) =>
       `<button class="chip" type="button" data-filtro="${esc(f)}" aria-pressed="${f === estado.filtro}">${esc(n)} <span>${c}</span></button>`).join("");
-    $("#filtros").hidden = CATEGORIAS.length < 2;
   }
 
   function listaVisible() {
