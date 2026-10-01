@@ -180,13 +180,23 @@ dialog::backdrop{background:rgba(0,0,0,.45)}
 .modal-in{display:grid;grid-template-columns:1fr 1fr}
 .modal-media{background:var(--piedra)}
 .modal-media img,.modal-media .sin-foto{width:100%;height:100%;aspect-ratio:4/5;object-fit:cover}
-.modal-cuerpo{padding:48px 32px 0;display:flex;flex-direction:column;gap:22px;min-width:0;align-self:stretch}
+.modal-cuerpo{--pad-m:32px;padding:48px var(--pad-m) 28px;display:flex;flex-direction:column;gap:22px;min-width:0;align-self:stretch}
 .m-nombre{font-size:clamp(1.6rem,3vw,2.1rem);padding-right:36px}
 .m-marca{margin-top:-14px;font-size:.875rem;font-weight:500;letter-spacing:.08em;text-transform:uppercase;color:var(--gris)}
 .m-desc{color:var(--gris);line-height:1.65;max-width:48ch}
+.m-opciones{display:flex;flex-direction:column;gap:22px}
 .m-nota{font-size:.875rem;padding:10px 12px;background:var(--piedra);border-radius:var(--radio)}
-.m-acciones{position:sticky;bottom:0;z-index:2;margin:auto -32px 0;padding:14px 32px 20px;background:#fff;border-top:1px solid var(--linea);display:flex;flex-direction:column;gap:10px}
-.m-acciones .btn{min-height:52px}
+/* Botón de compra: va entre las tallas y la descripción. Si su lugar queda debajo de lo que se ve, te sigue pegado abajo
+   (mitad talla, mitad botón, como KHY). Al llegar a su lugar se queda ahí, a todo el ancho. */
+.m-acciones{position:sticky;bottom:0;z-index:2;display:flex;margin:0;padding:0 0 env(safe-area-inset-bottom,0px);border-top:1px solid transparent;background:transparent}
+.m-acciones .btn{flex:1 1 50%;min-width:0;min-height:48px;padding:0 12px;white-space:nowrap}
+.m-sel{display:none}
+.m-acciones.pegada{margin:0 calc(-1 * var(--pad-m));background:#fff;border-top-color:var(--linea)}
+.m-acciones.pegada .btn{border-radius:0}
+.m-acciones.pegada .m-al-carrito{display:none}
+.m-acciones.pegada .m-sel{flex:1 1 50%;min-width:0;display:flex;align-items:center;justify-content:space-between;gap:8px;min-height:48px;padding:0 16px;border:0;border-right:1px solid var(--linea);border-radius:0;background:#fff;font-size:.9375rem;font-weight:500;white-space:nowrap}
+.m-acciones.pegada .m-sel:hover{background:var(--piedra)}
+.m-sel svg{width:16px;height:16px;flex:none}
 .cerrar{position:sticky;top:12px;z-index:3;width:40px;height:40px;margin:12px 12px -52px auto;display:grid;place-items:center;background:#fff;border:0;border-radius:999px;font-size:1.2rem;line-height:1;box-shadow:0 1px 4px rgba(0,0,0,.08)}
 .cerrar:hover{background:var(--piedra)}
 /* Opciones de la ficha: color y talla (estilo etiqueta + cuadritos) */
@@ -199,7 +209,7 @@ dialog::backdrop{background:rgba(0,0,0,.45)}
 .m-color[aria-checked="true"]{border:1.5px solid var(--tinta)}
 
 /* Tallas dentro de la ficha: 3 por fila */
-.m-tallas{display:flex;flex-direction:column;gap:12px;padding-bottom:20px}
+.m-tallas{display:flex;flex-direction:column;gap:12px}
 .m-tallas-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
 .m-talla{min-height:42px;padding:0 6px;border:1px solid var(--linea);border-radius:var(--radio);background:#fff;font-size:.9375rem;font-weight:500;font-variant-numeric:tabular-nums;transition:border-color .12s,background-color .12s,color .12s}
 .m-talla:hover{border-color:var(--tinta)}
@@ -322,8 +332,7 @@ dialog::backdrop{background:rgba(0,0,0,.45)}
   #modal{position:fixed;inset:auto 0 0 0;margin:0;width:100%;max-height:92dvh;border-radius:14px 14px 0 0}
   .modal-in{grid-template-columns:1fr}
   .modal-media img,.modal-media .sin-foto{aspect-ratio:1/1;max-height:46dvh}
-  .modal-cuerpo{padding:22px 20px 0}
-  .m-acciones{margin:auto -20px 0;padding:12px 20px calc(16px + env(safe-area-inset-bottom,0px))}
+  .modal-cuerpo{--pad-m:20px;padding:22px var(--pad-m) 28px}
 }
 @media (max-width:420px){
   .hoja-prod{grid-template-columns:96px 1fr;gap:14px}
@@ -802,51 +811,87 @@ const DIAS_NUEVO = 14;
         </div>
       </div>`;
 
-    let accion;
-    if (soloConsulta) {
-      const msg = "Hola " + TIENDA.nombre + ", quiero consultar por el modelo " + p.nombre + " (" + p.linea + ").";
-      accion = `<a class="btn btn-solid btn-ancho" href="${esc(wa(msg))}" target="_blank" rel="noopener">Consultar por WhatsApp</a>`;
-    } else {
-      const textoBoton = !puedeAgregar ? (p.estado === "agotado" ? "Agotado" : "Próximamente")
-        : unica ? textoAgregar(p) : "Selecciona una talla";
-      accion = `<button class="btn btn-solid btn-ancho" type="button" id="m-agregar"${puedeAgregar && unica ? "" : " disabled"}>${textoBoton}</button>`;
-    }
-
+    const textoBoton = !puedeAgregar ? (p.estado === "agotado" ? "Agotado" : "Próximamente") : "Añadir al carrito";
+    const bloqueOpciones = (bloqueColor || bloqueTallas) ? `<div class="m-opciones" id="m-opciones">${bloqueColor}${bloqueTallas}</div>` : "";
+    const selector = !puedeAgregar ? "" : `
+        <button class="m-sel" type="button" id="m-sel" aria-controls="m-opciones" aria-label="Cambiar talla">
+          <span id="m-sel-txt">Talla</span>
+          <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 6l5 5 5-5"/></svg>
+        </button>`;
+    // modelo sin tallas en config.json: en vez de comprar, se consulta por WhatsApp
+    const boton = soloConsulta
+      ? `<a class="btn btn-solid" href="${esc(wa("Hola " + TIENDA.nombre + ", quiero consultar por el modelo " + p.nombre + " (" + p.linea + ")."))}" target="_blank" rel="noopener">Consultar por WhatsApp</a>`
+      : `<button class="btn btn-solid" type="button" id="m-agregar" disabled>${textoBoton}</button>`;
     $("#m-cuerpo").innerHTML = `
       <h2 class="m-nombre" id="m-nombre">${esc(p.nombre)}</h2>
       <p class="m-marca">${esc(p.linea)}</p>
       <p class="m-precio">${precioTxt(p)}</p>
       ${nota}
-      ${bloqueColor}
-      ${bloqueTallas}
-      <div class="m-acciones">${accion}</div>`;
+      ${bloqueOpciones}
+      <div class="m-acciones">${selector}
+        ${boton}
+      </div>`;
 
-    // al cambiar de color se mantiene la talla elegida si existe y hay stock en el nuevo color
-    if (opciones.talla) {
-      const b = $$("#m-cuerpo .m-talla").find((x) => x.dataset.talla === opciones.talla && !x.disabled);
-      if (b) elegirTalla(b);
+    // Talla preseleccionada: la menor con stock del modelo (o la que ya estaba elegida al cambiar de color)
+    if (puedeAgregar) {
+      const libres = $$("#m-cuerpo .m-talla").filter((b) => !b.disabled);
+      const inicial = (opciones.talla && libres.find((b) => b.dataset.talla === opciones.talla)) || libres[0];
+      if (inicial) elegirTalla(inicial);
+      else { $("#m-agregar").textContent = "Sin stock"; $("#m-sel").hidden = true; }
     }
     if (!modal.open) modal.showModal();
+    actualizarBarra();
     modal.scrollTop = opciones.mantenerScroll ? scrollPrevio : 0;
+    actualizarBarra();
     document.documentElement.classList.add("bloqueado");
     history.replaceState(null, "", "#p/" + encodeURIComponent(p.id));
   }
 
+  // "pegada" = el lugar natural del botón está debajo de lo que se ve, así que te sigue; si no, se queda en su lugar
+  function actualizarBarra() {
+    const barra = $("#m-cuerpo .m-acciones");
+    if (!barra) return;
+    const hueco = parseFloat(getComputedStyle(barra.parentElement).rowGap) || 0;
+    const topNatural = barra.previousElementSibling.getBoundingClientRect().bottom + hueco;
+    const pegada = topNatural + barra.offsetHeight > modal.getBoundingClientRect().bottom + 0.5;
+    barra.classList.toggle("pegada", pegada);
+  }
+  modal.addEventListener("scroll", actualizarBarra, { passive: true });
+  window.addEventListener("resize", () => { if (modal.open) actualizarBarra(); });
+
+  // Texto del botón (solo texto fijo + precio): "Añadir al carrito - S/ 69.90"
   function textoAgregar(p) {
-    return consultar(p) ? "Añadir al carrito" : "Añadir al carrito - " + soles(p.precio);
+    return consultar(p) ? "Añadir al carrito" : `<span>Añadir<span class="m-al-carrito"> al carrito</span> - ${soles(p.precio)}</span>`;
   }
 
   function elegirTalla(boton) {
     $$("#m-cuerpo .m-talla").forEach((b) => b.setAttribute("aria-checked", String(b === boton)));
     const t = boton.dataset.talla;
     $("#m-talla-elegida").textContent = ": " + (t === "Único" ? "Única" : t);
+    const sel = $("#m-sel-txt");
+    if (sel) sel.textContent = t === "Único" ? "Talla única" : "Talla " + t;
     const agregarBtn = $("#m-agregar");
     agregarBtn.disabled = false;
-    agregarBtn.textContent = textoAgregar(productoAbierto);
+    agregarBtn.innerHTML = textoAgregar(productoAbierto);
+  }
+
+  // Al tocar la talla de la barra: baja sola hasta dejar colores, tallas y botón en el centro
+  function irAOpciones() {
+    const bloque = $("#m-opciones"), barra = $("#m-cuerpo .m-acciones");
+    if (!bloque || !barra) return;
+    const caja = modal.getBoundingClientRect(), b = bloque.getBoundingClientRect();
+    const hueco = parseFloat(getComputedStyle(barra.parentElement).rowGap) || 0;
+    const centroGrupo = (b.top + b.bottom + hueco + barra.offsetHeight) / 2;
+    const mover = centroGrupo - (caja.top + caja.bottom) / 2;
+    const sinMovimiento = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    modal.scrollBy({ top: Math.max(mover, 0), behavior: sinMovimiento ? "auto" : "smooth" });
+    const elegida = $("#m-cuerpo .m-talla[aria-checked=\"true\"]");
+    if (elegida) elegida.focus({ preventScroll: true });
   }
 
   modal.addEventListener("click", (e) => {
     if (e.target === modal || e.target.closest("[data-cerrar]")) { modal.close(); return; }
+    if (e.target.closest("#m-sel")) { irAOpciones(); return; }
     const color = e.target.closest(".m-color");
     if (color) {
       if (color.dataset.variante !== productoAbierto.id) {
