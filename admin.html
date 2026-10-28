@@ -1,0 +1,1118 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex, nofollow">
+<meta name="theme-color" content="#000000">
+<title>ZAZI Modelos — Admin</title>
+<link rel="icon" type="image/png" href="img/favicon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Oswald:wght@500;600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+/* ============================================================
+   ZAZI MODELOS — panel para editar el catálogo
+   Guarda los cambios en GitHub: config.json (precios, tallas,
+   agotadas) y fotos/<categoría>/ (una foto por modelo y color).
+   ============================================================ */
+:root{
+  --tinta:#000;--papel:#fff;--piedra:#F4F4F4;--linea:#E6E6E6;--gris:#767676;
+  --fucsia:#C11A61;--alerta:#B3261E;--r:6px;
+  --f-titulo:"Oswald","Arial Narrow",Arial,sans-serif;
+  --f-texto:"Inter",system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif;
+}
+*,*::before,*::after{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--papel);color:var(--tinta);font:400 16px/1.45 var(--f-texto);-webkit-font-smoothing:antialiased;padding-bottom:calc(100px + env(safe-area-inset-bottom,0px))}
+button,input,select,textarea{font:inherit;color:inherit}
+button{cursor:pointer}
+img{display:block;max-width:100%}
+h1,h2,p{margin:0}
+[hidden]{display:none !important}
+:focus-visible{outline:2px solid var(--tinta);outline-offset:2px}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+h1,h2{font-family:var(--f-titulo);font-weight:600;text-transform:uppercase;letter-spacing:.02em;line-height:1.05}
+h1{font-size:2rem}
+
+/* Cabecera */
+.cab{position:sticky;top:0;z-index:20;background:#fff;border-bottom:1px solid var(--linea);padding-top:env(safe-area-inset-top,0px)}
+.cab-in{max-width:760px;margin:0 auto;height:56px;padding:0 16px;display:flex;align-items:center;gap:12px}
+.cab-in img{height:22px;width:auto}
+.cab-t{font-family:var(--f-titulo);font-size:1.05rem;font-weight:500;letter-spacing:.04em;text-transform:uppercase;color:var(--gris)}
+.cab-acc{margin-left:auto;display:flex;align-items:center;gap:4px}
+.lnk{background:none;border:0;padding:8px;white-space:nowrap;font-size:.9375rem;font-weight:500;color:var(--tinta);text-decoration:underline;text-underline-offset:3px}
+main{max-width:760px;margin:0 auto;padding:16px}
+
+/* Controles */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:48px;padding:0 20px;border:1px solid var(--tinta);border-radius:var(--r);background:#fff;font-weight:600;font-size:.9375rem;text-decoration:none;color:var(--tinta)}
+.btn-negro{background:var(--tinta);color:#fff}
+.btn-peligro{border-color:var(--alerta);color:var(--alerta)}
+.btn-ancho{width:100%}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+.input{width:100%;min-height:48px;padding:10px 12px;border:1px solid #cfcfcf;border-radius:var(--r);background:#fff;font-size:16px}
+.input:focus{outline:none;border-color:var(--tinta);box-shadow:0 0 0 1px var(--tinta)}
+textarea.input{min-height:110px;resize:vertical;line-height:1.5}
+.campo{display:flex;flex-direction:column;gap:6px;font-size:.875rem;font-weight:600;min-width:0;border:0;padding:0;margin:0}
+.campo legend{padding:0;margin-bottom:6px}
+.campo small{font-weight:400;color:var(--gris);font-size:.8125rem}
+.check{display:flex;align-items:center;gap:10px;font-size:.9375rem;font-weight:500;min-height:44px}
+.check input{width:20px;height:20px;accent-color:#000;flex:none}
+.nota{font-size:.875rem;color:var(--gris)}
+.error{color:var(--alerta);font-size:.9375rem;font-weight:500}
+
+/* Acceso */
+.acceso{max-width:480px;margin:24px auto;display:flex;flex-direction:column;gap:18px}
+.acceso ol{margin:0;padding-left:20px;display:flex;flex-direction:column;gap:8px;color:#333;font-size:.9375rem}
+.acceso a{color:var(--tinta)}
+
+/* Lista de productos */
+.herr{display:flex;flex-direction:column;gap:12px;margin-bottom:8px}
+.herr-fila{display:flex;gap:10px}
+.herr-fila .input{flex:1}
+.chips{display:flex;gap:8px;overflow-x:auto;padding-bottom:2px;scrollbar-width:none}
+.chip{flex:none;min-height:38px;padding:0 16px;border:0;border-radius:999px;background:var(--piedra);font-size:.875rem;font-weight:500}
+.chip[aria-pressed="true"]{background:var(--tinta);color:#fff}
+.ayuda{font-size:.8125rem;color:var(--gris);margin:4px 0 0}
+.fila{position:relative;display:flex;flex-direction:column;gap:10px;padding:14px 0;border-bottom:1px solid var(--linea)}
+.fila.cambiada::before{content:"";position:absolute;left:-10px;top:14px;bottom:14px;width:3px;border-radius:2px;background:var(--fucsia)}
+.fila-abrir{display:grid;grid-template-columns:52px 1fr auto;gap:14px;align-items:center;width:100%;padding:0;background:none;border:0;text-align:left}
+.fila-foto{width:52px;height:65px;border-radius:4px;background:var(--piedra);overflow:hidden}
+.fila-foto img{width:100%;height:100%;object-fit:cover}
+.fila-nombre{display:block;font-weight:600;line-height:1.3}
+.fila-datos{display:flex;flex-wrap:wrap;gap:4px 10px;margin-top:3px;font-size:.875rem;color:var(--gris)}
+.fila-editar{font-size:.875rem;font-weight:500;text-decoration:underline;text-underline-offset:3px}
+.estado-agotado{color:var(--alerta);font-weight:600}
+.estado-proximamente{color:#8A5A00;font-weight:600}
+.en-vitrina{color:var(--fucsia);font-weight:600}
+.tallas{display:flex;flex-wrap:wrap;gap:6px}
+.fila .tallas{padding-left:66px}
+.talla{min-width:46px;min-height:42px;padding:0 8px;border:1px solid #cfcfcf;border-radius:4px;background:#fff;font-size:.9375rem;font-weight:500;font-variant-numeric:tabular-nums}
+.talla[aria-pressed="true"]{background:var(--piedra);border-color:var(--piedra);color:#8f8f8f;text-decoration:line-through}
+.vacio{padding:40px 0;text-align:center;color:var(--gris)}
+
+/* Categorías y modelos */
+.cat-t{font-size:1.5rem;margin:28px 0 4px}
+.cat-t:first-child{margin-top:12px}
+.modelo{border-top:2px solid var(--tinta);margin-top:14px}
+.modelo-cab{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;padding:12px 0 6px}
+.modelo-nombre{font-weight:600;font-size:1.0625rem;line-height:1.3}
+.modelo-datos{display:flex;flex-wrap:wrap;gap:4px 10px;margin-top:3px;font-size:.875rem;color:var(--gris)}
+.falta{color:var(--alerta);font-weight:600}
+.modelo .fila:last-child{border-bottom:0}
+.btn-chico{min-height:40px;padding:0 14px;font-size:.875rem}
+
+/* Barra para publicar */
+.barra{position:fixed;left:0;right:0;bottom:0;z-index:30;background:var(--tinta);color:#fff;padding:12px 16px calc(12px + env(safe-area-inset-bottom,0px))}
+.barra-in{max-width:760px;margin:0 auto;display:flex;align-items:center;gap:10px}
+.barra-txt{flex:1;display:flex;align-items:center;gap:10px;font-weight:500;font-size:.9375rem;line-height:1.3}
+.punto{flex:none;width:9px;height:9px;border-radius:50%;background:var(--fucsia);box-shadow:0 0 0 2px #fff}
+.barra .btn{min-height:44px;padding:0 16px}
+.btn-blanco{background:#fff;color:var(--tinta);border-color:#fff}
+.btn-borde{background:transparent;color:#fff;border-color:rgba(255,255,255,.6)}
+
+/* Editor */
+dialog{padding:0;border:0;background:#fff;color:var(--tinta);max-width:none;max-height:none}
+dialog::backdrop{background:rgba(0,0,0,.45)}
+#editor{position:fixed;inset:0;width:100%;height:100%;margin:0}
+.ed{display:flex;flex-direction:column;height:100%}
+.ed-cab{display:flex;align-items:center;gap:12px;padding:12px 8px 12px 16px;padding-top:calc(12px + env(safe-area-inset-top,0px));border-bottom:1px solid var(--linea)}
+.ed-cab h2{flex:1;font-size:1.35rem}
+.ed-cuerpo{flex:1;overflow-y:auto;padding:16px;display:flex;flex-direction:column;gap:18px;overscroll-behavior:contain}
+.ed-pie{display:flex;gap:10px;padding:12px 16px calc(12px + env(safe-area-inset-bottom,0px));border-top:1px solid var(--linea)}
+.ed-pie .btn{flex:1}
+.foto-ed{display:grid;grid-template-columns:112px 1fr;gap:14px;align-items:center}
+.marco{width:112px;aspect-ratio:4/5;border-radius:4px;background:var(--piedra);overflow:hidden;display:grid;place-items:center;color:var(--gris);font-size:.8125rem;text-align:center}
+.marco img{width:100%;height:100%;object-fit:cover}
+.foto-acc{display:flex;flex-direction:column;align-items:flex-start;gap:6px}
+.dos{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.colores{display:flex;align-items:center;flex-wrap:wrap;gap:10px}
+.colores input[type=color]{width:52px;height:44px;padding:2px;border:1px solid #cfcfcf;border-radius:var(--r);background:#fff}
+.muestra{width:44px;height:44px;border:1px solid var(--linea)}
+.seg{display:grid;grid-template-columns:repeat(3,1fr);border:1px solid var(--tinta);border-radius:var(--r);overflow:hidden}
+.seg label{position:relative;display:block}
+.seg input{position:absolute;opacity:0;pointer-events:none}
+.seg span{display:flex;align-items:center;justify-content:center;min-height:44px;padding:0 4px;border-left:1px solid var(--tinta);font-size:.875rem;font-weight:600;text-align:center}
+.seg label:first-child span{border-left:0}
+.seg input:checked+span{background:var(--tinta);color:#fff}
+.seg input:focus-visible+span{outline:2px solid var(--fucsia);outline-offset:-4px}
+.mas-acc{display:flex;flex-direction:column;gap:10px;padding-top:18px;border-top:1px solid var(--linea)}
+
+/* Aviso */
+#aviso{position:fixed;left:50%;bottom:calc(92px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);z-index:100;width:max-content;max-width:calc(100vw - 32px);padding:12px 16px;border-radius:8px;background:var(--tinta);color:#fff;font-weight:500;font-size:.9375rem;box-shadow:0 6px 18px rgba(0,0,0,.22)}
+#aviso.malo{background:var(--alerta)}
+
+@media (min-width:700px){
+  #editor{inset:0;width:min(640px,calc(100vw - 32px));height:fit-content;max-height:92dvh;margin:auto;border-radius:12px}
+  .ed{max-height:92dvh}
+  .ed-cab{padding-top:12px}
+}
+@media (prefers-reduced-motion:no-preference){
+  #editor[open]{animation:subir .2s ease-out}
+  @keyframes subir{from{transform:translateY(14px);opacity:0}}
+}
+</style>
+</head>
+<body>
+
+<header class="cab">
+  <div class="cab-in">
+    <img src="img/logo-zazi.png" alt="ZAZI" width="66" height="22">
+    <span class="cab-t">Modelos</span>
+    <div class="cab-acc">
+      <a class="lnk" href="../Zazi/admin.html">Zazi</a>
+      <a class="lnk" href="./" target="_blank" rel="noopener">Tienda</a>
+      <button class="lnk" type="button" id="salir" hidden>Salir</button>
+    </div>
+  </div>
+</header>
+
+<main>
+  <section class="acceso" id="acceso" hidden>
+    <h1>Acceso</h1>
+    <p>Para editar el catálogo, este dispositivo necesita un token de GitHub. Se guarda solo aquí y sirve también para el admin de Zazi.</p>
+    <ol>
+      <li>Abre <a href="https://github.com/settings/personal-access-tokens" target="_blank" rel="noopener">github.com/settings/personal-access-tokens</a>. Si ya tienes el token de ZAZI admin, edítalo y agrega Zazi-pe/Zazi-Modelos; luego salta al paso 5.</li>
+      <li>Si no, toca Generate new token. Nombre: ZAZI admin. Elige una fecha de vencimiento.</li>
+      <li>En Repository access, elige Only select repositories y marca Zazi-pe/Zazi y Zazi-pe/Zazi-Modelos.</li>
+      <li>En Permissions, toca Add permissions y marca Contents. Luego, junto a Contents, cambia Read-only por Read and write.</li>
+      <li>Guarda, copia el token y pégalo aquí.</li>
+    </ol>
+    <form id="form-acceso" class="campo">
+      <label class="campo" for="token">Token de GitHub</label>
+      <input class="input" id="token" type="password" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="github_pat_…">
+      <p class="error" id="acceso-error" role="alert" hidden></p>
+      <button class="btn btn-negro btn-ancho" type="submit" id="entrar">Entrar</button>
+    </form>
+  </section>
+
+  <p class="vacio" id="cargando">Cargando catálogo…</p>
+
+  <section id="panel" hidden>
+    <div class="herr">
+      <div class="herr-fila">
+        <label class="sr" for="buscar">Buscar</label>
+        <input class="input" id="buscar" type="search" placeholder="Buscar: sandalia negro" autocomplete="off">
+        <button class="btn btn-negro" type="button" id="nuevo">Nuevo</button>
+      </div>
+      <div class="chips" id="filtros" role="group" aria-label="Filtrar por categoría"></div>
+      <p class="ayuda" id="resumen"></p>
+    </div>
+    <div id="lista"></div>
+  </section>
+</main>
+
+<div class="barra" id="barra" hidden>
+  <div class="barra-in">
+    <p class="barra-txt"><span class="punto" aria-hidden="true"></span><span id="barra-txt"></span></p>
+    <button class="btn btn-borde" type="button" id="descartar">Descartar</button>
+    <button class="btn btn-blanco" type="button" id="publicar">Publicar</button>
+  </div>
+</div>
+
+<dialog id="editor" aria-labelledby="ed-titulo">
+  <form class="ed" id="ed-form" novalidate>
+    <div class="ed-cab">
+      <h2 id="ed-titulo">Editar</h2>
+      <button class="lnk" type="button" data-cerrar>Cerrar</button>
+    </div>
+    <div class="ed-cuerpo">
+
+      <div class="foto-ed" id="sec-foto">
+        <div class="marco" id="ed-marco"></div>
+        <div class="foto-acc">
+          <label class="btn" for="ed-archivo">Elegir foto</label>
+          <input class="sr" id="ed-archivo" type="file" accept="image/*">
+          <p class="nota">Se recorta al centro en formato 4:5, como en la tienda.</p>
+        </div>
+      </div>
+
+      <div class="campo" id="sec-cat">
+        <label class="campo">Categoría
+          <select class="input" id="ed-cat"></select>
+        </label>
+        <label class="campo" id="ed-cat-nueva-c" hidden>Nombre de la nueva categoría
+          <input class="input" id="ed-cat-nueva" autocomplete="off" placeholder="Ej. Zapatos">
+        </label>
+      </div>
+
+      <label class="campo" id="sec-elegir">Modelo
+        <select class="input" id="ed-modelo-sel"></select>
+      </label>
+
+      <div class="campo" id="sec-modelo">
+        <label class="campo">Nombre del modelo
+          <input class="input" id="ed-modelo" autocomplete="off" placeholder="Ej. Sandalia Plataforma">
+          <small>Así aparece en la tienda, seguido del color.</small>
+        </label>
+        <div class="dos">
+          <label class="campo">Precio (S/)
+            <input class="input" id="ed-precio" type="number" inputmode="decimal" step="0.01" min="0">
+          </label>
+          <label class="check" style="align-self:end"><input type="checkbox" id="ed-sin-precio"> Por confirmar</label>
+        </div>
+        <div class="campo">
+          <span>Tallas</span>
+          <div class="dos" id="ed-rango">
+            <label class="campo">Desde<input class="input" id="ed-desde" type="number" inputmode="numeric"></label>
+            <label class="campo">Hasta<input class="input" id="ed-hasta" type="number" inputmode="numeric"></label>
+          </div>
+          <label class="check"><input type="checkbox" id="ed-unica"> Talla única</label>
+        </div>
+        <fieldset class="campo">
+          <legend>Estado del modelo (todos sus colores)</legend>
+          <div class="seg">
+            <label><input type="radio" name="ed-estado" value="disponible"><span>Disponible</span></label>
+            <label><input type="radio" name="ed-estado" value="agotado"><span>Agotado</span></label>
+            <label><input type="radio" name="ed-estado" value="proximamente"><span>Próximamente</span></label>
+          </div>
+        </fieldset>
+      </div>
+
+      <div class="campo" id="sec-color">
+        <label class="campo">Color
+          <input class="input" id="ed-color" autocomplete="off" placeholder="Ej. Negro, Blanco Gris">
+        </label>
+        <div class="campo">
+          <span>Color del cuadrito</span>
+          <div class="colores">
+            <input type="color" id="ed-c1" aria-label="Color principal">
+            <input type="color" id="ed-c2" aria-label="Segundo color">
+            <span class="muestra" id="ed-muestra" aria-hidden="true"></span>
+            <label class="check"><input type="checkbox" id="ed-dos"> Dos tonos</label>
+          </div>
+          <small id="ed-muestra-nota"></small>
+        </div>
+        <div class="campo" id="sec-agotadas">
+          <span>Tallas agotadas de este color</span>
+          <small>Toca una talla para marcarla agotada.</small>
+          <div class="tallas" id="ed-agotadas"></div>
+        </div>
+        <label class="check" id="sec-color-agotado"><input type="checkbox" id="ed-color-agotado"> Este color está agotado</label>
+      </div>
+
+      <p class="error" id="ed-error" role="alert" hidden></p>
+
+      <div class="mas-acc" id="ed-mas">
+        <button class="btn" type="button" id="ed-otro-color">Añadir otro color de este modelo</button>
+        <button class="btn btn-peligro" type="button" id="ed-eliminar">Eliminar</button>
+      </div>
+    </div>
+    <div class="ed-pie">
+      <button class="btn" type="button" data-cerrar>Cancelar</button>
+      <button class="btn btn-negro" type="submit">Guardar</button>
+    </div>
+  </form>
+</dialog>
+
+<div id="aviso" role="status" aria-live="polite" hidden></div>
+
+<script>
+(() => {
+  "use strict";
+
+  const REPO = "Zazi-pe/Zazi-Modelos";
+  const RAMA = "main";
+  const CLAVE_TOKEN = "zazi-admin-token";        // el mismo token sirve para los dos admins
+  // Orden y nombre de las categorías (igual que FILTROS en index.html). Una carpeta nueva aparece al final.
+  const CATEGORIAS = [["sandalias", "Sandalias"], ["botas", "Botas"], ["botines", "Botines"], ["zapatillas", "Zapatillas"], ["zapatos", "Zapatos"]];
+  const ESTADOS = { disponible: "Disponible", agotado: "Agotado", proximamente: "Próximamente" };
+  const EXT = /\.(jpe?g|png|webp)$/i;
+
+  const $ = (s, el = document) => el.querySelector(s);
+  const $$ = (s, el = document) => [...el.querySelectorAll(s)];
+  const esc = (t) => String(t).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+  const norm = (t) => String(t).normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
+  const clave = (t) => norm(t).trim().replace(/[\s_]+/g, "-");
+  const slug = (t) => norm(t).replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "");
+  const titulo = (s) => String(s).split(/[-_\s]+/).filter(Boolean).map((w) => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase()).join(" ");
+  const soles = (n) => "S/ " + Number(n).toFixed(2);
+  const hexOk = (h) => typeof h === "string" && /^#[0-9a-f]{6}$/i.test(h);
+
+  /* ---------- Estado ---------- */
+  const st = {
+    head: "", arbol: "",
+    cfgOrig: null, cfg: null,
+    orig: new Map(),        // uid -> ruta original de cada foto
+    items: [],              // una por foto: { uid, path, origPath, sha, cat, modelo, color, b64, vista }
+    vistas: new Map(),      // ruta -> vista previa de fotos recién publicadas
+    filtro: "all", busqueda: "", publicando: false, uid: 0
+  };
+  let token = "";
+  try { token = localStorage.getItem(CLAVE_TOKEN) || ""; } catch (e) { /* sin almacenamiento */ }
+
+  /* ---------- GitHub ---------- */
+  async function api(ruta, opciones = {}) {
+    const cab = { "Accept": "application/vnd.github+json", "Authorization": "Bearer " + token, "X-GitHub-Api-Version": "2022-11-28" };
+    if (opciones.body) cab["Content-Type"] = "application/json";
+    const r = await fetch("https://api.github.com/repos/" + REPO + ruta, { ...opciones, headers: cab, cache: "no-store" });
+    if (!r.ok) {
+      const e = new Error("GitHub " + r.status);
+      e.status = r.status;
+      try { e.detalle = (await r.json()).message; } catch (_) { /* sin detalle */ }
+      throw e;
+    }
+    return r.status === 204 ? null : r.json();
+  }
+  const deBase64 = (b) => new TextDecoder().decode(Uint8Array.from(atob(b.replace(/\s/g, "")), (c) => c.charCodeAt(0)));
+
+  /* "bota-chelsea-negro" → modelo "bota-chelsea", color "negro" (misma regla que scripts/generar-productos.js) */
+  function partirNombre(stem) {
+    const s = stem.trim().replace(/[\s_]+/g, "-");
+    const i = s.indexOf("--");
+    if (i === 0) return null;
+    if (i > 0) return { modelo: s.slice(0, i), color: s.slice(i + 2).replace(/^-+|-+$/g, "") };
+    const p = s.split(/-+/).filter(Boolean);
+    if (!p.length) return null;
+    return { modelo: p.slice(0, 2).join("-"), color: p.slice(2).join("-") };
+  }
+  // Al revés: con modelo de dos palabras basta un guion; si no, "--" separa modelo y color
+  function armarNombre(modelo, color) {
+    if (!color) return modelo;
+    return modelo.split("-").length === 2 ? modelo + "-" + color : modelo + "--" + color;
+  }
+  const extDe = (ruta) => ((ruta || "").match(EXT) || [".jpg"])[0].toLowerCase();
+  const rutaDe = (it) => `fotos/${it.cat}/${armarNombre(it.modelo, it.color)}${it.b64 ? ".jpg" : extDe(it.origPath)}`;
+
+  function normalizarConfig(c) {
+    const o = { ...c, colores: {}, modelos: {} };
+    Object.entries(c.colores || {}).forEach(([k, v]) => { o.colores[clave(k)] = v; });
+    Object.entries(c.modelos || {}).forEach(([k, v]) => {
+      const m = { ...(v && typeof v === "object" ? v : {}) };
+      if (m.colores) {
+        const cc = {};
+        Object.entries(m.colores).forEach(([ck, cv]) => { cc[clave(ck)] = { ...(cv || {}) }; });
+        m.colores = cc;
+      }
+      o.modelos[clave(k)] = m;
+    });
+    return o;
+  }
+  const ORDEN_M = ["precio", "tallas", "estado", "agotadas", "colores"];
+  function ordenarModelo(m) {
+    const o = {};
+    ORDEN_M.forEach((k) => { if (m[k] !== undefined) o[k] = m[k]; });
+    Object.keys(m).forEach((k) => { if (!(k in o) && m[k] !== undefined) o[k] = m[k]; });
+    return o;
+  }
+  function serializar(c) {
+    const partes = [
+      '  "colores": {\n' + Object.entries(c.colores).map(([k, v]) => `    ${JSON.stringify(k)}: ${JSON.stringify(v)}`).join(",\n") + "\n  }",
+      '  "modelos": {\n' + Object.keys(c.modelos).sort().map((k) => `    ${JSON.stringify(k)}: ${JSON.stringify(ordenarModelo(c.modelos[k]))}`).join(",\n") + "\n  }"
+    ];
+    Object.keys(c).filter((k) => k !== "colores" && k !== "modelos").forEach((k) => partes.push(`  ${JSON.stringify(k)}: ${JSON.stringify(c[k])}`));
+    return "{\n" + partes.join(",\n\n") + "\n}\n";
+  }
+
+  async function cargar() {
+    const ref = await api("/git/ref/heads/" + RAMA);
+    const commit = await api("/git/commits/" + ref.object.sha);
+    const [arbol, archivo] = await Promise.all([
+      api("/git/trees/" + commit.tree.sha + "?recursive=1"),
+      api("/contents/config.json?ref=" + ref.object.sha).catch((e) => (e.status === 404 ? null : Promise.reject(e)))
+    ]);
+    st.head = ref.object.sha;
+    st.arbol = commit.tree.sha;
+    const cfg = archivo ? JSON.parse(deBase64(archivo.content)) : {};
+    st.cfgOrig = normalizarConfig(cfg);
+    st.cfg = normalizarConfig(cfg);
+    st.items = []; st.orig = new Map();
+    const vistos = new Set();
+    arbol.tree.forEach((e) => {
+      if (e.type !== "blob" || !e.path.startsWith("fotos/")) return;
+      const partes = e.path.split("/");
+      if (partes.length !== 3 || partes[2].startsWith(".") || !EXT.test(partes[2])) return;
+      const stem = partes[2].replace(EXT, "");
+      const n = partirNombre(stem);
+      if (!n || !n.modelo || vistos.has(clave(partes[1] + "/" + stem))) return;
+      vistos.add(clave(partes[1] + "/" + stem));
+      const it = { uid: ++st.uid, path: e.path, origPath: e.path, sha: e.sha, cat: partes[1], modelo: n.modelo, color: n.color, b64: null, vista: null };
+      st.items.push(it);
+      st.orig.set(it.uid, e.path);
+    });
+  }
+
+  /* ---------- Lectura de un producto (foto + config) ---------- */
+  const claveModelo = (it) => clave(it.cat) + "/" + clave(it.modelo);
+  const claveColor = (it) => clave(it.color);
+  const nombreCat = (c) => (CATEGORIAS.find(([k]) => k === clave(c)) || [c, titulo(c)])[1];
+  const nombreModelo = (it) => titulo(it.modelo);
+  const nombreItem = (it) => [titulo(it.modelo), it.color ? titulo(it.color) : ""].filter(Boolean).join(" ");
+
+  function expandir(t) {
+    if (!Array.isArray(t) || !t.length) return [];
+    if (t.length === 2 && t.every((n) => Number.isFinite(n)) && t[1] >= t[0] && t[1] - t[0] <= 60) {
+      const l = [];
+      for (let n = t[0]; n <= t[1]; n++) l.push(String(n));
+      return l;
+    }
+    return t.map(String);
+  }
+  function muestraDe(ck, cm) {
+    const aLista = (v) => (Array.isArray(v) ? v : [v]).filter((h) => /^#[0-9a-f]{3,8}$/i.test(h)).slice(0, 2);
+    if (cm && cm.hex && aLista(cm.hex).length) return aLista(cm.hex);
+    if (st.cfg.colores[ck] && aLista(st.cfg.colores[ck]).length) return aLista(st.cfg.colores[ck]);
+    const w = ck.split("-");
+    if (w.length === 2 && st.cfg.colores[w[0]] && st.cfg.colores[w[1]]) return [aLista(st.cfg.colores[w[0]])[0], aLista(st.cfg.colores[w[1]])[0]];
+    return null;
+  }
+  function vista(it) {
+    const m = st.cfg.modelos[claveModelo(it)] || null;
+    const cm = (m && m.colores && m.colores[claveColor(it)]) || {};
+    const tallas = expandir(m && m.tallas);
+    const agotadas = new Set([...(m && Array.isArray(m.agotadas) ? m.agotadas : []), ...(Array.isArray(cm.agotadas) ? cm.agotadas : [])].map(String));
+    let estado = m && ESTADOS[m.estado] ? m.estado : "disponible";
+    if (cm.agotado) estado = "agotado";
+    if (estado === "disponible" && tallas.length && tallas.every((t) => agotadas.has(t))) estado = "agotado";
+    return { m, cm, tallas, agotadas, estado, precio: m && typeof m.precio === "number" ? m.precio : null };
+  }
+  function textoTallas(t) {
+    if (!t.length) return "";
+    if (t.length === 1 && t[0] === "Único") return "Talla única";
+    return "Tallas " + t[0] + " al " + t[t.length - 1];
+  }
+
+  // Las agotadas a nivel de modelo pasan a cada color, para poder editarlas color por color
+  function prepararModelo(k) {
+    const m = st.cfg.modelos[k];
+    if (!m || !Array.isArray(m.agotadas)) return;
+    st.items.filter((it) => claveModelo(it) === k).forEach((it) => {
+      m.colores = m.colores || {};
+      const c = (m.colores[claveColor(it)] = m.colores[claveColor(it)] || {});
+      c.agotadas = [...new Set([...(c.agotadas || []), ...m.agotadas].map(String))];
+    });
+    delete m.agotadas;
+  }
+  function limpiarColor(m, ck) {
+    if (!m || !m.colores || !m.colores[ck]) return;
+    const c = m.colores[ck];
+    if (Array.isArray(c.agotadas) && !c.agotadas.length) delete c.agotadas;
+    if (!c.agotado) delete c.agotado;
+    if (!Object.keys(c).length) delete m.colores[ck];
+    if (!Object.keys(m.colores).length) delete m.colores;
+  }
+  function ponerAgotadas(it, lista) {
+    const k = claveModelo(it), ck = claveColor(it);
+    prepararModelo(k);
+    const m = st.cfg.modelos[k];
+    if (!m) return;
+    m.colores = m.colores || {};
+    m.colores[ck] = m.colores[ck] || {};
+    const orden = expandir(m.tallas);
+    m.colores[ck].agotadas = orden.filter((t) => lista.has(t));
+    limpiarColor(m, ck);
+  }
+
+  /* ---------- Fotos ---------- */
+  const RAW = "https://raw.githubusercontent.com/" + REPO + "/" + RAMA + "/";
+  const srcRuta = (r) => r.split("/").map(encodeURIComponent).join("/");
+  function imgFoto(it, alt) {
+    const ruta = it.origPath || it.path;
+    const src = it.vista || st.vistas.get(it.path) || srcRuta(ruta);
+    return `<img src="${esc(src)}" alt="${esc(alt)}" loading="lazy" onerror="this.onerror=null;this.src='${esc(RAW + srcRuta(ruta))}'">`;
+  }
+  async function procesarFoto(archivo) {
+    const url = URL.createObjectURL(archivo);
+    const img = await new Promise((ok, mal) => {
+      const i = new Image();
+      i.onload = () => ok(i);
+      i.onerror = () => mal(new Error("No se pudo leer la imagen."));
+      i.src = url;
+    });
+    URL.revokeObjectURL(url);
+    const W = 800, H = 1000;
+    let sx = 0, sy = 0, sw = img.naturalWidth, sh = img.naturalHeight;
+    if (sw / sh > W / H) { const nw = sh * W / H; sx = (sw - nw) / 2; sw = nw; }
+    else { const nh = sw * H / W; sy = (sh - nh) / 2; sh = nh; }
+    const lienzo = document.createElement("canvas");
+    lienzo.width = W; lienzo.height = H;
+    const g = lienzo.getContext("2d");
+    g.fillStyle = "#fff"; g.fillRect(0, 0, W, H);
+    g.imageSmoothingQuality = "high";
+    g.drawImage(img, sx, sy, sw, sh, 0, 0, W, H);
+    let blob;
+    for (const q of [0.85, 0.78, 0.7, 0.6]) {
+      blob = await new Promise((ok) => lienzo.toBlob(ok, "image/jpeg", q));
+      if (blob.size <= 220 * 1024) break;
+    }
+    const b64 = await new Promise((ok) => {
+      const lector = new FileReader();
+      lector.onload = () => ok(String(lector.result).split(",")[1]);
+      lector.readAsDataURL(blob);
+    });
+    return { b64, url: URL.createObjectURL(blob) };
+  }
+
+  /* ---------- Cambios pendientes ---------- */
+  function diferencias() {
+    const lineas = [], cambiados = new Set();
+    const actuales = new Set(st.items.map((it) => it.uid));
+    st.items.forEach((it) => {
+      if (!st.orig.has(it.uid)) { lineas.push("Nuevo: " + nombreItem(it)); cambiados.add(it.uid); return; }
+      if (it.b64) { lineas.push("Foto nueva: " + nombreItem(it)); cambiados.add(it.uid); }
+      else if (it.path !== it.origPath) { lineas.push("Renombrado: " + it.origPath.split("/").slice(1).join("/") + " → " + it.path.split("/").slice(1).join("/")); cambiados.add(it.uid); }
+    });
+    st.orig.forEach((ruta, uid) => { if (!actuales.has(uid)) lineas.push("Eliminado: " + ruta.split("/").slice(1).join("/")); });
+    const claves = new Set([...Object.keys(st.cfgOrig.modelos), ...Object.keys(st.cfg.modelos)]);
+    claves.forEach((k) => {
+      const a = st.cfgOrig.modelos[k], b = st.cfg.modelos[k];
+      if (JSON.stringify(a ? ordenarModelo(a) : null) === JSON.stringify(b ? ordenarModelo(b) : null)) return;
+      const its = st.items.filter((it) => claveModelo(it) === k);
+      if (b) {
+        lineas.push("Editado: " + titulo(k.split("/")[1]) + " (" + nombreCat(k.split("/")[0]) + ")");
+        its.forEach((it) => {
+          const ca = a && a.colores ? JSON.stringify(a.colores[claveColor(it)] || null) : "null";
+          const cb = b.colores ? JSON.stringify(b.colores[claveColor(it)] || null) : "null";
+          const ma = a ? JSON.stringify([a.precio, a.tallas, a.estado, a.agotadas]) : "";
+          const mb = JSON.stringify([b.precio, b.tallas, b.estado, b.agotadas]);
+          if (ca !== cb || ma !== mb) cambiados.add(it.uid);
+        });
+      }
+    });
+    if (JSON.stringify(st.cfgOrig.colores) !== JSON.stringify(st.cfg.colores)) lineas.push("Colores de muestra actualizados");
+    return { lineas, cambiados };
+  }
+
+  /* ---------- Pantallas ---------- */
+  function mostrar(cual) {
+    $("#acceso").hidden = cual !== "acceso";
+    $("#cargando").hidden = cual !== "cargando";
+    $("#panel").hidden = cual !== "panel";
+    $("#salir").hidden = cual !== "panel";
+    if (cual !== "panel") $("#barra").hidden = true;
+  }
+  let temporizador;
+  function avisar(texto, malo) {
+    const el = $("#aviso");
+    el.textContent = texto;
+    el.classList.toggle("malo", !!malo);
+    el.hidden = false;
+    clearTimeout(temporizador);
+    temporizador = setTimeout(() => { el.hidden = true; }, malo ? 7000 : 3500);
+  }
+
+  function ordenCats() {
+    const vistas = [...new Set(st.items.map((it) => clave(it.cat)))];
+    const conocidas = CATEGORIAS.map(([k]) => k).filter((k) => vistas.includes(k));
+    return [...conocidas, ...vistas.filter((k) => !conocidas.includes(k)).sort()];
+  }
+
+  function pintar() {
+    const { lineas, cambiados } = diferencias();
+    const cats = ordenCats();
+    if (st.filtro !== "all" && !cats.includes(st.filtro)) st.filtro = "all";
+    const cuenta = (c) => st.items.filter((it) => clave(it.cat) === c).length;
+    $("#filtros").innerHTML = [["all", "Todos", st.items.length], ...cats.map((c) => [c, nombreCat(c), cuenta(c)])].map(([f, n, c]) =>
+      `<button class="chip" type="button" data-filtro="${esc(f)}" aria-pressed="${f === st.filtro}">${esc(n)} ${c}</button>`).join("");
+
+    // Búsqueda por varias palabras: "sandalia negro" muestra solo lo que tiene ambas
+    const palabras = norm(st.busqueda).split(/\s+/).filter(Boolean);
+    const visibles = st.items.filter((it) => (st.filtro === "all" || clave(it.cat) === st.filtro) &&
+      palabras.every((w) => norm(it.cat + " " + nombreCat(it.cat) + " " + nombreItem(it)).includes(w)));
+
+    const html = [];
+    cats.forEach((c) => {
+      const deCat = visibles.filter((it) => clave(it.cat) === c);
+      if (!deCat.length) return;
+      html.push(`<h2 class="cat-t">${esc(nombreCat(c))}</h2>`);
+      const modelos = [...new Set(deCat.map(claveModelo))].sort();
+      modelos.forEach((k) => {
+        const its = deCat.filter((it) => claveModelo(it) === k).sort((a, b) => (a.color < b.color ? -1 : 1));
+        const m = st.cfg.modelos[k];
+        const t = expandir(m && m.tallas);
+        const datos = !m || typeof m.precio !== "number" && !t.length
+          ? '<span class="falta">Sin precio ni tallas</span>'
+          : [`<span>${m && typeof m.precio === "number" ? soles(m.precio) : "Precio por confirmar"}</span>`,
+             t.length ? `<span>${esc(textoTallas(t))}</span>` : '<span class="falta">Sin tallas</span>',
+             m && m.estado && m.estado !== "disponible" ? `<span class="estado-${esc(m.estado)}">${esc(ESTADOS[m.estado] || m.estado)}</span>` : ""].join("");
+        html.push(`<section class="modelo">
+          <div class="modelo-cab">
+            <div><p class="modelo-nombre">${esc(nombreModelo(its[0]))}</p><p class="modelo-datos">${datos}</p></div>
+            <button class="btn btn-chico" type="button" data-modelo="${esc(k)}">Editar modelo</button>
+          </div>
+          ${its.map((it) => fila(it, cambiados.has(it.uid))).join("")}
+        </section>`);
+      });
+    });
+    $("#lista").innerHTML = html.join("") || `<p class="vacio">${st.items.length ? "Ningún producto coincide con la búsqueda." : "Aún no hay productos. Toca Nuevo para subir la primera foto."}</p>`;
+    $("#resumen").textContent = (palabras.length ? visibles.length + (visibles.length === 1 ? " resultado. " : " resultados. ") : "") +
+      "Toca una talla para marcarla agotada en ese color.";
+
+    const n = lineas.length;
+    $("#barra").hidden = !n;
+    $("#barra-txt").textContent = n === 1 ? "1 cambio sin publicar" : n + " cambios sin publicar";
+  }
+
+  function fila(it, cambiada) {
+    const v = vista(it);
+    const datos = [
+      v.estado !== "disponible" ? `<span class="estado-${esc(v.estado)}">${esc(v.cm.agotado ? "Color agotado" : ESTADOS[v.estado])}</span>` : "",
+      !muestraDe(claveColor(it), v.cm) && it.color ? '<span class="falta">Sin cuadrito de color</span>' : ""
+    ].join("");
+    const botones = v.tallas.length > 1 ? `<div class="tallas" role="group" aria-label="Tallas de ${esc(nombreItem(it))}">
+      ${v.tallas.map((t) => `<button class="talla" type="button" data-uid="${it.uid}" data-talla="${esc(t)}" aria-pressed="${v.agotadas.has(t)}" aria-label="Talla ${esc(t)}${v.agotadas.has(t) ? ", agotada" : ""}">${esc(t)}</button>`).join("")}
+    </div>` : "";
+    return `<article class="fila${cambiada ? " cambiada" : ""}">
+      <button class="fila-abrir" type="button" data-item="${it.uid}">
+        <span class="fila-foto">${imgFoto(it, "")}</span>
+        <span><span class="fila-nombre">${esc(it.color ? titulo(it.color) : nombreItem(it))}</span><span class="fila-datos">${datos}</span></span>
+        <span class="fila-editar">Editar</span>
+      </button>${botones}
+    </article>`;
+  }
+
+  /* ---------- Editor ---------- */
+  const editor = $("#editor");
+  // modo: "modelo" (precio, tallas, categoría), "color" (foto, color, agotadas), "nuevo" (foto + modelo + color), "nuevo-color"
+  const ed = { modo: "", k: "", uid: null, b64: null, vista: null, colores: [], tocado: false, agotadas: new Set() };
+
+  function seccion(id, visible) { $(id).hidden = !visible; }
+  function opcionesCat(actual) {
+    const cats = [...new Set([...CATEGORIAS.map(([k]) => k), ...ordenCats()])];
+    $("#ed-cat").innerHTML = cats.map((c) => `<option value="${esc(c)}">${esc(nombreCat(c))}</option>`).join("") + '<option value="__nueva">Nueva categoría…</option>';
+    $("#ed-cat").value = actual && cats.includes(actual) ? actual : (st.filtro !== "all" ? st.filtro : cats[0]);
+    $("#ed-cat-nueva").value = "";
+    $("#ed-cat-nueva-c").hidden = $("#ed-cat").value !== "__nueva";
+  }
+  function opcionesModelo() {
+    const c = $("#ed-cat").value;
+    const ks = [...new Set(st.items.filter((it) => clave(it.cat) === c).map(claveModelo))].sort();
+    $("#ed-modelo-sel").innerHTML = ks.map((k) => `<option value="${esc(k)}">${esc(titulo(k.split("/")[1]))}</option>`).join("") + '<option value="__nuevo">Modelo nuevo…</option>';
+    $("#ed-modelo-sel").value = ks.length ? ks[0] : "__nuevo";
+    alCambiarModeloSel();
+  }
+  function alCambiarModeloSel() {
+    const nuevo = $("#ed-modelo-sel").value === "__nuevo";
+    seccion("#sec-modelo", nuevo);
+    if (nuevo) llenarModelo(null, "");
+  }
+  function llenarModelo(m, nombre) {
+    $("#ed-modelo").value = nombre;
+    $("#ed-sin-precio").checked = !!m && typeof m.precio !== "number";
+    $("#ed-precio").value = m && typeof m.precio === "number" ? m.precio : "";
+    const t = expandir(m && m.tallas);
+    const unica = t.length === 1 && t[0] === "Único";
+    $("#ed-unica").checked = unica;
+    const nums = t.map(Number).filter((n) => !isNaN(n));
+    $("#ed-desde").value = nums.length ? Math.min(...nums) : "";
+    $("#ed-hasta").value = nums.length ? Math.max(...nums) : "";
+    const est = m && ESTADOS[m.estado] ? m.estado : "disponible";
+    $$("input[name=ed-estado]").forEach((r) => { r.checked = r.value === est; });
+    pintarRango();
+  }
+  function pintarRango() {
+    $("#ed-rango").hidden = $("#ed-unica").checked;
+    $("#ed-precio").disabled = $("#ed-sin-precio").checked;
+  }
+  function llenarColor(color, cm) {
+    $("#ed-color").value = color ? titulo(color) : "";
+    ed.tocado = false;
+    pintarMuestraDesdeNombre(cm);
+  }
+  function pintarMuestraDesdeNombre(cm) {
+    const ck = slug($("#ed-color").value);
+    const hex = ck ? muestraDe(ck, cm) : null;
+    ed.colores = hex ? hex.slice(0, 2) : ["#E6E6E6"];
+    $("#ed-c1").value = hexOk(ed.colores[0]) ? ed.colores[0].toLowerCase() : "#e6e6e6";
+    $("#ed-c2").value = hexOk(ed.colores[1] || "") ? ed.colores[1].toLowerCase() : "#ffffff";
+    $("#ed-dos").checked = ed.colores.length > 1;
+    $("#ed-muestra-nota").textContent = !ck ? "" : hex ? "Color conocido. Si cambias el cuadrito, cambia en todos los modelos con este color." : "Color nuevo: elige su tono para el cuadrito.";
+    pintarMuestra();
+  }
+  function pintarMuestra() {
+    const c = ed.colores;
+    $("#ed-c2").hidden = c.length < 2;
+    $("#ed-muestra").style.background = c.length > 1 ? `linear-gradient(135deg, ${c[0]} 50%, ${c[1]} 50%)` : c[0];
+  }
+  function pintarAgotadas(tallas) {
+    seccion("#sec-agotadas", tallas.length > 1);
+    $("#ed-agotadas").innerHTML = tallas.map((t) =>
+      `<button class="talla" type="button" data-talla="${esc(t)}" aria-pressed="${ed.agotadas.has(t)}" aria-label="Talla ${esc(t)}">${esc(t)}</button>`).join("");
+  }
+  function pintarFotoEditor(it) {
+    const src = ed.vista;
+    $("#ed-marco").innerHTML = src ? `<img src="${esc(src)}" alt="Foto">` : it ? imgFoto(it, "Foto") : "Sin foto";
+  }
+
+  function abrir(modo, datos = {}) {
+    ed.modo = modo; ed.k = datos.k || ""; ed.uid = datos.uid || null; ed.b64 = null; ed.vista = null; ed.agotadas = new Set();
+    $("#ed-error").hidden = true;
+    $("#ed-archivo").value = "";
+    const it = ed.uid ? st.items.find((x) => x.uid === ed.uid) : null;
+    const k = it ? claveModelo(it) : ed.k;
+    const m = st.cfg.modelos[k] || null;
+
+    seccion("#sec-foto", modo !== "modelo");
+    seccion("#sec-cat", modo === "modelo" || modo === "nuevo");
+    seccion("#sec-elegir", modo === "nuevo");
+    seccion("#sec-modelo", modo === "modelo");
+    seccion("#sec-color", modo !== "modelo");
+    seccion("#sec-color-agotado", modo === "color");
+    seccion("#sec-agotadas", false);
+    seccion("#ed-mas", modo === "modelo" || modo === "color");
+    $("#ed-otro-color").hidden = modo !== "modelo";
+
+    if (modo === "modelo") {
+      const ej = st.items.find((x) => claveModelo(x) === k);
+      $("#ed-titulo").textContent = "Modelo " + titulo(k.split("/")[1]);
+      opcionesCat(k.split("/")[0]);
+      llenarModelo(m, ej ? nombreModelo(ej) : titulo(k.split("/")[1]));
+      $("#ed-eliminar").textContent = "Eliminar el modelo y sus " + st.items.filter((x) => claveModelo(x) === k).length + " foto(s)";
+    }
+    if (modo === "color") {
+      const v = vista(it);
+      $("#ed-titulo").textContent = nombreItem(it);
+      llenarColor(it.color, v.cm);
+      ed.agotadas = new Set((v.cm.agotadas || []).map(String));
+      (m && Array.isArray(m.agotadas) ? m.agotadas : []).forEach((t) => ed.agotadas.add(String(t)));
+      pintarAgotadas(v.tallas);
+      $("#ed-color-agotado").checked = !!v.cm.agotado;
+      $("#ed-eliminar").textContent = "Eliminar este color";
+      pintarFotoEditor(it);
+    }
+    if (modo === "nuevo") {
+      $("#ed-titulo").textContent = "Nuevo producto";
+      opcionesCat(st.filtro !== "all" ? st.filtro : "");
+      opcionesModelo();
+      llenarColor("", null);
+      pintarFotoEditor(null);
+    }
+    if (modo === "nuevo-color") {
+      $("#ed-titulo").textContent = "Nuevo color de " + titulo(k.split("/")[1]);
+      llenarColor("", null);
+      pintarFotoEditor(null);
+    }
+    if (!editor.open) editor.showModal();
+    $(".ed-cuerpo").scrollTop = 0;
+  }
+
+  function error(texto) {
+    const el = $("#ed-error");
+    el.textContent = texto; el.hidden = false;
+    el.scrollIntoView({ block: "center", behavior: "smooth" });
+  }
+
+  function leerCat() {
+    if ($("#ed-cat").value !== "__nueva") return $("#ed-cat").value;
+    return slug($("#ed-cat-nueva").value);
+  }
+  function leerModeloCfg(base) {
+    const sinPrecio = $("#ed-sin-precio").checked;
+    const precio = parseFloat(String($("#ed-precio").value).replace(",", "."));
+    if (!sinPrecio && !(precio > 0)) return { error: "Escribe el precio o marca Por confirmar." };
+    let tallas;
+    if ($("#ed-unica").checked) tallas = ["Único"];
+    else {
+      const a = parseInt($("#ed-desde").value, 10), b = parseInt($("#ed-hasta").value, 10);
+      if (isNaN(a) || isNaN(b) || a > b || b - a > 30) return { error: "Revisa las tallas: Desde debe ser menor o igual que Hasta." };
+      tallas = [a, b];
+    }
+    const estado = ($("input[name=ed-estado]:checked") || {}).value || "disponible";
+    const m = { ...(base || {}) };
+    if (sinPrecio) delete m.precio; else m.precio = Math.round(precio * 100) / 100;
+    m.tallas = tallas;
+    if (estado === "disponible") delete m.estado; else m.estado = estado;
+    return { m };
+  }
+  // Guarda el cuadrito en la paleta si el color es nuevo o si lo cambiaste
+  function guardarMuestra(ck) {
+    if (!ck) return;
+    const conocido = muestraDe(ck, null);
+    if (conocido && !ed.tocado) return;
+    if (!conocido && !ed.tocado) return;
+    const valor = ed.colores.length > 1 ? ed.colores.map((c) => c.toUpperCase()) : ed.colores[0].toUpperCase();
+    st.cfg.colores[ck] = valor;
+  }
+  const existeNombre = (cat, modelo, color, menosUid) => st.items.some((x) => x.uid !== menosUid &&
+    clave(x.cat) === clave(cat) && clave(armarNombre(x.modelo, x.color)) === clave(armarNombre(modelo, color)));
+
+  function guardar(e) {
+    e.preventDefault();
+    if (ed.modo === "modelo") return guardarModelo();
+    const colorNombre = $("#ed-color").value.trim();
+    const color = slug(colorNombre);
+    if (!color) return error("Escribe el color.");
+
+    if (ed.modo === "color") {
+      const it = st.items.find((x) => x.uid === ed.uid);
+      if (existeNombre(it.cat, it.modelo, color, it.uid)) return error("Ese modelo ya tiene una foto de ese color.");
+      const k = claveModelo(it), ckViejo = claveColor(it);
+      prepararModelo(k);
+      const m = st.cfg.modelos[k];
+      if (m && m.colores && ckViejo !== color && m.colores[ckViejo]) { m.colores[color] = m.colores[ckViejo]; delete m.colores[ckViejo]; }
+      it.color = color;
+      if (ed.b64) { it.b64 = ed.b64; it.vista = ed.vista; }
+      it.path = rutaDe(it);
+      if (m) {
+        ponerAgotadas(it, ed.agotadas);
+        m.colores = m.colores || {};
+        m.colores[color] = m.colores[color] || {};
+        m.colores[color].agotado = $("#ed-color-agotado").checked;
+        limpiarColor(m, color);
+      }
+      guardarMuestra(color);
+      return terminar("Guardado. Toca Publicar para subirlo a la tienda.");
+    }
+
+    // nuevo producto o nuevo color: siempre con foto
+    if (!ed.b64) return error("Elige la foto del producto.");
+    let cat, modelo, k;
+    if (ed.modo === "nuevo-color") {
+      const ej = st.items.find((x) => claveModelo(x) === ed.k);
+      cat = ej.cat; modelo = ej.modelo; k = ed.k;
+    } else {
+      cat = leerCat();
+      if (!cat) return error("Escribe el nombre de la nueva categoría.");
+      if ($("#ed-modelo-sel").value === "__nuevo") {
+        modelo = slug($("#ed-modelo").value);
+        if (!modelo) return error("Escribe el nombre del modelo.");
+        k = clave(cat) + "/" + modelo;
+        if (st.items.some((x) => claveModelo(x) === k)) return error("Ya existe ese modelo en esta categoría. Elígelo en la lista de modelos.");
+        const r = leerModeloCfg(st.cfg.modelos[k]);
+        if (r.error) return error(r.error);
+        st.cfg.modelos[k] = r.m;
+      } else {
+        k = $("#ed-modelo-sel").value;
+        const ej = st.items.find((x) => claveModelo(x) === k);
+        cat = ej.cat; modelo = ej.modelo;
+      }
+    }
+    if (existeNombre(cat, modelo, color, null)) return error("Ese modelo ya tiene una foto de ese color.");
+    const it = { uid: ++st.uid, path: "", origPath: null, sha: null, cat, modelo, color, b64: ed.b64, vista: ed.vista };
+    it.path = rutaDe(it);
+    st.items.push(it);
+    guardarMuestra(color);
+    terminar("Añadido. Toca Publicar para subirlo a la tienda.");
+  }
+
+  function guardarModelo() {
+    const k = ed.k;
+    const cat = leerCat();
+    if (!cat) return error("Escribe el nombre de la nueva categoría.");
+    const modelo = slug($("#ed-modelo").value);
+    if (!modelo) return error("Escribe el nombre del modelo.");
+    const kNuevo = clave(cat) + "/" + modelo;
+    if (kNuevo !== k && st.items.some((x) => claveModelo(x) === kNuevo)) return error("Ya existe un modelo con ese nombre en esa categoría.");
+    const its = st.items.filter((x) => claveModelo(x) === k);
+    for (const it of its) {
+      if (st.items.some((x) => !its.includes(x) && clave(x.cat) === clave(cat) && clave(armarNombre(x.modelo, x.color)) === clave(armarNombre(modelo, it.color)))) {
+        return error("Al renombrar chocaría con otra foto en esa categoría. Usa otro nombre.");
+      }
+    }
+    const r = leerModeloCfg(st.cfg.modelos[k]);
+    if (r.error) return error(r.error);
+    delete st.cfg.modelos[k];
+    st.cfg.modelos[kNuevo] = r.m;
+    its.forEach((it) => { it.cat = cat; it.modelo = modelo; it.path = rutaDe(it); });
+    terminar("Guardado. Toca Publicar para subirlo a la tienda.");
+  }
+
+  function terminar(texto) {
+    editor.close();
+    pintar();
+    avisar(texto);
+  }
+
+  /* ---------- Eventos del editor ---------- */
+  $("#ed-form").addEventListener("submit", guardar);
+  $("#ed-form").addEventListener("input", () => { $("#ed-error").hidden = true; });
+  editor.addEventListener("click", (e) => {
+    if (e.target === editor || e.target.closest("[data-cerrar]")) { editor.close(); return; }
+    const t = e.target.closest("#ed-agotadas .talla");
+    if (t) {
+      const v = t.dataset.talla;
+      if (ed.agotadas.has(v)) ed.agotadas.delete(v); else ed.agotadas.add(v);
+      t.setAttribute("aria-pressed", String(ed.agotadas.has(v)));
+    }
+  });
+  $("#ed-cat").addEventListener("change", () => {
+    $("#ed-cat-nueva-c").hidden = $("#ed-cat").value !== "__nueva";
+    if (ed.modo === "nuevo") opcionesModelo();
+  });
+  $("#ed-modelo-sel").addEventListener("change", alCambiarModeloSel);
+  $("#ed-color").addEventListener("input", () => { if (!ed.tocado) pintarMuestraDesdeNombre(null); });
+  $("#ed-c1").addEventListener("input", (e) => { ed.tocado = true; ed.colores[0] = e.target.value; pintarMuestra(); });
+  $("#ed-c2").addEventListener("input", (e) => { ed.tocado = true; if (ed.colores.length > 1) ed.colores[1] = e.target.value; pintarMuestra(); });
+  $("#ed-dos").addEventListener("change", (e) => {
+    ed.tocado = true;
+    ed.colores = e.target.checked ? [ed.colores[0], $("#ed-c2").value] : [ed.colores[0]];
+    pintarMuestra();
+  });
+  $("#ed-sin-precio").addEventListener("change", pintarRango);
+  $("#ed-unica").addEventListener("change", pintarRango);
+
+  $("#ed-archivo").addEventListener("change", async (e) => {
+    const archivo = e.target.files && e.target.files[0];
+    if (!archivo) return;
+    $("#ed-marco").textContent = "Preparando foto…";
+    try {
+      const foto = await procesarFoto(archivo);
+      ed.b64 = foto.b64; ed.vista = foto.url;
+    } catch (err) {
+      avisar(err.message || "No se pudo usar esa foto. Prueba con otra.", true);
+    }
+    pintarFotoEditor(ed.uid ? st.items.find((x) => x.uid === ed.uid) : null);
+    e.target.value = "";
+  });
+
+  $("#ed-otro-color").addEventListener("click", () => abrir("nuevo-color", { k: ed.k }));
+
+  $("#ed-eliminar").addEventListener("click", () => {
+    if (ed.modo === "modelo") {
+      const its = st.items.filter((x) => claveModelo(x) === ed.k);
+      if (!confirm(`¿Eliminar ${titulo(ed.k.split("/")[1])} y sus ${its.length} foto(s)?`)) return;
+      st.items = st.items.filter((x) => claveModelo(x) !== ed.k);
+      delete st.cfg.modelos[ed.k];
+      return terminar("Eliminado. Toca Publicar para quitarlo de la tienda.");
+    }
+    const it = st.items.find((x) => x.uid === ed.uid);
+    if (!it || !confirm(`¿Eliminar ${nombreItem(it)}?`)) return;
+    const k = claveModelo(it);
+    st.items = st.items.filter((x) => x.uid !== it.uid);
+    const m = st.cfg.modelos[k];
+    if (m && m.colores) { delete m.colores[claveColor(it)]; if (!Object.keys(m.colores).length) delete m.colores; }
+    if (!st.items.some((x) => claveModelo(x) === k)) delete st.cfg.modelos[k];   // era el último color del modelo
+    terminar("Eliminado. Toca Publicar para quitarlo de la tienda.");
+  });
+
+  /* ---------- Eventos de la lista ---------- */
+  $("#lista").addEventListener("click", (e) => {
+    const t = e.target.closest(".talla");
+    if (t) {
+      const it = st.items.find((x) => x.uid === Number(t.dataset.uid));
+      if (!it) return;
+      const v = vista(it);
+      const set = new Set(v.agotadas);
+      if (set.has(t.dataset.talla)) set.delete(t.dataset.talla); else set.add(t.dataset.talla);
+      ponerAgotadas(it, set);
+      pintar();
+      return;
+    }
+    const m = e.target.closest("[data-modelo]");
+    if (m) { abrir("modelo", { k: m.dataset.modelo }); return; }
+    const i = e.target.closest("[data-item]");
+    if (i) abrir("color", { uid: Number(i.dataset.item) });
+  });
+  $("#filtros").addEventListener("click", (e) => {
+    const b = e.target.closest(".chip");
+    if (b) { st.filtro = b.dataset.filtro; pintar(); }
+  });
+  $("#buscar").addEventListener("input", (e) => { st.busqueda = e.target.value; pintar(); });
+  $("#nuevo").addEventListener("click", () => abrir("nuevo"));
+
+  /* ---------- Publicar ---------- */
+  function mensaje(lineas) {
+    return "Catálogo: " + (lineas.length === 1 ? lineas[0] : lineas.length + " cambios") +
+      "\n\n" + lineas.map((l) => "- " + l).join("\n") + "\n\nHecho desde admin.html";
+  }
+
+  async function publicar() {
+    const { lineas } = diferencias();
+    if (!lineas.length || st.publicando) return;
+    st.publicando = true;
+    const boton = $("#publicar");
+    boton.disabled = true; $("#descartar").disabled = true;
+    boton.textContent = "Publicando…";
+    try {
+      const ref = await api("/git/ref/heads/" + RAMA);
+      if (ref.object.sha !== st.head) { const e = new Error("conflicto"); e.conflicto = true; throw e; }
+
+      const agregar = new Map(), borrar = new Set();
+      for (const it of st.items) {
+        if (it.b64) {
+          const blob = await api("/git/blobs", { method: "POST", body: JSON.stringify({ content: it.b64, encoding: "base64" }) });
+          agregar.set(it.path, blob.sha);
+          if (it.origPath && it.origPath !== it.path) borrar.add(it.origPath);
+        } else if (it.origPath && it.origPath !== it.path) {
+          agregar.set(it.path, it.sha);
+          borrar.add(it.origPath);
+        }
+      }
+      const actuales = new Set(st.items.map((it) => it.uid));
+      st.orig.forEach((ruta, uid) => { if (!actuales.has(uid)) borrar.add(ruta); });
+      agregar.forEach((_, ruta) => borrar.delete(ruta));
+
+      const arbol = [{ path: "config.json", mode: "100644", type: "blob", content: serializar(st.cfg) }];
+      agregar.forEach((sha, ruta) => arbol.push({ path: ruta, mode: "100644", type: "blob", sha }));
+      borrar.forEach((ruta) => arbol.push({ path: ruta, mode: "100644", type: "blob", sha: null }));
+
+      const nuevoArbol = await api("/git/trees", { method: "POST", body: JSON.stringify({ base_tree: st.arbol, tree: arbol }) });
+      const nuevo = await api("/git/commits", { method: "POST", body: JSON.stringify({ message: mensaje(lineas), tree: nuevoArbol.sha, parents: [st.head] }) });
+      await api("/git/refs/heads/" + RAMA, { method: "PATCH", body: JSON.stringify({ sha: nuevo.sha }) });
+      st.items.forEach((it) => { if (it.vista) st.vistas.set(it.path, it.vista); });
+      await cargar();
+      pintar();
+      avisar("Publicado. La tienda se actualiza en 1 o 2 minutos.");
+    } catch (e) {
+      if (e.conflicto || e.status === 409 || e.status === 422) avisar("El catálogo cambió desde otro lugar mientras editabas. Toca Descartar para cargar la versión nueva y vuelve a hacer tus cambios.", true);
+      else if (e.status === 401) { avisar("Tu token venció o fue revocado. Entra con uno nuevo; tus cambios siguen aquí.", true); token = ""; mostrarAcceso(); }
+      else if (e.status === 403 || e.status === 404) avisar("Este token no puede escribir en Zazi-pe/Zazi-Modelos. Revisa que tenga ese repositorio y Contents: Read and write.", true);
+      else avisar("No se pudo publicar" + (e.status ? " (GitHub " + e.status + ")" : ". Revisa tu conexión") + ". Tus cambios siguen aquí; vuelve a intentarlo.", true);
+    } finally {
+      st.publicando = false;
+      boton.disabled = false; $("#descartar").disabled = false;
+      boton.textContent = "Publicar";
+    }
+  }
+  $("#publicar").addEventListener("click", publicar);
+
+  $("#descartar").addEventListener("click", async () => {
+    const n = diferencias().lineas.length;
+    if (n && !confirm(n === 1 ? "¿Descartar el cambio sin publicar?" : `¿Descartar los ${n} cambios sin publicar?`)) return;
+    mostrar("cargando");
+    try { await cargar(); mostrar("panel"); pintar(); }
+    catch (e) { manejarErrorCarga(e); }
+  });
+
+  window.addEventListener("beforeunload", (e) => {
+    if (st.cfg && diferencias().lineas.length) { e.preventDefault(); e.returnValue = ""; }
+  });
+
+  /* ---------- Acceso ---------- */
+  function mostrarAcceso(texto) {
+    mostrar("acceso");
+    $("#acceso-error").textContent = texto || "";
+    $("#acceso-error").hidden = !texto;
+  }
+  function manejarErrorCarga(e) {
+    if (e.status === 401) { token = ""; try { localStorage.removeItem(CLAVE_TOKEN); } catch (_) {} mostrarAcceso("El token no es válido o ya venció. Crea uno nuevo."); }
+    else if (e.status === 403 || e.status === 404) mostrarAcceso("Este token no tiene acceso a Zazi-pe/Zazi-Modelos. Edita el token en GitHub y agrega ese repositorio (paso 1).");
+    else mostrarAcceso("No se pudo cargar el catálogo. Revisa tu conexión y vuelve a intentarlo.");
+  }
+
+  $("#form-acceso").addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const valor = $("#token").value.trim();
+    if (!valor) { mostrarAcceso("Pega tu token de GitHub."); return; }
+    const pendiente = st.cfg && diferencias().lineas.length;
+    token = valor;
+    $("#entrar").disabled = true;
+    try {
+      if (!pendiente) await cargar();
+      else await api("");
+      try { localStorage.setItem(CLAVE_TOKEN, token); } catch (_) { /* sin almacenamiento */ }
+      $("#token").value = "";
+      mostrar("panel"); pintar();
+    } catch (err) { manejarErrorCarga(err); }
+    finally { $("#entrar").disabled = false; }
+  });
+
+  $("#salir").addEventListener("click", () => {
+    const n = diferencias().lineas.length;
+    if (n && !confirm("Tienes cambios sin publicar. ¿Salir de todas formas?")) return;
+    try { localStorage.removeItem(CLAVE_TOKEN); } catch (_) {}
+    token = ""; st.cfg = null;
+    mostrarAcceso();
+  });
+
+  /* ---------- Arranque ---------- */
+  (async () => {
+    if (!token) { mostrarAcceso(); return; }
+    mostrar("cargando");
+    try { await cargar(); mostrar("panel"); pintar(); }
+    catch (e) { manejarErrorCarga(e); }
+  })();
+})();
+</script>
+</body>
+</html>
