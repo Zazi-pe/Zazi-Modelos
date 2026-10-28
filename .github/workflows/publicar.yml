@@ -32,8 +32,9 @@ jobs:
       - name: Armar el sitio
         run: |
           mkdir -p _site/fotos
-          cp index.html config.json productos.json _site/
+          cp index.html admin.html config.json productos.json _site/
           if [ -d fotos ]; then cp -r fotos/. _site/fotos/; fi
+          if [ -d img ]; then cp -r img _site/; fi
 
       - uses: actions/configure-pages@v5
 
