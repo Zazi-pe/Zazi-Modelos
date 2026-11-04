@@ -1,0 +1,6 @@
+{
+  "filtros": [["sandalias","Sandalias"],["botas","Botas"],["botines","Botines"],["zapatillas","Zapatillas"],["zapatos","Zapatos"]],
+  "productos": [
+    {"id":3001,"sku":"","filtro":"botines","linea":"Botines","nombre":"Botín Pasador Marrón","modelo":"Botín Pasador","color":"Marrón","colores":["#8B5A3C"],"precio":79.9,"tallas":[35,39],"agotadas":["36","38","39"],"estado":"disponible","creado":"2026-10-01","foto":"fotos/botines/botin-pasador-marron.jpeg"}
+  ]
+}

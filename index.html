@@ -219,9 +219,8 @@ dialog::backdrop{background:rgba(0,0,0,.45)}
 .m-tallas-ayuda{font-size:.875rem;color:var(--gris)}
 
 
-/* Paneles desde abajo: "Add to bag" y carrito */
-#hoja,#carrito{position:fixed;inset:auto 0 0 0;margin:0 auto;width:min(560px,100vw);max-height:85dvh;border-radius:14px 14px 0 0;box-shadow:0 -12px 32px rgba(0,0,0,.18);background:#fff}
-#hoja{height:auto;overflow-y:auto}
+/* Panel del carrito (sube desde abajo) */
+#carrito{position:fixed;inset:auto 0 0 0;margin:0 auto;width:min(560px,100vw);max-height:85dvh;border-radius:14px 14px 0 0;box-shadow:0 -12px 32px rgba(0,0,0,.18);background:#fff}
 #carrito{height:min(85dvh,780px)}
 #carrito[open]{display:flex;flex-direction:column}
 .hoja-cab{position:relative;display:flex;align-items:center;justify-content:center;padding:16px 60px 8px}
@@ -229,24 +228,6 @@ dialog::backdrop{background:rgba(0,0,0,.45)}
 .hoja-x{position:absolute;right:8px;top:50%;transform:translateY(-50%);width:46px;height:46px;display:grid;place-items:center;background:none;border:0;border-radius:999px;color:var(--tinta)}
 .hoja-x svg{width:24px;height:24px}
 .hoja-x:hover{background:var(--piedra)}
-.hoja-prod{display:grid;grid-template-columns:110px 1fr;gap:16px;padding:12px 20px 20px}
-.h-foto{aspect-ratio:4/5;background:var(--piedra);overflow:hidden}
-.h-foto img{width:100%;height:100%;object-fit:cover}
-.h-datos{display:flex;flex-direction:column;align-items:flex-start;gap:5px}
-.h-nombre{font-size:1.0625rem;font-weight:400;line-height:1.35}
-.h-linea{font-size:1rem;color:var(--gris)}
-.h-precio{font-size:1.0625rem;font-weight:500;font-variant-numeric:tabular-nums}
-.hoja-sub{font-family:var(--f-titulo);font-weight:600;font-size:1.3rem;letter-spacing:.03em;text-transform:uppercase;padding:0 20px 12px;border-bottom:1px solid var(--linea)}
-.hoja-tallas{padding-bottom:12px}
-.hoja-tallas li{border-bottom:1px solid var(--linea)}
-.h-talla{width:100%;display:flex;align-items:center;justify-content:space-between;min-height:52px;padding:14px 20px;background:none;border:0;font-size:1.0625rem;text-align:left}
-.h-talla:hover,.h-talla:focus-visible{background:#fafafa}
-.h-talla.agotada{color:#5f5f5f;cursor:not-allowed}
-.h-talla.agotada span{text-decoration:line-through;text-decoration-thickness:1px}
-.h-talla.agotada .h-add{color:#9a9a9a}
-.h-talla.agotada:hover{background:none}
-.h-add{display:inline-flex;align-items:center;gap:8px}
-.h-add b{font-weight:300;font-size:1.35rem;line-height:1}
 
 /* Carrito */
 .cajon-cab{position:relative;display:flex;align-items:center;padding:16px 60px 12px 20px;border-bottom:1px solid var(--linea)}
@@ -295,7 +276,7 @@ dialog::backdrop{background:rgba(0,0,0,.45)}
 /* ---------- Movimiento: solo como respuesta a una acción ---------- */
 @media (prefers-reduced-motion:no-preference){
   #modal[open]{animation:subir .22s ease-out}
-  #carrito[open],#hoja[open]{animation:hoja-sube .34s cubic-bezier(.2,.8,.2,1)}
+  #carrito[open]{animation:hoja-sube .34s cubic-bezier(.2,.8,.2,1)}
   @keyframes subir{from{transform:translateY(16px);opacity:0}}
   @keyframes hoja-sube{from{transform:translateY(100%)}}
 }
@@ -335,12 +316,11 @@ dialog::backdrop{background:rgba(0,0,0,.45)}
   .modal-cuerpo{--pad-m:20px;padding:22px var(--pad-m) 28px}
 }
 @media (max-width:420px){
-  .hoja-prod{grid-template-columns:96px 1fr;gap:14px}
   .c-item{grid-template-columns:88px 1fr}
   .c-foto{width:88px;height:110px}
 }
 
-/* ---------- Solo para el catálogo con fotos automáticas ---------- */
+/* ---------- Opciones que usa solo uno de los catálogos (ver SITIOS) ---------- */
 .hero-in.hero-solo{grid-template-columns:1fr}
 .m-color.texto{width:auto;min-width:34px;padding:0 12px;place-items:center;font-size:.8125rem;font-weight:500}
 .m-precio{margin-top:-10px;font-size:1.125rem;font-weight:600;font-variant-numeric:tabular-nums}
@@ -385,6 +365,12 @@ dialog::backdrop{background:rgba(0,0,0,.45)}
       </div>
 
       <figure class="hero-foto" id="vitrina"></figure>
+
+      <ul class="hero-datos" id="hero-datos" hidden>
+        <li><b>100%</b><span>Control de calidad par por par</span></li>
+        <li><b>24H</b><span>Atención por WhatsApp</span></li>
+        <li><b>35-46</b><span>Tallas 35 a 39 mujer, 40 a 46 hombre</span></li>
+      </ul>
     </div>
   </section>
 
@@ -394,7 +380,7 @@ dialog::backdrop{background:rgba(0,0,0,.45)}
         <h2 id="t-catalogo">Catálogo</h2>
         <p class="sub">Elige el modelo y la talla. Pagas por Yape o en efectivo.</p>
       </div>
-      <p class="conteo" id="conteo" aria-live="polite"></p>
+      <p class="conteo" id="conteo" aria-live="polite">Cargando…</p>
     </div>
 
     <div class="chips" id="filtros" role="group" aria-label="Filtrar por línea"></div>
@@ -540,12 +526,13 @@ dialog::backdrop{background:rgba(0,0,0,.45)}
   </form>
 </dialog>
 
+<div id="aviso" role="status" aria-live="polite" hidden></div>
 
 <script>
 /* ============================================================
    ZAZI — DATOS DE LA TIENDA
-   Aquí cambias tus datos. Los productos (precios y tallas)
-   se manejan en config.json; las fotos, en la carpeta fotos/.
+   Este mismo archivo se usa en los dos catálogos (Zazi y Zazi-Modelos).
+   Los productos y filtros de cada catálogo están en su productos.json.
    ============================================================ */
 
 const TIENDA = {
@@ -556,135 +543,97 @@ const TIENDA = {
   yape: { numero: "959 161 270", titular: "Rosario Tapia Carrasco" }
 };
 
-/* Orden y nombre de los filtros del catálogo (el primero es el nombre de la carpeta en fotos/).
-   Una carpeta nueva que no esté en esta lista aparece igual, al final. */
-const FILTROS = [
-  ["sandalias", "Sandalias"], ["botas", "Botas"], ["botines", "Botines"], ["zapatillas", "Zapatillas"], ["zapatos", "Zapatos"]
-];
+/* Lo que cambia entre los dos catálogos. Cada sitio se reconoce por su dirección
+   (zazi-pe.github.io/Zazi/ o zazi-pe.github.io/Zazi-Modelos/). */
+const SITIOS = {
+  "zazi":         { carrito: "zazi-carrito-v1",         datosPortada: true,  precioEnFicha: false, descripciones: true },
+  "zazi-modelos": { carrito: "zazi-propios-carrito-v1", datosPortada: false, precioEnFicha: true,  descripciones: false }
+};
 
-/* Las fotos subidas en los últimos días llevan la etiqueta "Nuevo" (0 = sin etiqueta). */
+/* Los productos agregados en los últimos días llevan la etiqueta "Nuevo"
+   (desde el admin se puede forzar "Sí" o "No" en cada producto). */
 const DIAS_NUEVO = 14;
+
 </script>
 <script>
 /* ============================================================
    ZAZI — lógica de la tienda (catálogo, carrito y pedido)
-   Productos: fotos en fotos/<categoria>/ (productos.json, automático)
-   + precios y tallas en config.json. Datos de la tienda: bloque de arriba.
+   Los productos se cargan desde productos.json.
    ============================================================ */
-(() => {
+(async () => {
   "use strict";
 
   const $ = (s, el = document) => el.querySelector(s);
   const $$ = (s, el = document) => [...el.querySelectorAll(s)];
   const esc = (t) => String(t).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
-  const norm = (t) => String(t).normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
-  const clave = (t) => norm(t).trim().replace(/[\s_]+/g, "-");
   const soles = (n) => "S/ " + n.toFixed(2);
-  const src = (ruta) => esc(String(ruta).split("/").map(encodeURIComponent).join("/"));
-  const hexOk = (h) => typeof h === "string" && /^#[0-9a-f]{3,8}$/i.test(h);
-  const aHex = (v) => { const l = (Array.isArray(v) ? v : [v]).filter(hexOk).slice(0, 2); return l.length ? l : null; };
-
-  let CONFIG = {};
-  let PRODUCTOS = [];
-  let porId = new Map();
-  let CATEGORIAS = []; // [[clave, nombre], …] en el orden de los filtros
-
-  const wa = (texto) => "https://wa.me/" + TIENDA.whatsapp + (texto ? "?text=" + encodeURIComponent(texto) : "");
   const consultar = (p) => p.precio == null;                  // sin precio: se consulta por WhatsApp
   const precioTxt = (p) => (consultar(p) ? "Consultar precio" : soles(p.precio));
+  const norm = (t) => String(t).normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
+  const wa = (texto) => "https://wa.me/" + TIENDA.whatsapp + (texto ? "?text=" + encodeURIComponent(texto) : "");
 
   const ICONO_ZAPATILLA = '<svg viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round" aria-hidden="true"><path d="M6 11h20l-1.6 16H7.6L6 11z"/><path d="M11 11V8a5 5 0 0 1 10 0v3"/></svg>';
 
-  const estado = { filtro: "all", busqueda: "", orden: "destacados", carrito: [] };
+  /* ---------- Qué catálogo es (por la dirección; para probar: ?sitio=zazi-modelos) ---------- */
+  const nombreSitio = (new URLSearchParams(location.search).get("sitio") || location.pathname.split("/").filter(Boolean)[0] || "zazi").toLowerCase();
+  const SITIO = SITIOS[nombreSitio] || SITIOS.zazi;
 
-  /* ---------- Construir los productos (fotos + config) ---------- */
-  function titulo(slug) {
-    return String(slug).split(/[-_\s]+/).filter(Boolean)
-      .map((w) => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase()).join(" ");
+  /* ---------- Datos del catálogo (productos.json) ---------- */
+  let PRODUCTOS = [], FILTROS = [], errorCarga = false;
+  try {
+    const r = await fetch("productos.json?v=" + Date.now(), { cache: "no-store" });
+    if (!r.ok) throw new Error("HTTP " + r.status);
+    const datos = await r.json();
+    PRODUCTOS = Array.isArray(datos.productos) ? datos.productos : [];
+    FILTROS = Array.isArray(datos.filtros) ? datos.filtros : [];
+  } catch (e) {
+    errorCarga = true;
+    console.error("No se pudo cargar productos.json", e);
   }
+  // fecha de alta de cada producto (para "Nuevo", el orden y la vitrina)
+  PRODUCTOS.forEach((p) => { p._fecha = Date.parse(p.creado) || 0; });
 
-  function expandirTallas(t) {
-    if (!Array.isArray(t) || !t.length) return { lista: [], rango: null };
-    if (t.length === 2 && t.every((n) => Number.isFinite(n)) && t[1] >= t[0] && t[1] - t[0] <= 60) {
+  const estado = { filtro: "all", busqueda: "", orden: "destacados", carrito: [] };
+  const porId = new Map(PRODUCTOS.map((p) => [p.id, p]));
+
+  /* ---------- Utilidades de producto ---------- */
+  function tallasDe(p) {
+    const t = p.tallas || [];
+    if (t.length === 2 && typeof t[0] === "number" && typeof t[1] === "number") {
       const lista = [];
       for (let n = t[0]; n <= t[1]; n++) lista.push(String(n));
-      return { lista, rango: [t[0], t[1]] };
+      return lista;
     }
-    return { lista: t.map(String), rango: null };
+    return t.map(String);
   }
-
-  function construir(fotos, cfg) {
-    const paleta = new Map();
-    Object.entries(cfg.colores || {}).forEach(([k, v]) => { const h = aHex(v); if (h) paleta.set(clave(k), h); });
-    const modelos = new Map();
-    Object.entries(cfg.modelos || {}).forEach(([k, v]) => {
-      const m = v && typeof v === "object" ? v : {};
-      modelos.set(clave(k), { ...m, _colores: new Map(Object.entries(m.colores || {}).map(([c, o]) => [clave(c), o || {}])) });
-    });
-
-    // Muestra de color: la del modelo, la de la paleta, o (si son dos palabras conocidas) una mezcla de ambas
-    const muestra = (colorClave, cm) => {
-      if (cm && cm.hex && aHex(cm.hex)) return aHex(cm.hex);
-      if (paleta.has(colorClave)) return paleta.get(colorClave);
-      const w = colorClave.split("-");
-      if (w.length === 2 && paleta.has(w[0]) && paleta.has(w[1])) return [paleta.get(w[0])[0], paleta.get(w[1])[0]];
-      return null;
-    };
-
-    return fotos.map((f) => {
-      const m = modelos.get(f.claveModelo) || null;
-      const cm = (m && m._colores.get(f.colorClave)) || {};
-      const { lista: tallas, rango } = expandirTallas(m && m.tallas);
-      const agotadas = [
-        ...(m && Array.isArray(m.agotadas) ? m.agotadas : []),
-        ...(Array.isArray(cm.agotadas) ? cm.agotadas : []),
-      ].map(String);
-      let est = m && ["disponible", "agotado", "proximamente"].includes(m.estado) ? m.estado : "disponible";
-      if (cm.agotado) est = "agotado";
-      if (est === "disponible" && tallas.length && tallas.every((t) => agotadas.includes(t))) est = "agotado";
-
-      const modelo = titulo(f.modeloSlug);
-      const color = f.colorSlug ? titulo(f.colorSlug) : "";
-      return {
-        id: f.id,
-        catClave: clave(f.categoria),
-        linea: titulo(f.categoria),
-        claveModelo: f.claveModelo,
-        modelo, color,
-        nombre: [modelo, color].filter(Boolean).join(" "),
-        hex: f.colorClave ? muestra(f.colorClave, cm) : null,
-        precio: m && typeof m.precio === "number" ? m.precio : null,
-        tallas, rango, agotadas,
-        estado: est,
-        foto: f.foto,
-        fecha: Date.parse(f.fecha) || 0,
-      };
-    });
-  }
-
-  const porFecha = (a, b) => b.fecha - a.fecha || (a.id < b.id ? -1 : a.id > b.id ? 1 : 0);
-  const esUnica = (p) => p.tallas.length === 1 && p.tallas[0] === "Único";
+  const esUnica = (p) => tallasDe(p).length === 1 && tallasDe(p)[0] === "Único";
   function textoTallas(p) {
-    if (!p.tallas.length) return "";
+    const t = tallasDe(p);
     if (esUnica(p)) return "Talla única";
-    if (p.rango) return "Tallas " + p.rango[0] + " al " + p.rango[1];
-    return "Tallas " + p.tallas.join(", ");
+    if (p.tallas.length === 2 && typeof p.tallas[0] === "number") return "Tallas " + p.tallas[0] + " al " + p.tallas[1];
+    return "Tallas " + t.join(", ");
   }
-  const precioLinea = (p, cant) => (consultar(p) ? 0 : p.precio * cant);
-  // "Nuevo": fotos subidas en los últimos DIAS_NUEVO días (ver bloque de arriba)
-  const esNuevo = (p) => DIAS_NUEVO > 0 && p.fecha > 0 && Date.now() - p.fecha < DIAS_NUEVO * 864e5;
-  const fondoColor = (p) => !p.hex ? null : p.hex.length === 1 ? p.hex[0] : `linear-gradient(135deg, ${p.hex[0]} 50%, ${p.hex[1]} 50%)`;
+  function precioLinea(p, cant) { return consultar(p) ? 0 : p.precio * cant; }
+  // "Nuevo": "si" o "no" lo fuerza desde el admin; si no, los agregados en los últimos DIAS_NUEVO días
+  const esNuevo = (p) => p.nuevo === "si" ? true : p.nuevo === "no" ? false :
+    DIAS_NUEVO > 0 && p._fecha > 0 && Date.now() - p._fecha < DIAS_NUEVO * 864e5;
+  // Lo más nuevo primero; si tienen la misma fecha, el id más alto
+  const porFecha = (a, b) => b._fecha - a._fecha || b.id - a.id;
+  // Estado real: si todas las tallas están agotadas, el producto se muestra agotado
+  PRODUCTOS.forEach((p) => {
+    const t = tallasDe(p), ag = (p.agotadas || []).map(String);
+    if (p.estado === "disponible" && t.length && t.every((x) => ag.includes(x))) p.estado = "agotado";
+  });
 
   /* ---------- Carrito (se guarda en el navegador) ---------- */
-  const CLAVE = "zazi-propios-carrito-v1";
+  const CLAVE = SITIO.carrito;
   function cargarCarrito() {
     try {
       const datos = JSON.parse(localStorage.getItem(CLAVE) || "[]");
-      if (!Array.isArray(datos)) return [];
       return datos.filter((l) => {
-        const p = porId.get(l.id);
-        return p && p.estado === "disponible" && p.tallas.includes(String(l.talla)) &&
-          !p.agotadas.includes(String(l.talla)) && Number.isInteger(l.cant) && l.cant > 0;
+        const p = PRODUCTOS.find((x) => x.id === l.id);
+        return p && p.estado === "disponible" && tallasDe(p).includes(String(l.talla)) &&
+          !(p.agotadas || []).map(String).includes(String(l.talla)) && l.cant > 0;
       });
     } catch (e) { return []; }
   }
@@ -702,19 +651,20 @@ const DIAS_NUEVO = 14;
 
   /* ---------- Filtros y catálogo ---------- */
   function pintarFiltros() {
-    const cuenta = (c) => PRODUCTOS.filter((p) => p.catClave === c).length;
-    const items = [["all", "Todos", PRODUCTOS.length], ...CATEGORIAS.map(([c, n]) => [c, n, cuenta(c)])];
+    const cuenta = (f) => PRODUCTOS.filter((p) => p.filtro === f).length;
+    const items = [["all", "Todos", PRODUCTOS.length], ...FILTROS.filter(([f]) => cuenta(f)).map(([f, n]) => [f, n, cuenta(f)])];
     $("#filtros").innerHTML = items.map(([f, n, c]) =>
-      `<button class="chip" type="button" data-filtro="${esc(f)}" aria-pressed="${f === estado.filtro}">${esc(n)} <span>${c}</span></button>`).join("");
+      `<button class="chip" type="button" data-filtro="${f}" aria-pressed="${f === estado.filtro}">${esc(n)} <span>${c}</span></button>`).join("");
   }
 
   function listaVisible() {
-    // Búsqueda por varias palabras: "sandalia negro" muestra solo lo que tiene ambas
+    // Búsqueda por varias palabras: "you negro" muestra solo lo que tiene ambas
     const palabras = norm(estado.busqueda).split(/\s+/).filter(Boolean);
-    let lista = PRODUCTOS.filter((p) => (estado.filtro === "all" || p.catClave === estado.filtro) &&
+    let lista = PRODUCTOS.filter((p) => (estado.filtro === "all" || p.filtro === estado.filtro) &&
       palabras.every((w) => norm(p.nombre + " " + p.linea).includes(w)));
     const valor = (p, vacio) => (consultar(p) ? vacio : p.precio);
-    if (estado.orden === "destacados") lista = [...lista].sort(porFecha);   // lo último que subiste, primero
+    // "Recomendados" muestra primero lo último agregado al catálogo
+    if (estado.orden === "destacados") lista = [...lista].sort(porFecha);
     if (estado.orden === "menor") lista = [...lista].sort((a, b) => valor(a, Infinity) - valor(b, Infinity) || porFecha(a, b));
     if (estado.orden === "mayor") lista = [...lista].sort((a, b) => valor(b, -Infinity) - valor(a, -Infinity) || porFecha(a, b));
     return lista;
@@ -724,13 +674,14 @@ const DIAS_NUEVO = 14;
     const marca = p.estado === "agotado" ? '<span class="etiqueta agotado">Agotado</span>'
       : p.estado === "proximamente" ? '<span class="etiqueta">Próximamente</span>' : "";
     const foto = p.foto
-      ? `<img src="${src(p.foto)}" width="576" height="720" alt="${esc(p.nombre)}" loading="lazy" decoding="async">`
+      ? `<img src="${esc(p.foto)}" width="576" height="720" alt="${esc(p.nombre)}" loading="lazy" decoding="async">`
       : `<div class="sin-foto">${ICONO_ZAPATILLA}<span>Foto próximamente</span></div>`;
-    return `<a class="card${p.estado === "agotado" ? " agotado" : ""}" href="#p/${encodeURIComponent(p.id)}" data-id="${esc(p.id)}">
+    return `<a class="card${p.estado === "agotado" ? " agotado" : ""}" href="#p${p.id}" data-id="${p.id}">
       <div class="card-media">${foto}${marca}${p.estado === "disponible" && esNuevo(p) ? '<span class="tag-nuevo">Nuevo</span>' : ""}</div>
       <div class="card-cuerpo">
         <span class="card-linea">${esc(p.linea)}</span>
         <h3 class="card-nombre">${esc(p.nombre)}</h3>
+        <p class="card-desc">${esc(p.descripcion)}</p>
         <div class="card-pie"><span class="card-precio">${precioTxt(p)}</span><span class="card-tallas">${esc(textoTallas(p))}</span></div>
       </div></a>`;
   }
@@ -743,7 +694,7 @@ const DIAS_NUEVO = 14;
     $$("#filtros .chip").forEach((b) => b.setAttribute("aria-pressed", String(b.dataset.filtro === estado.filtro)));
   }
 
-  /* Catálogo sin modelos todavía, o archivos que no cargaron */
+  /* Catálogo sin modelos todavía, o archivo que no cargó */
   function mensajeCatalogo(tipo) {
     ["#filtros", ".herramientas", "#conteo", "#rejilla", "#vacio"].forEach((s) => { $(s).hidden = true; });
     $("#catalogo-msg p").textContent = tipo === "error"
@@ -752,14 +703,14 @@ const DIAS_NUEVO = 14;
     $("#catalogo-msg").hidden = false;
   }
 
-  /* ---------- Vitrina: muestra el modelo más nuevo ---------- */
+  /* ---------- Vitrina: muestra el producto más nuevo ---------- */
   function pintarVitrina() {
-    const fig = $("#vitrina");
-    const p = [...PRODUCTOS].filter((x) => x.foto).sort(porFecha)[0];   // el modelo más nuevo
-    if (!p) { fig.hidden = true; $(".hero-in").classList.add("hero-solo"); return; }
-    fig.innerHTML = `
-      <img src="${src(p.foto)}" width="576" height="720" alt="${esc(p.nombre)}">
-      <button class="hero-etiqueta" type="button" data-abrir="${esc(p.id)}">
+    const el = $("#vitrina");
+    const p = [...PRODUCTOS].filter((x) => x.foto).sort(porFecha)[0];
+    if (!p) { el.hidden = true; $(".hero-in").classList.add("hero-solo"); return; }
+    el.innerHTML = `
+      ${p.foto ? `<img src="${esc(p.foto)}" width="576" height="720" alt="${esc(p.nombre)}">` : `<div class="sin-foto" aria-hidden="true">${ICONO_ZAPATILLA}<span>Foto próximamente</span></div>`}
+      <button class="hero-etiqueta" type="button" data-abrir="${p.id}">
         <span>MODELO EN VITRINA</span>
         <b>${esc(p.nombre)}</b>
       </button>`;
@@ -769,28 +720,35 @@ const DIAS_NUEVO = 14;
   const modal = $("#modal");
   let productoAbierto = null;
 
+  // Cuadrito de color: un tono, o dos en diagonal. Sin tono, se muestra el nombre del color.
+  const fondoColor = (v) => {
+    const c = (v.colores || []).filter((h) => /^#[0-9a-f]{3,8}$/i.test(h));
+    return !c.length ? null : c.length === 1 ? c[0] : `linear-gradient(135deg, ${c[0]} 50%, ${c[1]} 50%)`;
+  };
+
   function abrirProducto(id, opciones = {}) {
-    const p = porId.get(String(id));
+    const p = porId.get(Number(id));
     if (!p) return;
     const scrollPrevio = modal.scrollTop;
     productoAbierto = p;
     $("#m-media").innerHTML = p.foto
-      ? `<img src="${src(p.foto)}" width="576" height="720" alt="${esc(p.nombre)}">`
+      ? `<img src="${esc(p.foto)}" width="576" height="720" alt="${esc(p.nombre)}">`
       : `<div class="sin-foto">${ICONO_ZAPATILLA}<span>Foto próximamente</span></div>`;
 
-    const hayTallas = p.tallas.length > 0;
+    const hayTallas = tallasDe(p).length > 0;
     const puedeAgregar = p.estado === "disponible" && hayTallas;
-    const soloConsulta = p.estado === "disponible" && !hayTallas;     // modelo aún sin tallas en config.json
+    const soloConsulta = p.estado === "disponible" && !hayTallas;     // producto aún sin tallas
     const nota = p.estado === "agotado" ? '<p class="m-nota">Agotado por ahora.</p>'
       : p.estado === "proximamente" ? '<p class="m-nota">Este modelo llega pronto.</p>'
       : soloConsulta ? '<p class="m-nota">Escríbenos por WhatsApp y te confirmamos tallas y disponibilidad.</p>' : "";
 
-    // los colores salen en el orden en que subiste las fotos (la más antigua primero)
-    const variantes = PRODUCTOS.filter((v) => v.claveModelo === p.claveModelo && v.color).sort((a, b) => a.fecha - b.fecha || (a.id < b.id ? -1 : 1));
+    // Colores del mismo modelo (misma línea y modelo), en el orden en que se agregaron
+    const variantes = p.modelo ? PRODUCTOS.filter((v) => v.filtro === p.filtro && v.modelo === p.modelo)
+      .sort((a, b) => a._fecha - b._fecha || a.id - b.id) : [p];
     const botonColor = (v) => {
       const fondo = fondoColor(v);
-      const attrs = `type="button" class="m-color${fondo ? "" : " texto"}" role="radio" aria-checked="${v.id === p.id}" data-variante="${esc(v.id)}" aria-label="${esc(v.color)}" title="${esc(v.color)}"`;
-      return fondo ? `<button ${attrs}><span style="background:${fondo}"></span></button>` : `<button ${attrs}>${esc(v.color)}</button>`;
+      const attrs = `type="button" class="m-color${fondo ? "" : " texto"}" role="radio" aria-checked="${v.id === p.id}" data-variante="${v.id}" aria-label="${esc(v.color || v.nombre)}" title="${esc(v.color || v.nombre)}"`;
+      return fondo ? `<button ${attrs}><span style="background:${fondo}"></span></button>` : `<button ${attrs}>${esc(v.color || v.nombre)}</button>`;
     };
     const bloqueColor = !p.color ? "" : `
       <div class="m-opcion">
@@ -798,19 +756,20 @@ const DIAS_NUEVO = 14;
         <div class="m-colores" role="radiogroup" aria-labelledby="m-color-t">${variantes.map(botonColor).join("")}</div>
       </div>`;
 
-    const unica = esUnica(p);
+    const agotadas = (p.agotadas || []).map(String);
+    const tallas = tallasDe(p);
+    const unica = tallas.length === 1 && tallas[0] === "Único";
     const bloqueTallas = !puedeAgregar ? "" : `
       <div class="m-opcion m-tallas">
-        <p class="m-etq" id="m-tallas-t">Talla<span id="m-talla-elegida">${unica && puedeAgregar ? ": Única" : ""}</span></p>
+        <p class="m-etq" id="m-tallas-t">Talla<span id="m-talla-elegida">${unica ? ": Única" : ""}</span></p>
         <div class="m-tallas-grid" role="radiogroup" aria-labelledby="m-tallas-t">
-          ${p.tallas.map((t) => {
-            const sinStock = p.agotadas.includes(t);
+          ${tallas.map((t) => {
+            const sinStock = agotadas.includes(t);
             const txt = t === "Único" ? "Única" : esc(t);
             return `<button type="button" class="m-talla${sinStock ? " agotada" : ""}" role="radio" aria-checked="${unica && !sinStock ? "true" : "false"}" data-talla="${esc(t)}"${sinStock ? ` disabled aria-label="Talla ${txt}, sin stock"` : ` aria-label="Talla ${txt}"`}>${txt}</button>`;
           }).join("")}
         </div>
       </div>`;
-
     const textoBoton = !puedeAgregar ? (p.estado === "agotado" ? "Agotado" : "Próximamente") : "Añadir al carrito";
     const bloqueOpciones = (bloqueColor || bloqueTallas) ? `<div class="m-opciones" id="m-opciones">${bloqueColor}${bloqueTallas}</div>` : "";
     const selector = !puedeAgregar ? "" : `
@@ -818,7 +777,7 @@ const DIAS_NUEVO = 14;
           <span id="m-sel-txt">Talla</span>
           <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 6l5 5 5-5"/></svg>
         </button>`;
-    // modelo sin tallas en config.json: en vez de comprar, se consulta por WhatsApp
+    // producto sin tallas: en vez de comprar, se consulta por WhatsApp
     const boton = soloConsulta
       ? `<a class="btn btn-solid" href="${esc(wa("Hola " + TIENDA.nombre + ", quiero consultar por el modelo " + p.nombre + " (" + p.linea + ")."))}" target="_blank" rel="noopener">Consultar por WhatsApp</a>`
       : `<button class="btn btn-solid" type="button" id="m-agregar" disabled>${textoBoton}</button>`;
@@ -826,12 +785,13 @@ const DIAS_NUEVO = 14;
     $("#m-cuerpo").innerHTML = `
       <h2 class="m-nombre" id="m-nombre">${esc(p.nombre)}</h2>
       <p class="m-marca">${esc(p.linea)}</p>
-      <p class="m-precio">${precioTxt(p)}</p>
+      ${SITIO.precioEnFicha ? `<p class="m-precio">${precioTxt(p)}</p>` : ""}
       ${nota}
       ${bloqueOpciones}
       <div class="m-acciones">${selector}
         ${boton}
-      </div>`;
+      </div>
+      ${SITIO.descripciones && p.descripcion ? `<p class="m-desc">${esc(p.descripcion)}</p>` : ""}`;
 
     // Talla preseleccionada: la menor con stock del modelo (o la que ya estaba elegida al cambiar de color)
     if (puedeAgregar) {
@@ -845,7 +805,7 @@ const DIAS_NUEVO = 14;
     modal.scrollTop = opciones.mantenerScroll ? scrollPrevio : 0;
     actualizarBarra();
     document.documentElement.classList.add("bloqueado");
-    history.replaceState(null, "", "#p/" + encodeURIComponent(p.id));
+    history.replaceState(null, "", "#p" + p.id);
   }
 
   // "pegada" = el lugar natural del botón está debajo de lo que se ve, así que te sigue; si no, se queda en su lugar
@@ -876,7 +836,7 @@ const DIAS_NUEVO = 14;
     agregarBtn.innerHTML = textoAgregar(productoAbierto);
   }
 
-  // Al tocar la talla de la barra: baja sola hasta dejar colores, tallas y botón en el centro
+  // Al tocar la talla de la barra: baja sola hasta dejar colores, tallas y botón en el centro, con la descripción asomando debajo
   function irAOpciones() {
     const bloque = $("#m-opciones"), barra = $("#m-cuerpo .m-acciones");
     if (!bloque || !barra) return;
@@ -884,13 +844,12 @@ const DIAS_NUEVO = 14;
     const hueco = parseFloat(getComputedStyle(barra.parentElement).rowGap) || 0;
     const centroGrupo = (b.top + b.bottom + hueco + barra.offsetHeight) / 2;
     const mover = centroGrupo - (caja.top + caja.bottom) / 2;
-    // Este catálogo no tiene descripción debajo del botón (en el otro catálogo, es lo que da espacio para centrar).
-    // Si falta espacio para llegar al centro, se agrega ese espacio abajo; si no, el botón queda justo bajo el dedo.
+    // Si falta espacio debajo del botón para llegar al centro (sin descripción), se agrega ese espacio
     const cuerpo = $("#m-cuerpo");
     const falta = mover - (modal.scrollHeight - modal.clientHeight - modal.scrollTop);
     if (falta > 0) cuerpo.style.paddingBottom = (parseFloat(getComputedStyle(cuerpo).paddingBottom) + falta) + "px";
     const sinMovimiento = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-    // destino fijo (no "baja X más"): tocar varias veces durante la animación no lo empuja más allá
+    // destino fijo: tocar varias veces durante la animación no lo empuja más allá
     modal.scrollTo({ top: modal.scrollTop + Math.max(mover, 0), behavior: sinMovimiento ? "auto" : "smooth" });
     const elegida = $("#m-cuerpo .m-talla[aria-checked=\"true\"]");
     if (elegida) elegida.focus({ preventScroll: true });
@@ -901,7 +860,7 @@ const DIAS_NUEVO = 14;
     if (e.target.closest("#m-sel")) { irAOpciones(); return; }
     const color = e.target.closest(".m-color");
     if (color) {
-      if (color.dataset.variante !== productoAbierto.id) {
+      if (Number(color.dataset.variante) !== productoAbierto.id) {
         const elegida = $("#m-cuerpo .m-talla[aria-checked=\"true\"]");
         abrirProducto(color.dataset.variante, { talla: elegida ? elegida.dataset.talla : null, mantenerScroll: true });
       }
@@ -920,8 +879,21 @@ const DIAS_NUEVO = 14;
   });
   modal.addEventListener("close", () => {
     if (!$("#carrito").open) document.documentElement.classList.remove("bloqueado");
-    if (/^#p\//.test(location.hash)) history.replaceState(null, "", location.pathname + location.search);
+    if (/^#p\d+$/.test(location.hash)) history.replaceState(null, "", location.pathname + location.search);
     productoAbierto = null;
+  });
+
+  /* ---------- Aviso al añadir ---------- */
+  let temporizador;
+  function mostrarAviso(texto, conCarrito) {
+    const el = $("#aviso");
+    el.innerHTML = `<span>${esc(texto)}</span>` + (conCarrito ? '<button type="button" id="aviso-ver">Ver carrito</button>' : "");
+    el.hidden = false;
+    clearTimeout(temporizador);
+    temporizador = setTimeout(() => { el.hidden = true; }, 4500);
+  }
+  $("#aviso").addEventListener("click", (e) => {
+    if (e.target.id === "aviso-ver") { $("#aviso").hidden = true; abrirCarrito(); }
   });
 
   /* ---------- Carrito ---------- */
@@ -941,7 +913,7 @@ const DIAS_NUEVO = 14;
         <span><b>Tus productos no están reservados,</b> confirma tu pedido pronto para no quedarte sin tu talla.</span></p>`;
       lista.innerHTML = aviso + estado.carrito.map((l, i) => {
         const p = porId.get(l.id);
-        const foto = p.foto ? `<img src="${src(p.foto)}" alt="" loading="lazy">` : `<div class="sin-foto">${ICONO_ZAPATILLA}</div>`;
+        const foto = p.foto ? `<img src="${esc(p.foto)}" alt="" loading="lazy">` : `<div class="sin-foto">${ICONO_ZAPATILLA}</div>`;
         return `<div class="c-item">
           <div class="c-foto">${foto}</div>
           <div class="c-info">
@@ -1105,52 +1077,22 @@ const DIAS_NUEVO = 14;
   $("#y-numero").textContent = TIENDA.yape.numero;
 
   /* ---------- Arranque ---------- */
-  async function cargarJSON(ruta) {
-    const r = await fetch(ruta, { cache: "no-cache" });   // siempre revisa si hay una versión nueva
-    if (!r.ok) throw new Error(ruta + " → HTTP " + r.status);
-    return r.json();
-  }
+  pintarCamposEntrega();
+  $("#hero-datos").hidden = !SITIO.datosPortada;
+  pintarVitrina();
+  estado.carrito = cargarCarrito();
+  pintarFiltros();
+  pintarCatalogo();
+  pintarCarrito();
+  if (errorCarga) mensajeCatalogo("error");
+  else if (!PRODUCTOS.length) mensajeCatalogo("vacio");
 
   function abrirDesdeHash() {
-    const m = /^#p\/(.+)$/.exec(location.hash);
-    if (!m) return;
-    try { abrirProducto(decodeURIComponent(m[1])); } catch (e) { /* enlace mal formado */ }
+    const m = /^#p(\d+)$/.exec(location.hash);
+    if (m) abrirProducto(m[1]);
   }
-
-  async function iniciar() {
-    pintarCamposEntrega();
-    try {
-      const [cfg, prod] = await Promise.all([cargarJSON("config.json"), cargarJSON("productos.json")]);
-      CONFIG = cfg || {};
-      PRODUCTOS = construir(Array.isArray(prod.productos) ? prod.productos : [], CONFIG);
-    } catch (err) {
-      console.error("[ZAZI] No se pudo cargar el catálogo (si abriste index.html directo, usa un servidor local):", err);
-      $("#vitrina").hidden = true; $(".hero-in").classList.add("hero-solo");
-      pintarCarrito(); mensajeCatalogo("error");
-      return;
-    }
-    porId = new Map(PRODUCTOS.map((p) => [p.id, p]));
-
-    // Orden y nombre de los filtros: FILTROS (arriba). Una carpeta nueva que no esté ahí aparece al final.
-    const vistas = new Map(PRODUCTOS.map((p) => [p.catClave, p.linea]));
-    const conocidos = FILTROS.filter(([c]) => vistas.has(clave(c))).map(([c, n]) => [clave(c), n]);
-    const resto = [...vistas].filter(([c]) => !FILTROS.some(([f]) => clave(f) === c)).sort((x, y) => x[1].localeCompare(y[1], "es"));
-    CATEGORIAS = [...conocidos, ...resto];
-    // los nombres de las tarjetas usan el mismo nombre que el filtro
-    const nombreCat = new Map(CATEGORIAS);
-    PRODUCTOS.forEach((p) => { p.linea = nombreCat.get(p.catClave) || p.linea; });
-
-    pintarVitrina();
-    estado.carrito = cargarCarrito();
-    pintarFiltros();
-    pintarCatalogo();
-    pintarCarrito();
-    if (!PRODUCTOS.length) mensajeCatalogo("vacio");
-    abrirDesdeHash();
-  }
-
   window.addEventListener("hashchange", abrirDesdeHash);
-  iniciar();
+  abrirDesdeHash();
 })();
 
 </script>
