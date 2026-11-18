@@ -10,6 +10,7 @@
 <meta property="og:description" content="Elige tu producto y talla y pide por WhatsApp.">
 <meta property="og:type" content="website">
 <link rel="icon" type="image/png" href="img/favicon.png">
+<script src="shopify.js"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@500;600;700&family=Inter:wght@400;500;600&family=Playfair+Display:ital,wght@1,600&display=swap" rel="stylesheet">
@@ -592,6 +593,12 @@ const DIAS_NUEVO = 14;
   }
   // fecha de alta de cada producto (para "Nuevo", el orden y la vitrina)
   PRODUCTOS.forEach((p) => { p._fecha = Date.parse(p.creado) || 0; });
+  // Productos conectados a Shopify: precio, tallas y agotadas salen de Shopify (shopify.js).
+  // Si Shopify no responde, se quedan los que están guardados en productos.json.
+  if (window.ZaziShopify) {
+    try { await window.ZaziShopify.aplicar(PRODUCTOS); }
+    catch (e) { console.warn("No se pudo leer Shopify; se usan los datos guardados.", e); }
+  }
 
   const estado = { filtro: "all", busqueda: "", orden: "destacados", carrito: [] };
   const porId = new Map(PRODUCTOS.map((p) => [p.id, p]));

@@ -8,6 +8,7 @@ Solo cambian sus datos (`productos.json`, `fotos/`).
 | `index.html` | La tienda. Reconoce el catálogo por su dirección (`/Zazi/` o `/Zazi-Modelos/`). Datos de la tienda, `SITIOS` y `DIAS_NUEVO` arriba. | Sí |
 | `admin.html` | El panel para editar el catálogo. Reconoce el catálogo por su dirección. | Sí |
 | `validar.js` | Las reglas de revisión. Las usan el admin (antes de publicar) y GitHub Actions (antes de publicar la tienda). | Sí |
+| `shopify.js` | Lee de Shopify el precio, las tallas y las agotadas de los productos conectados. Lo usan la tienda y el admin. | Sí |
 | `.github/workflows/publicar.yml` | Revisa `productos.json` y publica en GitHub Pages. Si hay errores, no publica. | Sí |
 | `productos.json` | Filtros y productos del catálogo. Lo escribe el admin. | No |
 | `fotos/` | Fotos de productos. Las nuevas van en `fotos/<línea>/`. | No |
@@ -22,10 +23,10 @@ Para probar en la computadora: `python3 -m http.server` en la carpeta que contie
 {
   "filtros": [["anda","Anda"], ["you","You"]],
   "productos": [
-    {"id":3001, "sku":"", "filtro":"anda", "linea":"Anda", "nombre":"Anda 260X Celeste", "modelo":"Anda 260X",
-     "color":"Celeste", "colores":["#9CCBEA"], "precio":69.9, "tallas":[35,39], "agotadas":["36"],
-     "estado":"disponible", "nuevo":"si", "creado":"2026-09-24", "foto":"fotos/anda-260x-celeste.jpeg",
-     "descripcion":"…"}
+    {"id":4001, "shopify":{"id":"15503136456925","color":"Gris Lila"}, "filtro":"you", "linea":"You",
+     "nombre":"You Urbano Onda Gris Lila", "modelo":"You Urbano Onda", "color":"Gris Lila", "colores":["#B0A6BE"],
+     "precio":59.9, "tallas":[35,40], "agotadas":["35","36"], "estado":"disponible", "creado":"2026-09-24",
+     "foto":"fotos/you-urbano-onda-gris-lila.jpeg", "descripcion":"…"}
   ]
 }
 ```
@@ -33,7 +34,7 @@ Para probar en la computadora: `python3 -m http.server` en la carpeta que contie
 | Campo | Significado |
 |---|---|
 | `id` | Número único. Cada línea usa un bloque de 1000 (Anda 3000, You 4000…). Sirve para los enlaces `#p3001`. |
-| `sku` | Código de Bsale (vacío por ahora). |
+| `shopify` | Opcional. Conexión con Shopify: `id` del producto en Shopify y su `color` (como está en Shopify). Si está, el precio, las tallas y las agotadas salen de Shopify; lo guardado aquí queda de respaldo por si Shopify no responde. |
 | `filtro` / `linea` | Clave y nombre de la línea o categoría (debe existir en `filtros`). |
 | `nombre` / `modelo` / `color` | Nombre completo, modelo sin color y color. Mismo `filtro` + `modelo` = colores del mismo modelo. |
 | `colores` | Tono del cuadrito: 1 o 2 hex. Sin tono, se muestra el nombre del color. |

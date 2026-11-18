@@ -70,7 +70,14 @@
 
       // estado
       if (!ESTADOS.includes(p.estado)) err(p, "El estado no es válido (" + p.estado + ").");
-      else if (p.estado === "disponible" && lista.length && lista.every((x) => agotadas.includes(x))) aviso(p, "Está como disponible, pero todas sus tallas están agotadas (la tienda lo muestra como agotado).");
+      else if (p.estado === "disponible" && !p.shopify && lista.length && lista.every((x) => agotadas.includes(x))) aviso(p, "Está como disponible, pero todas sus tallas están agotadas (la tienda lo muestra como agotado).");
+
+      // conexión con Shopify (precio, tallas y agotadas se leen de ahí; lo guardado queda de respaldo)
+      if (p.shopify !== undefined) {
+        const s = p.shopify;
+        if (!s || typeof s !== "object" || !/^\d+$/.test(String(s.id || "")) || !String(s.color || "").trim())
+          err(p, "La conexión con Shopify no es válida (falta el producto o el color).");
+      }
 
       // color, nuevo y fecha
       if (p.color && !(Array.isArray(p.colores) && p.colores.some(hexOk))) aviso(p, "No tiene el tono del cuadrito de color (se mostrará el nombre del color).");
