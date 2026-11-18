@@ -89,6 +89,11 @@ textarea.input{min-height:110px;resize:vertical;line-height:1.5}
 .en-vitrina{color:var(--fucsia);font-weight:600}
 .es-nuevo{color:var(--tinta);font-weight:600}
 .de-shopify{color:#2F6B2F;font-weight:600}
+.sin-shopify{color:var(--alerta);font-weight:600}
+.conexion{font-size:.9375rem;font-weight:600}
+.conexion.si{color:#2F6B2F}
+.conexion.no{color:var(--alerta)}
+.acc-shopify{display:flex;gap:4px;flex-wrap:wrap}
 .fila span.talla{display:inline-flex;align-items:center;justify-content:center;cursor:default}
 #revision{width:min(560px,calc(100vw - 32px));max-height:85dvh;margin:auto;border-radius:12px;overflow:auto}
 .rev{padding:20px;display:flex;flex-direction:column;gap:14px}
@@ -261,10 +266,17 @@ dialog::backdrop{background:rgba(0,0,0,.45)}
       </div>
 
       <div class="campo">
-        <span>Producto en Shopify</span>
-        <select class="input" id="ed-shopify" aria-label="Producto en Shopify"></select>
-        <select class="input" id="ed-shopify-color" aria-label="Color en Shopify" hidden></select>
-        <small id="ed-shopify-nota">Si lo conectas, el precio, las tallas y las agotadas salen de Shopify.</small>
+        <span>Shopify</span>
+        <p class="conexion" id="ed-shopify-estado"></p>
+        <small id="ed-shopify-nota"></small>
+        <div class="herr-fila" id="ed-sku-c">
+          <input class="input" id="ed-sku" aria-label="SKU de Shopify" placeholder="Escribe o escanea un SKU" autocomplete="off" autocapitalize="characters" spellcheck="false" enterkeyhint="go">
+          <button class="btn" type="button" id="ed-sku-ok">Conectar</button>
+        </div>
+        <div class="acc-shopify" id="ed-shopify-acc">
+          <button class="lnk" type="button" id="ed-cambiar">Cambiar conexión</button>
+          <button class="lnk" type="button" id="ed-desconectar">Desconectar</button>
+        </div>
       </div>
 
       <div class="dos" id="ed-precio-c">
@@ -373,9 +385,9 @@ dialog::backdrop{background:rgba(0,0,0,.45)}
     subidas: new Map(),     // ruta -> foto nueva en base64, aún sin publicar
     vistas: new Map(),      // ruta -> vista previa local de fotos nuevas
     filtro: "all", busqueda: "", publicando: false,
-    shopifyLista: null,     // promesa con la lista de productos de Shopify (para el editor)
     shopifyInfo: new Map(), // id de Shopify -> variantes (precio, tallas, disponibles)
-    vivo: new Map()         // id del catálogo -> datos actuales de Shopify (para la lista)
+    vivo: new Map(),        // id del catálogo -> datos actuales de Shopify (para la lista)
+    vivoListo: false        // ya se intentó leer Shopify para la lista
   };
   let token = "";
   try { token = localStorage.getItem(CLAVE_TOKEN) || ""; } catch (e) { /* sin almacenamiento */ }
@@ -417,6 +429,7 @@ dialog::backdrop{background:rgba(0,0,0,.45)}
     st.fotos = new Set([...st.archivos].filter((r) => r.startsWith("fotos/")));
     st.subidas.clear();
     st.vivo = new Map();
+    st.vivoListo = false;
     cargarShopify();          // no se espera: la lista se repinta cuando llegan los datos de Shopify
   }
 
@@ -575,7 +588,8 @@ dialog::backdrop{background:rgba(0,0,0,.45)}
     const datos = [
       `<span>${v.precio == null ? "Precio por confirmar" : soles(v.precio)}</span>`,
       `<span class="estado-${esc(p.estado)}">${esc(ESTADOS[p.estado] || p.estado)}</span>`,
-      p.shopify ? `<span class="de-shopify">${vivo ? "Shopify" : "Shopify (sin leer)"}</span>` : "",
+      !p.shopify ? '<span class="sin-shopify">Sin conectar a Shopify</span>'
+        : vivo || !st.vivoListo ? '<span class="de-shopify">Shopify</span>' : '<span class="sin-shopify">Shopify: no se encontró</span>',
       esNuevo(p) ? '<span class="es-nuevo">Nuevo</span>' : "",
       idVitrina() === p.id ? '<span class="en-vitrina">En vitrina</span>' : ""
     ].join("");
@@ -602,7 +616,7 @@ dialog::backdrop{background:rgba(0,0,0,.45)}
 
   /* ---------- Editor ---------- */
   const editor = $("#editor");
-  const ed = { id: null, foto: null, colores: [], agotadas: new Set(), nombreAuto: "", creado: "", tocado: false, shopify: null };
+  const ed = { id: null, foto: null, colores: [], agotadas: new Set(), nombreAuto: "", creado: "", tocado: false, shopify: null, cambiando: false };
 
   const autoNombre = () => [$("#ed-modelo").value.trim(), $("#ed-color").value.trim()].filter(Boolean).join(" ");
 
@@ -643,7 +657,7 @@ dialog::backdrop{background:rgba(0,0,0,.45)}
     const estado = p.estado || "disponible";
     $$("input[name=ed-estado]").forEach((r) => { r.checked = r.value === estado; });
     $("#ed-desc").value = p.descripcion || "";
-    ed.shopify = p.shopify && p.shopify.id ? { id: String(p.shopify.id), color: p.shopify.color || "" } : null;
+    ed.shopify = p.shopify && p.shopify.id ? { id: String(p.shopify.id), color: p.shopify.color || "", sku: p.shopify.sku || undefined } : null;
     const valorNuevo = p.nuevo === "si" || p.nuevo === "no" ? p.nuevo : "auto";
     $$("input[name=ed-nuevo]").forEach((r) => { r.checked = r.value === valorNuevo; });
     ed.creado = p.creado || "";
@@ -653,7 +667,7 @@ dialog::backdrop{background:rgba(0,0,0,.45)}
     $("#ed-error").hidden = true;
     $("#ed-archivo").value = "";
 
-    pintarFotoEditor(); pintarMuestra(); pintarTallasEditor(); pintarPrecio(); prepararShopify();
+    pintarFotoEditor(); pintarMuestra(); pintarTallasEditor(); pintarPrecio(); ed.cambiando = false; $("#ed-sku").value = ""; pintarShopify();
     if (!editor.open) editor.showModal();
     $(".ed-cuerpo").scrollTop = 0;
   }
@@ -699,11 +713,6 @@ dialog::backdrop{background:rgba(0,0,0,.45)}
      Conectado: el precio, las tallas y las agotadas salen de Shopify; al guardar se copian
      a productos.json solo como respaldo (por si Shopify no responde en la tienda). */
   const ZS = window.ZaziShopify;
-  function listaShopify() {
-    if (!ZS) return Promise.reject(new Error("Falta shopify.js"));
-    if (!st.shopifyLista) st.shopifyLista = ZS.lista().catch((e) => { st.shopifyLista = null; throw e; });
-    return st.shopifyLista;
-  }
   async function infoShopify(id) {
     if (!st.shopifyInfo.has(id)) {
       const m = await ZS.productos([id]);
@@ -719,47 +728,54 @@ dialog::backdrop{background:rgba(0,0,0,.45)}
   const resumenShopify = (d) => "Desde Shopify: " + (d.precio == null ? "precio por confirmar" : soles(d.precio)) +
     " · " + textoTallasDe(d.tallas) + " · " + (d.agotadas.length ? "agotadas: " + d.agotadas.join(", ") : "ninguna agotada") + ".";
 
-  async function prepararShopify() {
-    const sel = $("#ed-shopify");
-    const actual = ed.shopify ? ed.shopify.id : "";
-    sel.innerHTML = '<option value="">Sin conectar</option>' + (actual ? `<option value="${esc(actual)}">Producto ${esc(actual)}</option>` : "");
-    sel.value = actual;
-    pintarShopify();
-    try {
-      const lista = await listaShopify();
-      sel.innerHTML = '<option value="">Sin conectar</option>' + lista.map((x) => `<option value="${esc(x.id)}">${esc(x.titulo)}</option>`).join("");
-      if (actual && !lista.some((x) => x.id === actual)) sel.insertAdjacentHTML("beforeend", `<option value="${esc(actual)}">No publicado en la Tienda online (${esc(actual)})</option>`);
-      sel.value = ed.shopify ? ed.shopify.id : "";
-    } catch (e) {
-      if (!ed.shopify) $("#ed-shopify-nota").textContent = "No se pudo cargar la lista de Shopify. Revisa tu conexión y vuelve a abrir el producto.";
-    }
-  }
-
+  /* La conexión se hace una sola vez: con el SKU de cualquier talla del modelo y color.
+     Después el editor solo muestra "Conectado" (se puede cambiar o desconectar si hace falta). */
   async function pintarShopify() {
     const con = !!ed.shopify;
     $("#ed-precio-c").hidden = con;
     $("#ed-tallas-c").hidden = con;
     if (con) $("#ed-agotadas-c").hidden = true; else pintarTallasEditor();
-    const csel = $("#ed-shopify-color"), nota = $("#ed-shopify-nota");
-    csel.hidden = !con;
-    if (!con) { nota.textContent = "Si lo conectas, el precio, las tallas y las agotadas salen de Shopify."; return; }
-    const id = ed.shopify.id;
-    nota.textContent = "Leyendo Shopify…";
+    $("#ed-sku-c").hidden = con && !ed.cambiando;
+    $("#ed-shopify-acc").hidden = !con;
+    const estado = $("#ed-shopify-estado"), nota = $("#ed-shopify-nota");
+    const poner = (si, t, n) => { estado.className = "conexion " + (si ? "si" : "no"); estado.textContent = t; nota.textContent = n; };
+    if (!con) {
+      poner(false, "Sin conectar a Shopify", "Escribe o escanea el SKU de cualquier talla de este modelo y color. Después el precio y las tallas salen de Shopify.");
+      return;
+    }
+    const { id, color } = ed.shopify;
+    poner(true, "Conectado a Shopify", "Leyendo Shopify…");
     let info;
     try { info = await infoShopify(id); }
-    catch (e) { if (ed.shopify && ed.shopify.id === id) nota.textContent = "No se pudo leer Shopify. Revisa tu conexión."; return; }
-    if (!ed.shopify || ed.shopify.id !== id) return;          // se eligió otro mientras cargaba
-    if (!info) { csel.innerHTML = ""; csel.hidden = true; nota.textContent = "Ese producto no está publicado en la Tienda online de Shopify."; return; }
-    const colores = [...new Set(info.variantes.map((v) => v.color).filter(Boolean))];
-    // si aún no hay color elegido, se propone el del catálogo cuando coincide
-    if (!ed.shopify.color) ed.shopify.color = colores.find((c) => norm(c) === norm($("#ed-color").value.trim())) || "";
-    const elegido = colores.find((c) => norm(c) === norm(ed.shopify.color)) || "";
-    csel.innerHTML = '<option value="">Elige el color en Shopify</option>' + colores.map((c) => `<option value="${esc(c)}">${esc(c)}</option>`).join("");
-    csel.value = elegido;
-    const d = ZS.datosDe(info, elegido);
-    nota.textContent = d ? resumenShopify(d)
-      : ed.shopify.color ? "El color \"" + ed.shopify.color + "\" ya no está en ese producto de Shopify. Elige otro."
-      : "Elige el color de este producto en Shopify.";
+    catch (e) { if (ed.shopify && ed.shopify.id === id) nota.textContent = "No se pudo leer Shopify ahora. Revisa tu conexión."; return; }
+    if (!ed.shopify || ed.shopify.id !== id || ed.shopify.color !== color) return;     // cambió mientras cargaba
+    if (!info) { poner(false, "Shopify: no se encontró el producto conectado", "Ya no está publicado en la Tienda online. Conéctalo de nuevo con un SKU."); $("#ed-sku-c").hidden = false; return; }
+    const d = ZS.datosDe(info, color);
+    if (!d) { poner(false, "Shopify: el color " + color + " ya no está en " + info.titulo, "Conéctalo de nuevo con un SKU de este color."); $("#ed-sku-c").hidden = false; return; }
+    poner(true, "Conectado a Shopify: " + info.titulo + " · " + color, resumenShopify(d));
+  }
+
+  async function conectarSku() {
+    const sku = $("#ed-sku").value.trim();
+    const nota = $("#ed-shopify-nota");
+    if (!sku) { nota.textContent = "Escribe o escanea un SKU."; $("#ed-sku").focus(); return; }
+    if (!ZS) { nota.textContent = "Falta shopify.js."; return; }
+    $("#ed-sku-ok").disabled = true;
+    nota.textContent = "Buscando " + sku + "…";
+    try {
+      const r = await ZS.buscarSku(sku);
+      if (!r) { nota.textContent = "El SKU " + sku + " no está en la Tienda online de Shopify. Revísalo."; return; }
+      if (!r.color) { nota.textContent = r.titulo + " no tiene la opción Color en Shopify; no se puede conectar."; return; }
+      ed.shopify = { id: r.id, color: r.color, sku: r.sku || sku };
+      ed.cambiando = false;
+      $("#ed-sku").value = "";
+      $("#ed-error").hidden = true;
+      await pintarShopify();
+    } catch (e) {
+      nota.textContent = "No se pudo buscar en Shopify. Revisa tu conexión y vuelve a intentarlo.";
+    } finally {
+      $("#ed-sku-ok").disabled = false;
+    }
   }
 
   // Lista: datos actuales de Shopify de los productos conectados (no bloquea; repinta al llegar)
@@ -769,6 +785,7 @@ dialog::backdrop{background:rgba(0,0,0,.45)}
     if (!conectados.length) return;
     try {
       st.vivo = await ZS.aplicar(conectados.map((p) => ({ id: p.id, nombre: p.nombre, shopify: p.shopify })));
+      st.vivoListo = true;
       pintar();
     } catch (e) { console.warn("No se pudo leer Shopify para la lista.", e); }
   }
@@ -801,10 +818,9 @@ dialog::backdrop{background:rgba(0,0,0,.45)}
     // Conectado a Shopify: precio y tallas salen de ahí (se guardan como respaldo)
     let deShopify = null;
     if (ed.shopify) {
-      if (!ed.shopify.color) return errorEditor("Elige el color en Shopify, o deja el producto sin conectar.");
       deShopify = ZS ? ZS.datosDe(st.shopifyInfo.get(ed.shopify.id), ed.shopify.color) : null;
       const mismo = anterior.shopify && String(anterior.shopify.id) === ed.shopify.id && norm(anterior.shopify.color) === norm(ed.shopify.color);
-      if (!deShopify && !mismo) return errorEditor("No se pudieron leer los datos de Shopify de ese color. Revisa tu conexión y vuelve a intentarlo.");
+      if (!deShopify && !mismo) return errorEditor("No se pudieron leer los datos de Shopify de este producto. Revisa la conexión con Shopify y vuelve a intentarlo.");
     } else {
       if (!sinPrecio && !(precio > 0)) return errorEditor("Escribe el precio o marca Por confirmar.");
       if (!tallasLista.length) return errorEditor("Revisa las tallas: Desde debe ser menor o igual que Hasta.");
@@ -825,7 +841,7 @@ dialog::backdrop{background:rgba(0,0,0,.45)}
       ...anterior,
       id: ed.id || nuevoId(filtro),
       sku: undefined,
-      shopify: ed.shopify ? { id: ed.shopify.id, color: ed.shopify.color } : undefined,
+      shopify: ed.shopify ? { id: ed.shopify.id, color: ed.shopify.color, sku: ed.shopify.sku || undefined } : undefined,
       filtro, linea, nombre, modelo, color,
       colores: ed.colores.slice(),
       ...valores,
@@ -890,14 +906,12 @@ dialog::backdrop{background:rgba(0,0,0,.45)}
     pintarMuestra();
   });
   $("#ed-sin-precio").addEventListener("change", pintarPrecio);
-  $("#ed-shopify").addEventListener("change", (e) => {
-    const id = e.target.value;
-    ed.shopify = id ? { id, color: "" } : null;
-    pintarShopify();
-  });
-  $("#ed-shopify-color").addEventListener("change", (e) => {
-    if (!ed.shopify) return;
-    ed.shopify.color = e.target.value;
+  $("#ed-sku-ok").addEventListener("click", conectarSku);
+  $("#ed-sku").addEventListener("keydown", (e) => { if (e.key === "Enter") { e.preventDefault(); conectarSku(); } });
+  $("#ed-cambiar").addEventListener("click", () => { ed.cambiando = true; $("#ed-sku-c").hidden = false; $("#ed-sku").focus(); });
+  $("#ed-desconectar").addEventListener("click", () => {
+    if (!confirm("¿Desconectar este producto de Shopify? El precio y las tallas volverán a escribirse a mano.")) return;
+    ed.shopify = null; ed.cambiando = false;
     pintarShopify();
   });
   ["#ed-desde", "#ed-hasta", "#ed-unica"].forEach((s) => $(s).addEventListener("input", pintarTallasEditor));
@@ -926,8 +940,7 @@ dialog::backdrop{background:rgba(0,0,0,.45)}
   $("#ed-otro-color").addEventListener("click", () => {
     const p = porId(ed.id);
     if (!p) return;
-    abrirEditor({ filtro: p.filtro, linea: p.linea, modelo: p.modelo, precio: p.precio, tallas: p.tallas, estado: "disponible", colores: ["#E6E6E6"],
-      shopify: p.shopify ? { id: p.shopify.id, color: "" } : undefined },
+    abrirEditor({ filtro: p.filtro, linea: p.linea, modelo: p.modelo, precio: p.precio, tallas: p.tallas, estado: "disponible", colores: ["#E6E6E6"] },
       "Nuevo color de " + p.modelo);
   });
 

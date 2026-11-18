@@ -130,28 +130,27 @@
     return aplicados;
   }
 
-  const CONSULTA_LISTA = `query($despues: String) {
-    products(first: 100, after: $despues, sortKey: TITLE) {
-      pageInfo { hasNextPage endCursor }
-      nodes { id title options { name optionValues { name } } }
+  const CONSULTA_SKU = `query($q: String!) {
+    search(first: 10, query: $q, types: PRODUCT) {
+      nodes { ... on Product { id title variants(first: 100) { nodes { sku selectedOptions { name value } } } } }
     }
   }`;
 
-  // Para el admin: todos los productos publicados, por nombre: [{ id, titulo, colores: [...] }]
-  async function lista() {
-    const salida = [];
-    let despues = null;
-    for (let pagina = 0; pagina < 20; pagina++) {
-      const d = (await graphql(CONSULTA_LISTA, { despues })).products;
-      d.nodes.forEach((n) => {
-        const op = (n.options || []).find((o) => norm(o.name) === "color");
-        salida.push({ id: numero(n.id), titulo: n.title, colores: op ? op.optionValues.map((v) => v.name) : [] });
-      });
-      if (!d.pageInfo.hasNextPage) break;
-      despues = d.pageInfo.endCursor;
+  /* Para el admin: busca un SKU (de cualquier talla) y devuelve el producto y el color al que pertenece:
+     { id, titulo, color, talla, sku } o null si ningún producto publicado tiene ese SKU exacto. */
+  async function buscarSku(sku) {
+    const buscado = String(sku || "").trim();
+    if (!buscado) return null;
+    const d = await graphql(CONSULTA_SKU, { q: buscado });
+    for (const n of (d.search && d.search.nodes) || []) {
+      const v = ((n.variants && n.variants.nodes) || []).find((x) => norm(x.sku) === norm(buscado));
+      if (v) {
+        const o = opciones(v.selectedOptions);
+        return { id: numero(n.id), titulo: n.title, color: o.color, talla: o.talla, sku: v.sku };
+      }
     }
-    return salida;
+    return null;
   }
 
-  raiz.ZaziShopify = { TIENDA, aplicar, productos, datosDe, lista };
+  raiz.ZaziShopify = { TIENDA, aplicar, productos, datosDe, buscarSku };
 })(typeof window !== "undefined" ? window : globalThis);

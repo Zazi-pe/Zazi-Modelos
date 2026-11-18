@@ -98,7 +98,7 @@ Written by the admin. Each product is on one line, with keys in a fixed order.
 | Field | Meaning |
 |---|---|
 | `id` | Unique integer and stable identity, used in deep links `#p<id>` and in carts. Each line takes a block of 1000 (Zazi: Anda 3xxx, You 4xxx, I-RUN 5xxx). A new product gets the highest id in its line's block + 1; a new line opens the next block (minimum 3000). |
-| `shopify` | Optional link to Shopify: `{"id": "<Shopify product id>", "color": "<Color option value as in Shopify>"}`. When present, the store takes **price, sizes and sold-out sizes** from Shopify for that color; the values saved here are only a fallback (refreshed each time the product is saved in the admin). The catalog `color` stays for display, so "Marrón" can link to Shopify's "Marron". Replaced the old empty `sku` field (Nov 18). |
+| `shopify` | Optional link to Shopify: `{"id": "<Shopify product id>", "color": "<Color option value as in Shopify>", "sku": "<SKU used to connect>"}` (`sku` is only a record of which SKU was scanned; links made before Nov 18 evening don't have it). When present, the store takes **price, sizes and sold-out sizes** from Shopify for that color; the values saved here are only a fallback (refreshed each time the product is saved in the admin). The catalog `color` stays for display, so "Marrón" can link to Shopify's "Marron". Replaced the old empty `sku` field (Nov 18). |
 | `filtro` / `linea` | Line or category key (must exist in `filtros`) and its display name. |
 | `nombre` / `modelo` / `color` | Full display name (accents allowed), model without color, and color. **Same `filtro` + same `modelo` = colors of one model** (swatches in the product view). |
 | `colores` | Swatch: 1 hex (solid) or 2 (diagonal split). Empty or invalid shows the color **name as a text chip**. |
@@ -193,7 +193,7 @@ Same detection as the store, via a `CATALOGOS` map:
 - Search (multi-word), line chips, and a "Nuevo" button.
 - **Rows, newest first:**
   - Photo, name, price and estado, plus "Nuevo" if it currently shows and "En vitrina" (computed).
-  - **Tappable size chips:** tap to mark a size sold out or restock it, the fastest action. **Linked products** show a green "Shopify" tag, their live price and sizes from Shopify, and size chips that can't be tapped (Shopify decides).
+  - **Tappable size chips:** tap to mark a size sold out or restock it, the fastest action. **Connected products** show a green "Shopify" tag, their live price and sizes from Shopify, and size chips that can't be tapped (Shopify decides). **Products not connected** show a red "Sin conectar a Shopify" tag; a connected product Shopify no longer has shows red "Shopify: no se encontró".
   - A fuchsia bar on the left marks changed rows.
 - **Black bottom bar:** "N cambios sin publicar" with Descartar and Publicar.
 - `beforeunload` warns about unpublished changes.
@@ -209,8 +209,8 @@ A full-screen dialog on phone, centered on desktop. It covers:
 - **Estado:** Disponible / Agotado / Próximamente.
 - **"Nuevo":** Automático / Sí / No, with a note like "Agregado el … Muestra Nuevo hasta el …".
 - **Description:** Zazi only.
-- **Producto en Shopify:** a list of every product published in the Online Store, then a color list for the chosen product (preselected when it matches the catalog color). A note shows "Desde Shopify: S/ 59.90 · tallas 35 al 40 · agotadas: …". While linked, the price, sizes and sold-out fields are hidden; saving copies Shopify's values into the product as a fallback. Choosing "Sin conectar" brings the manual fields back, prefilled. Saving a link needs a color; if Shopify can't be read, an unchanged link keeps its saved values.
-- **Actions:** "Añadir otro color de este modelo" copies line, model, price, sizes and the Shopify product (color left to choose). "Eliminar producto" asks for confirmation; its photo is deleted from the repo if no other product uses it.
+- **Shopify (connection, done once per product):** a product that isn't connected shows red **"Sin conectar a Shopify"** and a field to **type or scan the SKU of any size** of that model and color (Enter or "Conectar"). `ZaziShopify.buscarSku()` finds it through Shopify's public search, and the product shows green **"Conectado a Shopify: <Shopify title> · <color>"** plus "Desde Shopify: S/ 59.90 · tallas 35 al 40 · agotadas: …". While connected, the price, sizes and sold-out fields are hidden; saving copies Shopify's values into the product as a fallback. "Cambiar conexión" shows the SKU field again; "Desconectar" (with confirmation) brings the manual fields back, prefilled. If the connected product or color disappears from the Online Store, the status turns red and asks for a new SKU. (A first version used a dropdown of all Shopify products; Stefano found it unreliable, replaced the same day.)
+- **Actions:** "Añadir otro color de este modelo" copies line, model, price and sizes; the new color gets connected with its own SKU. "Eliminar producto" asks for confirmation; its photo is deleted from the repo if no other product uses it.
 - **New products:** get `creado` = today in Lima time and the next id in their block. The photo is named on save as `fotos/<filtro>/<slug(nombre)>.jpg`, with `-2`, `-3`… added if the name is taken.
 
 ### Publish
@@ -285,7 +285,7 @@ A full-screen dialog on phone, centered on desktop. It covers:
 
 **How `shopify.js` works:**
 - `aplicar(lista)`: groups linked products by Shopify id (3 per query, to stay under the tokenless complexity limit; ~240 ms for all), reads each product's variants (`availableForSale`, `price`, `selectedOptions`), keeps the variants whose **Color** option matches the link color (accent- and case-insensitive), and sets `precio` (lowest price of that color, `null` if 0), `tallas` (consecutive numbers become a range `[a, b]`; otherwise a list; no Talla option = `["Único"]`) and `agotadas` (sizes with no available variant). Products or colors not found keep their saved values (console warning).
-- `lista()`: every product in the Online Store with its colors, for the admin picker (~1 s).
+- `buscarSku(sku)`: Shopify's public `search` finds the product that has that SKU (any format, case-insensitive; checked against the variant's exact SKU) and returns `{ id, titulo, color, talla, sku }`. Barcodes aren't searchable in the public API, only SKUs.
 - Stock is "available or not" (Storefront gives no counts), summed over Shopify's single location.
 - `validar.js`: a `shopify` value must have a numeric `id` and a `color` (error otherwise). The "disponible but all sizes sold out" warning is skipped for linked products, since Shopify decides.
 

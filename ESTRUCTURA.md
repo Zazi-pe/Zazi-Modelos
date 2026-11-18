@@ -34,7 +34,7 @@ Para probar en la computadora: `python3 -m http.server` en la carpeta que contie
 | Campo | Significado |
 |---|---|
 | `id` | Número único. Cada línea usa un bloque de 1000 (Anda 3000, You 4000…). Sirve para los enlaces `#p3001`. |
-| `shopify` | Opcional. Conexión con Shopify: `id` del producto en Shopify y su `color` (como está en Shopify). Si está, el precio, las tallas y las agotadas salen de Shopify; lo guardado aquí queda de respaldo por si Shopify no responde. |
+| `shopify` | Opcional. Conexión con Shopify: `id` del producto en Shopify, su `color` (como está en Shopify) y el `sku` con el que se conectó. Se hace una vez desde el admin, escribiendo o escaneando el SKU de cualquier talla. Si está, el precio, las tallas y las agotadas salen de Shopify; lo guardado aquí queda de respaldo por si Shopify no responde. |
 | `filtro` / `linea` | Clave y nombre de la línea o categoría (debe existir en `filtros`). |
 | `nombre` / `modelo` / `color` | Nombre completo, modelo sin color y color. Mismo `filtro` + `modelo` = colores del mismo modelo. |
 | `colores` | Tono del cuadrito: 1 o 2 hex. Sin tono, se muestra el nombre del color. |
