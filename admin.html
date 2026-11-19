@@ -335,6 +335,10 @@ dialog::backdrop{background:rgba(0,0,0,.45)}
 
       <p class="error" id="ed-error" role="alert" hidden></p>
 
+      <div class="mas-acc" id="ed-pend-acc" hidden>
+        <button class="btn btn-peligro" type="button" id="ed-quitar-pend">Quitar de pendientes</button>
+        <small class="nota">Para un modelo que se creó mal: quítalo de aquí y bórralo también en Shopify (a mano); luego vuelve a crearlo desde Nuevos modelos.</small>
+      </div>
       <div class="mas-acc" id="ed-mas">
         <button class="btn" type="button" id="ed-otro-color">Añadir otro color de este modelo</button>
         <button class="btn btn-peligro" type="button" id="ed-eliminar">Eliminar producto</button>
@@ -705,6 +709,7 @@ dialog::backdrop{background:rgba(0,0,0,.45)}
     pintarNotaNuevo();
     $("#ed-desc-c").hidden = !CAT.descripciones;
     $("#ed-mas").hidden = nuevo || !!pendiente;
+    $("#ed-pend-acc").hidden = !pendiente;
     $("#ed-error").hidden = true;
     $("#ed-archivo").value = "";
 
@@ -956,6 +961,35 @@ dialog::backdrop{background:rgba(0,0,0,.45)}
       if (ed.pendiente) boton.textContent = "Publicar";
     }
   }
+  /* ---------- Quitar un pendiente sin publicarlo (enseguida, en su propio commit) ---------- */
+  async function quitarPendiente(pend) {
+    if (!confirm("¿Quitar \"" + pend.nombre + "\" de pendientes? No se publica en la tienda.\n\nSi el modelo se creó mal, bórralo también en Shopify (a mano) y vuelve a crearlo desde Nuevos modelos.")) return;
+    const boton = $("#ed-quitar-pend");
+    boton.disabled = true; boton.textContent = "Quitando…";
+    try {
+      const ref = await api("/git/ref/heads/" + RAMA);
+      const head = ref.object.sha;
+      if (head !== st.head) { const e = new Error("conflicto"); e.conflicto = true; throw e; }
+      const arbol = [{ path: "pendientes.json", mode: "100644", type: "blob", content: serializarPendientes(st.pendientes.filter((x) => x !== pend)) }];
+      const nuevoArbol = await api("/git/trees", { method: "POST", body: JSON.stringify({ base_tree: st.arbol, tree: arbol }) });
+      const nuevo = await api("/git/commits", { method: "POST", body: JSON.stringify({ message: "Pendientes: quitado " + pend.nombre + "\n\nHecho desde admin.html", tree: nuevoArbol.sha, parents: [head] }) });
+      await api("/git/refs/heads/" + RAMA, { method: "PATCH", body: JSON.stringify({ sha: nuevo.sha }) });
+      ed.pendiente = null;
+      editor.close();
+      await cargar();
+      pintar();
+      avisar("Quitado de pendientes. Recuerda borrarlo en Shopify si se creó mal.");
+    } catch (e) {
+      if (e.conflicto || e.status === 409 || e.status === 422) errorEditor("El catálogo cambió desde otro lugar. Cierra, toca Descartar (o recarga la página) y vuelve a intentarlo.");
+      else if (e.status === 401) errorEditor("Tu token venció o fue revocado. Cierra y entra con uno nuevo.");
+      else if (e.status === 403 || e.status === 404) errorEditor("Este token no puede escribir en " + REPO + ".");
+      else errorEditor("No se pudo quitar" + (e.status ? " (GitHub " + e.status + ")" : ". Revisa tu conexión") + ". Vuelve a intentarlo.");
+    } finally {
+      boton.disabled = false; boton.textContent = "Quitar de pendientes";
+    }
+  }
+  $("#ed-quitar-pend").addEventListener("click", () => { if (ed.pendiente) quitarPendiente(ed.pendiente); });
+
   $("#pend-lista").addEventListener("click", async (e) => {
     const b = e.target.closest("[data-pendiente]");
     if (!b) return;

@@ -195,7 +195,7 @@ Same detection as the store, via a `CATALOGOS` map:
 - The admin loads it in `cargar()` and shows **"Pendientes de publicar (N)" above the normal list** (tag "Pendiente: falta foto y color"). Tapping one opens the editor titled **"Publicar producto"**, button **"Publicar"**, already connected to Shopify; a line that doesn't exist yet comes preselected as "Nueva …". **Photo and color square are required.**
 - **Publicar commits immediately**, on its own: `productos.json` (with the new product, next id in its line's block; the new line added to `filtros` if needed), `pendientes.json` without it, and the photo, in one commit ("Catálogo: Publicado: X"). If there are other unpublished edits, it asks to publish or discard them first. If Shopify can't be read at that moment, the pending item's own data is used as fallback.
 - A pending item without a Shopify id (shouldn't happen) is resolved by its SKU when opened.
-- Not built (mention, don't build): removing a pending item without publishing it (today only by editing `pendientes.json`).
+- **"Quitar de pendientes"** (red button in the Publicar editor, with a confirm): removes it from `pendientes.json` in its own commit without publishing. For a model created wrong: also delete it in Shopify by hand, then create it again from Nuevos modelos.
 
 ### List screen
 - Search (multi-word), line chips, and a "Nuevo" button.
