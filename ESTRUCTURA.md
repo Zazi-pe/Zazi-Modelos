@@ -11,6 +11,7 @@ Solo cambian sus datos (`productos.json`, `fotos/`).
 | `shopify.js` | Lee de Shopify el precio, las tallas y las agotadas de los productos conectados. Lo usan la tienda y el admin. | Sí |
 | `.github/workflows/publicar.yml` | Revisa `productos.json` y publica en GitHub Pages. Si hay errores, no publica. | Sí |
 | `productos.json` | Filtros y productos del catálogo. Lo escribe el admin. | No |
+| `pendientes.json` | Productos que llegaron desde "Nuevos modelos" (página de Etiquetas), aún sin foto ni cuadrito. No salen en la tienda; se publican desde el admin. Puede no existir. | No |
 | `fotos/` | Fotos de productos. Las nuevas van en `fotos/<línea>/`. | No |
 | `img/` | Logos, favicon y QR de Yape. | Sí |
 
@@ -46,6 +47,22 @@ Para probar en la computadora: `python3 -m http.server` en la carpeta que contie
 | `creado` | Fecha de alta (AAAA-MM-DD). Ordena "Recomendados", decide "Nuevo" y la vitrina (el más nuevo). |
 | `foto` | Ruta de la foto en el repositorio. |
 | `descripcion` | Se muestra solo en el catálogo que tiene descripciones (`SITIOS` en `index.html`). |
+
+## pendientes.json
+
+```json
+{
+  "pendientes": [
+    {"shopify":{"id":"15520067780829","color":"Negro","sku":"2053758919498"}, "filtro":"you", "linea":"You",
+     "nombre":"Modelo Nuevo Negro", "modelo":"Modelo Nuevo", "color":"Negro", "precio":69.9, "tallas":[35,39],
+     "agotadas":["37"], "agregado":"2026-11-19"}
+  ]
+}
+```
+
+Uno por modelo + color, ya conectados a Shopify. En el admin salen arriba, en "Pendientes de publicar": se les pone
+foto y cuadrito de color (obligatorios) y **Publicar** los pasa a `productos.json` en un solo commit. Precio, tallas y
+agotadas son solo de respaldo (los de verdad salen de Shopify).
 
 ## Diferencias entre los dos catálogos (`SITIOS` en index.html)
 

@@ -90,6 +90,10 @@ textarea.input{min-height:110px;resize:vertical;line-height:1.5}
 .es-nuevo{color:var(--tinta);font-weight:600}
 .de-shopify{color:#2F6B2F;font-weight:600}
 .sin-shopify{color:var(--alerta);font-weight:600}
+.pendiente{color:#8A5A00;font-weight:600}
+#pendientes{margin-bottom:22px;padding-bottom:6px;border-bottom:2px solid var(--tinta)}
+#pendientes h2{font-size:1.15rem;margin:10px 0 2px}
+.foto-pend{display:grid;place-items:center;font-size:.6875rem;color:var(--gris);text-align:center;line-height:1.2}
 .conexion{font-size:.9375rem;font-weight:600}
 .conexion.si{color:#2F6B2F}
 .conexion.no{color:var(--alerta)}
@@ -206,6 +210,11 @@ dialog::backdrop{background:rgba(0,0,0,.45)}
       <div class="chips" id="filtros" role="group" aria-label="Filtrar por línea"></div>
       <p class="ayuda">Toca una talla para marcarla agotada. Toca el producto para editarlo. Los productos de Shopify se actualizan solos.</p>
     </div>
+    <section id="pendientes" aria-labelledby="pend-t" hidden>
+      <h2 id="pend-t">Pendientes de publicar <span id="pend-n"></span></h2>
+      <p class="ayuda">Llegaron desde Nuevos modelos y ya están conectados a Shopify. Toca uno, agrega la foto y el color del cuadrito, y publícalo.</p>
+      <div id="pend-lista"></div>
+    </section>
     <div id="lista"></div>
   </section>
 </main>
@@ -333,7 +342,7 @@ dialog::backdrop{background:rgba(0,0,0,.45)}
     </div>
     <div class="ed-pie">
       <button class="btn" type="button" data-cerrar>Cancelar</button>
-      <button class="btn btn-negro" type="submit">Guardar</button>
+      <button class="btn btn-negro" type="submit" id="ed-guardar">Guardar</button>
     </div>
   </form>
 </dialog>
@@ -387,7 +396,8 @@ dialog::backdrop{background:rgba(0,0,0,.45)}
     filtro: "all", busqueda: "", publicando: false,
     shopifyInfo: new Map(), // id de Shopify -> variantes (precio, tallas, disponibles)
     vivo: new Map(),        // id del catálogo -> datos actuales de Shopify (para la lista)
-    vivoListo: false        // ya se intentó leer Shopify para la lista
+    vivoListo: false,       // ya se intentó leer Shopify para la lista
+    pendientes: []          // pendientes.json: productos que llegaron de Nuevos modelos, aún sin foto
   };
   let token = "";
   try { token = localStorage.getItem(CLAVE_TOKEN) || ""; } catch (e) { /* sin almacenamiento */ }
@@ -413,6 +423,11 @@ dialog::backdrop{background:rgba(0,0,0,.45)}
       '  "productos": [\n' + d.productos.map((p) => "    " + JSON.stringify(p)).join(",\n") + "\n  ]\n}\n";
   }
 
+  // pendientes.json: un producto por línea, igual que productos.json
+  function serializarPendientes(lista) {
+    return lista.length ? "{\n  \"pendientes\": [\n" + lista.map((p) => "    " + JSON.stringify(p)).join(",\n") + "\n  ]\n}\n" : "{\n  \"pendientes\": []\n}\n";
+  }
+
   async function cargar() {
     const ref = await api("/git/ref/heads/" + RAMA);
     const commit = await api("/git/commits/" + ref.object.sha);
@@ -428,6 +443,12 @@ dialog::backdrop{background:rgba(0,0,0,.45)}
     st.archivos = new Set(arbol.tree.filter((e) => e.type === "blob").map((e) => e.path));
     st.fotos = new Set([...st.archivos].filter((r) => r.startsWith("fotos/")));
     st.subidas.clear();
+    st.pendientes = [];
+    if (st.archivos.has("pendientes.json")) {
+      const pend = await api("/contents/pendientes.json?ref=" + ref.object.sha);
+      const d = JSON.parse(deBase64(pend.content));
+      st.pendientes = Array.isArray(d.pendientes) ? d.pendientes : [];
+    }
     st.vivo = new Map();
     st.vivoListo = false;
     cargarShopify();          // no se espera: la lista se repinta cuando llegan los datos de Shopify
@@ -573,6 +594,17 @@ dialog::backdrop{background:rgba(0,0,0,.45)}
     $("#lista").innerHTML = lista.length ? lista.map((p) => fila(p, ids.has(p.id))).join("")
       : `<p class="vacio">${d.productos.length ? "Ningún producto coincide con la búsqueda." : "Aún no hay productos. Toca Nuevo para añadir el primero."}</p>`;
 
+    const pend = st.pendientes;
+    $("#pendientes").hidden = !pend.length;
+    $("#pend-n").textContent = "(" + pend.length + ")";
+    $("#pend-lista").innerHTML = pend.map((x, i) => `<article class="fila">
+      <button class="fila-abrir" type="button" data-pendiente="${i}">
+        <span class="fila-foto foto-pend">Sin foto</span>
+        <span><span class="fila-nombre">${esc(x.nombre)}</span><span class="fila-datos">
+          <span>${esc(x.linea || "")}</span><span class="pendiente">Pendiente: falta foto y color</span><span class="de-shopify">Shopify</span></span></span>
+        <span class="fila-editar">Publicar</span>
+      </button></article>`).join("");
+
     const n = lineas.length;
     $("#barra").hidden = !n;
     $("#barra-txt").textContent = n === 1 ? "1 cambio sin publicar" : n + " cambios sin publicar";
@@ -620,11 +652,18 @@ dialog::backdrop{background:rgba(0,0,0,.45)}
 
   const autoNombre = () => [$("#ed-modelo").value.trim(), $("#ed-color").value.trim()].filter(Boolean).join(" ");
 
-  function abrirEditor(p, titulo) {
+  function abrirEditor(p, titulo, pendiente) {
     const nuevo = !p.id;
+    ed.pendiente = pendiente || null;
+    $("#ed-guardar").textContent = pendiente ? "Publicar" : "Guardar";
     ed.id = p.id || null;
     ed.foto = p.foto || null;
     ed.colores = (p.colores && p.colores.length ? p.colores : ["#E6E6E6"]).slice(0, 2);
+    // pendiente sin cuadrito: si otro producto ya tiene ese mismo color, se propone su tono
+    if (pendiente && !(p.colores && p.colores.length)) {
+      const otro = st.datos.productos.find((x) => norm(x.color) === norm(p.color || "") && Array.isArray(x.colores) && x.colores.length);
+      if (otro) ed.colores = otro.colores.slice(0, 2);
+    }
     ed.agotadas = new Set((p.agotadas || []).map(String));
     ed.tocado = !nuevo;
     $("#ed-titulo").textContent = titulo || (nuevo ? "Nuevo producto" : "Editar producto");
@@ -634,6 +673,8 @@ dialog::backdrop{background:rgba(0,0,0,.45)}
       `<option value="__nueva">Nueva ${CAT.grupo}…</option>`;
     $("#ed-linea").value = p.filtro && filtros.some(([f]) => f === p.filtro) ? p.filtro : (filtros.length ? (st.filtro !== "all" ? st.filtro : filtros[filtros.length - 1][0]) : "__nueva");
     $("#ed-nueva").value = "";
+    // una línea que aún no existe (llega de Nuevos modelos): se propone como nueva
+    if (p.filtro && p.linea && !filtros.some(([f]) => f === p.filtro)) { $("#ed-linea").value = "__nueva"; $("#ed-nueva").value = p.linea; }
     $("#ed-nueva-c").hidden = $("#ed-linea").value !== "__nueva";
 
     $("#ed-modelo").value = p.modelo || "";
@@ -663,7 +704,7 @@ dialog::backdrop{background:rgba(0,0,0,.45)}
     ed.creado = p.creado || "";
     pintarNotaNuevo();
     $("#ed-desc-c").hidden = !CAT.descripciones;
-    $("#ed-mas").hidden = nuevo;
+    $("#ed-mas").hidden = nuevo || !!pendiente;
     $("#ed-error").hidden = true;
     $("#ed-archivo").value = "";
 
@@ -814,19 +855,25 @@ dialog::backdrop{background:rgba(0,0,0,.45)}
       linea = (st.datos.filtros.find(([f]) => f === filtro) || [filtro, filtro])[1];
     }
     if (!modelo || !color) return errorEditor("Escribe el modelo y el color.");
+    if (ed.pendiente) {
+      if (!ed.foto) return errorEditor("Agrega la foto para publicar.");
+      if (ed.colores.length === 1 && ed.colores[0].toUpperCase() === "#E6E6E6") return errorEditor("Elige el color del cuadrito para publicar.");
+    }
     const anterior = ed.id ? porId(ed.id) : {};
     // Conectado a Shopify: precio y tallas salen de ahí (se guardan como respaldo)
     let deShopify = null;
     if (ed.shopify) {
       deShopify = ZS ? ZS.datosDe(st.shopifyInfo.get(ed.shopify.id), ed.shopify.color) : null;
-      const mismo = anterior.shopify && String(anterior.shopify.id) === ed.shopify.id && norm(anterior.shopify.color) === norm(ed.shopify.color);
+      // sin lectura de Shopify sirve lo guardado: el producto ya conectado, o el pendiente con los datos del Excel
+      const base = ed.pendiente || anterior;
+      const mismo = base.shopify && String(base.shopify.id) === ed.shopify.id && norm(base.shopify.color) === norm(ed.shopify.color);
       if (!deShopify && !mismo) return errorEditor("No se pudieron leer los datos de Shopify de este producto. Revisa la conexión con Shopify y vuelve a intentarlo.");
     } else {
       if (!sinPrecio && !(precio > 0)) return errorEditor("Escribe el precio o marca Por confirmar.");
       if (!tallasLista.length) return errorEditor("Revisa las tallas: Desde debe ser menor o igual que Hasta.");
     }
 
-    if (!st.datos.filtros.some(([f]) => f === filtro)) st.datos.filtros.push([filtro, linea]);
+    if (!ed.pendiente && !st.datos.filtros.some(([f]) => f === filtro)) st.datos.filtros.push([filtro, linea]);
     const valorNuevo = ($("input[name=ed-nuevo]:checked") || {}).value || "auto";
     const agotadas = tallasLista.length > 1 ? tallasLista.filter((t) => ed.agotadas.has(t)) : [];
     const manual = {
@@ -835,7 +882,7 @@ dialog::backdrop{background:rgba(0,0,0,.45)}
       agotadas: agotadas.length ? agotadas : undefined
     };
     const valores = deShopify ? { precio: deShopify.precio, tallas: deShopify.tallas, agotadas: deShopify.agotadas.length ? deShopify.agotadas : undefined }
-      : ed.shopify ? { precio: anterior.precio, tallas: anterior.tallas, agotadas: anterior.agotadas }   // Shopify no respondió: queda lo guardado
+      : ed.shopify ? { precio: (ed.pendiente || anterior).precio, tallas: (ed.pendiente || anterior).tallas, agotadas: (ed.pendiente || anterior).agotadas }   // Shopify no respondió: queda lo guardado
       : manual;
     const p = ordenar({
       ...anterior,
@@ -859,12 +906,70 @@ dialog::backdrop{background:rgba(0,0,0,.45)}
       st.subidas.set(ruta, b64); st.vistas.set(ruta, vista);
       p.foto = ruta;
     }
+    if (ed.pendiente) { publicarPendiente(p, ed.pendiente); return; }
     reemplazar(p);
     if (deShopify) st.vivo.set(p.id, deShopify); else st.vivo.delete(p.id);
     editor.close();
     pintar();
     avisar("Guardado. Toca Publicar para subirlo a la tienda.");
   }
+
+  /* ---------- Publicar un pendiente (enseguida, en su propio commit) ----------
+     Sale de pendientes.json y entra a productos.json con su foto, en un solo commit. */
+  async function publicarPendiente(p, pend) {
+    const filtros = st.datos.filtros.some(([f]) => f === p.filtro) ? st.datos.filtros : [...st.datos.filtros, [p.filtro, p.linea]];
+    const datos = { filtros, productos: [...st.datos.productos.filter((x) => x.id !== p.id), p].sort((a, b) => a.id - b.id) };
+    const archivos = new Set(st.archivos);
+    if (p.foto) archivos.add(p.foto);
+    const r = window.ZaziValidar ? window.ZaziValidar.validar(datos, [...archivos]) : { errores: [] };
+    const propios = r.errores.filter((x) => x.id === p.id || x.id === null);
+    if (propios.length) return errorEditor(propios.map((x) => x.msg).join(" "));
+    const boton = $("#ed-guardar");
+    boton.disabled = true; boton.textContent = "Publicando…";
+    try {
+      const ref = await api("/git/ref/heads/" + RAMA);
+      const head = ref.object.sha;
+      if (head !== st.head) { const e = new Error("conflicto"); e.conflicto = true; throw e; }
+      const arbol = [
+        { path: "productos.json", mode: "100644", type: "blob", content: serializar(datos) },
+        { path: "pendientes.json", mode: "100644", type: "blob", content: serializarPendientes(st.pendientes.filter((x) => x !== pend)) }
+      ];
+      if (p.foto && st.subidas.has(p.foto)) {
+        const blob = await api("/git/blobs", { method: "POST", body: JSON.stringify({ content: st.subidas.get(p.foto), encoding: "base64" }) });
+        arbol.push({ path: p.foto, mode: "100644", type: "blob", sha: blob.sha });
+      }
+      const nuevoArbol = await api("/git/trees", { method: "POST", body: JSON.stringify({ base_tree: st.arbol, tree: arbol }) });
+      const nuevo = await api("/git/commits", { method: "POST", body: JSON.stringify({ message: "Catálogo: Publicado: " + p.nombre + "\n\nVenía de Pendientes (Nuevos modelos).\nHecho desde admin.html", tree: nuevoArbol.sha, parents: [head] }) });
+      await api("/git/refs/heads/" + RAMA, { method: "PATCH", body: JSON.stringify({ sha: nuevo.sha }) });
+      ed.pendiente = null;
+      editor.close();
+      await cargar();
+      pintar();
+      avisar("Publicado. La tienda se actualiza en 1 o 2 minutos.");
+    } catch (e) {
+      if (e.conflicto || e.status === 409 || e.status === 422) errorEditor("El catálogo cambió desde otro lugar. Cierra, toca Descartar (o recarga la página) y vuelve a publicarlo.");
+      else if (e.status === 401) { errorEditor("Tu token venció o fue revocado. Cierra y entra con uno nuevo."); }
+      else if (e.status === 403 || e.status === 404) errorEditor("Este token no puede escribir en " + REPO + ".");
+      else errorEditor("No se pudo publicar" + (e.status ? " (GitHub " + e.status + ")" : ". Revisa tu conexión") + ". Vuelve a intentarlo.");
+    } finally {
+      boton.disabled = false;
+      if (ed.pendiente) boton.textContent = "Publicar";
+    }
+  }
+  $("#pend-lista").addEventListener("click", async (e) => {
+    const b = e.target.closest("[data-pendiente]");
+    if (!b) return;
+    const pend = st.pendientes[Number(b.dataset.pendiente)];
+    if (!pend) return;
+    const n = diferencias().lineas.length;
+    if (n) { avisar("Primero publica o descarta " + (n === 1 ? "el cambio sin publicar" : "los " + n + " cambios sin publicar") + ".", true); return; }
+    let shopify = pend.shopify || null;
+    // sin id de Shopify (no debería pasar): se busca por su SKU
+    if (shopify && !shopify.id && shopify.sku && ZS) {
+      try { const r = await ZS.buscarSku(shopify.sku); if (r) shopify = { id: r.id, color: r.color, sku: r.sku }; } catch (_) { /* queda sin conectar */ }
+    }
+    abrirEditor({ ...pend, shopify: shopify && shopify.id ? shopify : undefined, estado: "disponible" }, "Publicar producto", pend);
+  });
 
   /* ---------- Eventos del editor ---------- */
   $("#ed-form").addEventListener("submit", guardar);

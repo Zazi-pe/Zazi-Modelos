@@ -68,6 +68,7 @@ ESTRUCTURA.md                    short structure reference (Spanish); same in bo
 CLAUDE.md                        rules for Claude Code; same content in both except the first lines
 docs/handoff.md                  this document; same in both
 productos.json                   catalog data; DIFFERENT per repo
+pendientes.json                  products waiting for photo + swatch, written by Etiquetas' Nuevos modelos; may not exist; DIFFERENT per repo
 fotos/                           product photos; different per repo
 img/                             favicon.png, logo-zazi.png, logo-zazi-blanco.png, yape-qr.jpg; same in both
 ```
@@ -188,6 +189,13 @@ Same detection as the store, via a `CATALOGOS` map:
 1. `GET /git/ref/heads/main`, then `GET /git/commits/{sha}`.
 2. In parallel: `GET /contents/productos.json?ref=…` and `GET /git/trees/{tree}?recursive=1` (the full file list, used for the photo checks).
 3. It remembers `st.head` and `st.arbol`.
+
+### Pendientes (products from Nuevos modelos, Nov 19)
+- `pendientes.json` (repo root, may not exist) holds products created in Shopify by the Etiquetas page's **Nuevos modelos** with "Agregar también al catálogo" ticked: **one per model + color**, already connected (`shopify {id, color, sku}`), with `filtro`/`linea` (proposed there: Zazi by brand, Modelos by type; a missing one is proposed as a new line), `nombre` (= model name + color, exactly as the sheet's name), `modelo`, `color`, fallback `precio`/`tallas`/`agotadas` from the sheet, and `agregado` (date). Same one-per-line format as `productos.json`. The store never reads it, `validar.js` doesn't check it, and the deploy ignores it.
+- The admin loads it in `cargar()` and shows **"Pendientes de publicar (N)" above the normal list** (tag "Pendiente: falta foto y color"). Tapping one opens the editor titled **"Publicar producto"**, button **"Publicar"**, already connected to Shopify; a line that doesn't exist yet comes preselected as "Nueva …". **Photo and color square are required.**
+- **Publicar commits immediately**, on its own: `productos.json` (with the new product, next id in its line's block; the new line added to `filtros` if needed), `pendientes.json` without it, and the photo, in one commit ("Catálogo: Publicado: X"). If there are other unpublished edits, it asks to publish or discard them first. If Shopify can't be read at that moment, the pending item's own data is used as fallback.
+- A pending item without a Shopify id (shouldn't happen) is resolved by its SKU when opened.
+- Not built (mention, don't build): removing a pending item without publishing it (today only by editing `pendientes.json`).
 
 ### List screen
 - Search (multi-word), line chips, and a "Nuevo" button.
@@ -316,6 +324,7 @@ A full-screen dialog on phone, centered on desktop. It covers:
    - **Decisions:** vitrina automatic (newest); "Nuevo" 14 days in both; real errors block and minor issues warn; two repos kept with the same URLs; zip-and-upload for big files (no longer needed with Claude Code).
    - **Status at the end:** Stefano tested both admins (publishing, "Nuevo" forcing, size toggles, the error block) and they work. Whether the stores look right on his phone was not confirmed yet.
 4. **Move to Claude Code (Nov 11–12):** the repos were cloned to `~/ClaudeCode/Zazi-pe/`, `CLAUDE.md` files were added, and this handoff became a living document in `docs/`.
+6. **Nuevos modelos → catalog (Nov 19):** Etiquetas' Nuevos modelos can add the created models to a catalog as pending products (`pendientes.json`); the admin got the Pendientes section and the Publicar flow.
 5. **Shopify (Nov 18):** inventory moved from Bsale to Shopify. The label page's worker was rewritten for Shopify (Etiquetas repo). The catalogs got `shopify.js`, the `shopify` field (replacing `sku`), the admin picker, and the 13 You/Pasador products linked. Bsale's catalog plan (worker-served stock, branches, price list 5) was dropped: the stores read Shopify's public API directly.
 
 ---
