@@ -37,8 +37,9 @@ jobs:
           if [ -d fotos ]; then cp -r fotos _site/; fi
           if [ -d img ]; then cp -r img _site/; fi
 
-      # Copias livianas de las fotos para celulares (WebP de 400 y 800 px de ancho) en _site/fotos-web/.
-      # La tienda las usa con <picture>; si alguna falta, muestra la foto original.
+      # Copias livianas de las fotos en _site/fotos-web/: WebP de 400 y 800 px de ancho y una del tamaño
+      # original (-full, para pantallas 3x). La tienda las usa con <picture>; si alguna falta, muestra la original.
+      # Calidad 82-85: a 75 se notaba en celulares (texturas pixeladas).
       - name: Fotos livianas (WebP)
         run: |
           sudo apt-get update -qq && sudo apt-get install -y -qq webp > /dev/null
@@ -48,8 +49,9 @@ jobs:
               rel="${f#_site/fotos/}"; base="${rel%.*}"
               mkdir -p "_site/fotos-web/$(dirname "$rel")"
               for ancho in 400 800; do
-                cwebp -quiet -q 75 -resize "$ancho" 0 "$f" -o "_site/fotos-web/${base}-${ancho}.webp" || echo "::warning::No se pudo crear la copia WebP de $rel"
+                cwebp -quiet -q 82 -m 6 -sharp_yuv -resize "$ancho" 0 "$f" -o "_site/fotos-web/${base}-${ancho}.webp" || echo "::warning::No se pudo crear la copia WebP de $rel"
               done
+              cwebp -quiet -q 85 -m 6 -sharp_yuv "$f" -o "_site/fotos-web/${base}-full.webp" || echo "::warning::No se pudo crear la copia WebP de $rel
             done
             echo "Fotos: $(du -sh _site/fotos | cut -f1) originales, $(du -sh _site/fotos-web | cut -f1) en WebP"
           fi

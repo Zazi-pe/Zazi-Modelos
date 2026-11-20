@@ -576,16 +576,17 @@ const DIAS_NUEVO = 14;
   const norm = (t) => String(t).normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
   const wa = (texto) => "https://wa.me/" + TIENDA.whatsapp + (texto ? "?text=" + encodeURIComponent(texto) : "");
 
-  /* Fotos de productos: en el sitio publicado hay copias WebP de 400 y 800 px en fotos-web/ (las crea
-     publicar.yml). El celular baja la que le sirve según "sizes"; si la copia no existe, se usa la original. */
-  const fotoWeb = (ruta, ancho) => "fotos-web/" + String(ruta).replace(/^fotos\//, "").replace(/\.[^./]+$/, "") + "-" + ancho + ".webp";
+  /* Fotos de productos: en el sitio publicado hay copias WebP de 400 y 800 px y del tamaño original (-full,
+     ~1024 px) en fotos-web/ (las crea publicar.yml). El celular baja la que le sirve según "sizes" y su pantalla;
+     si la copia no existe, se usa la original. */
+  const fotoWeb = (ruta, ancho) => "fotos-web/" + String(ruta).replace(/^fotos\//, "").replace(/\.[^./]+$/, "") + "-" + ancho + ".webp";   // ancho: 400, 800 o "full"
   window.zaziSinWebp = (img) => {                 // la copia WebP no cargó: se quita y queda la foto original
     img.onerror = null;
     const s = img.parentNode && img.parentNode.querySelector("source");
     if (s) { s.remove(); img.src = img.getAttribute("src"); }
   };
   function fotoProducto(p, sizes, atributos) {
-    return `<picture><source type="image/webp" srcset="${esc(fotoWeb(p.foto, 400))} 400w, ${esc(fotoWeb(p.foto, 800))} 800w" sizes="${sizes}">` +
+    return `<picture><source type="image/webp" srcset="${esc(fotoWeb(p.foto, 400))} 400w, ${esc(fotoWeb(p.foto, 800))} 800w, ${esc(fotoWeb(p.foto, "full"))} 1024w" sizes="${sizes}">` +
       `<img src="${esc(p.foto)}" ${atributos} onerror="zaziSinWebp(this)"></picture>`;
   }
 
