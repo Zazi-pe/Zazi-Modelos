@@ -427,6 +427,10 @@ dialog::backdrop{background:rgba(0,0,0,.45)}
       '  "productos": [\n' + d.productos.map((p) => "    " + JSON.stringify(p)).join(",\n") + "\n  ]\n}\n";
   }
 
+  // Un pendiente se reconoce por su producto y color de Shopify (o por su nombre), no por el objeto en memoria
+  const clavePend = (x) => x && x.shopify && x.shopify.id ? "s:" + x.shopify.id + "|" + norm(x.shopify.color || x.color || "") : "n:" + norm(x && x.nombre || "");
+  const quitarDe = (lista, pend) => lista.filter((x) => clavePend(x) !== clavePend(pend));
+
   // pendientes.json: un producto por línea, igual que productos.json
   function serializarPendientes(lista) {
     return lista.length ? "{\n  \"pendientes\": [\n" + lista.map((p) => "    " + JSON.stringify(p)).join(",\n") + "\n  ]\n}\n" : "{\n  \"pendientes\": []\n}\n";
@@ -452,6 +456,10 @@ dialog::backdrop{background:rgba(0,0,0,.45)}
       const pend = await api("/contents/pendientes.json?ref=" + ref.object.sha);
       const d = JSON.parse(deBase64(pend.content));
       st.pendientes = Array.isArray(d.pendientes) ? d.pendientes : [];
+      // si alguno ya está publicado (mismo producto y color de Shopify, o mismo nombre), no se muestra;
+      // el próximo guardado de pendientes.json lo limpia
+      const publicados = new Set(st.datos.productos.map(clavePend).concat(st.datos.productos.map((x) => "n:" + norm(x.nombre))));
+      st.pendientes = st.pendientes.filter((x) => !publicados.has(clavePend(x)) && !publicados.has("n:" + norm(x.nombre)));
     }
     st.vivo = new Map();
     st.vivoListo = false;
@@ -922,6 +930,7 @@ dialog::backdrop{background:rgba(0,0,0,.45)}
   /* ---------- Publicar un pendiente (enseguida, en su propio commit) ----------
      Sale de pendientes.json y entra a productos.json con su foto, en un solo commit. */
   async function publicarPendiente(p, pend) {
+    if (st.ocupado) return;
     const filtros = st.datos.filtros.some(([f]) => f === p.filtro) ? st.datos.filtros : [...st.datos.filtros, [p.filtro, p.linea]];
     const datos = { filtros, productos: [...st.datos.productos.filter((x) => x.id !== p.id), p].sort((a, b) => a.id - b.id) };
     const archivos = new Set(st.archivos);
@@ -931,13 +940,14 @@ dialog::backdrop{background:rgba(0,0,0,.45)}
     if (propios.length) return errorEditor(propios.map((x) => x.msg).join(" "));
     const boton = $("#ed-guardar");
     boton.disabled = true; boton.textContent = "Publicando…";
+    st.ocupado = true;
     try {
       const ref = await api("/git/ref/heads/" + RAMA);
       const head = ref.object.sha;
       if (head !== st.head) { const e = new Error("conflicto"); e.conflicto = true; throw e; }
       const arbol = [
         { path: "productos.json", mode: "100644", type: "blob", content: serializar(datos) },
-        { path: "pendientes.json", mode: "100644", type: "blob", content: serializarPendientes(st.pendientes.filter((x) => x !== pend)) }
+        { path: "pendientes.json", mode: "100644", type: "blob", content: serializarPendientes(quitarDe(st.pendientes, pend)) }
       ];
       if (p.foto && st.subidas.has(p.foto)) {
         const blob = await api("/git/blobs", { method: "POST", body: JSON.stringify({ content: st.subidas.get(p.foto), encoding: "base64" }) });
@@ -957,6 +967,7 @@ dialog::backdrop{background:rgba(0,0,0,.45)}
       else if (e.status === 403 || e.status === 404) errorEditor("Este token no puede escribir en " + REPO + ".");
       else errorEditor("No se pudo publicar" + (e.status ? " (GitHub " + e.status + ")" : ". Revisa tu conexión") + ". Vuelve a intentarlo.");
     } finally {
+      st.ocupado = false;
       boton.disabled = false;
       if (ed.pendiente) boton.textContent = "Publicar";
     }
@@ -966,11 +977,12 @@ dialog::backdrop{background:rgba(0,0,0,.45)}
     if (!confirm("¿Quitar \"" + pend.nombre + "\" de pendientes? No se publica en la tienda.\n\nSi el modelo se creó mal, bórralo también en Shopify (a mano) y vuelve a crearlo desde Nuevos modelos.")) return;
     const boton = $("#ed-quitar-pend");
     boton.disabled = true; boton.textContent = "Quitando…";
+    st.ocupado = true;
     try {
       const ref = await api("/git/ref/heads/" + RAMA);
       const head = ref.object.sha;
       if (head !== st.head) { const e = new Error("conflicto"); e.conflicto = true; throw e; }
-      const arbol = [{ path: "pendientes.json", mode: "100644", type: "blob", content: serializarPendientes(st.pendientes.filter((x) => x !== pend)) }];
+      const arbol = [{ path: "pendientes.json", mode: "100644", type: "blob", content: serializarPendientes(quitarDe(st.pendientes, pend)) }];
       const nuevoArbol = await api("/git/trees", { method: "POST", body: JSON.stringify({ base_tree: st.arbol, tree: arbol }) });
       const nuevo = await api("/git/commits", { method: "POST", body: JSON.stringify({ message: "Pendientes: quitado " + pend.nombre + "\n\nHecho desde admin.html", tree: nuevoArbol.sha, parents: [head] }) });
       await api("/git/refs/heads/" + RAMA, { method: "PATCH", body: JSON.stringify({ sha: nuevo.sha }) });
@@ -985,6 +997,7 @@ dialog::backdrop{background:rgba(0,0,0,.45)}
       else if (e.status === 403 || e.status === 404) errorEditor("Este token no puede escribir en " + REPO + ".");
       else errorEditor("No se pudo quitar" + (e.status ? " (GitHub " + e.status + ")" : ". Revisa tu conexión") + ". Vuelve a intentarlo.");
     } finally {
+      st.ocupado = false;
       boton.disabled = false; boton.textContent = "Quitar de pendientes";
     }
   }
@@ -993,6 +1006,7 @@ dialog::backdrop{background:rgba(0,0,0,.45)}
   $("#pend-lista").addEventListener("click", async (e) => {
     const b = e.target.closest("[data-pendiente]");
     if (!b) return;
+    if (st.ocupado) { avisar("Espera un momento: se está terminando de publicar el anterior."); return; }
     const pend = st.pendientes[Number(b.dataset.pendiente)];
     if (!pend) return;
     const n = diferencias().lineas.length;
