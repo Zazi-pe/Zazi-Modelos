@@ -1,4 +1,4 @@
-# ZAZI catalogs — handoff (living document, last updated November 18, 2026)
+# ZAZI catalogs — handoff (living document, last updated November 20, 2026)
 
 Living handoff for the two catalog repos, **Zazi** and **Zazi-Modelos**. The same file lives in both repos at `docs/handoff.md`; whenever it's updated, the copy in the other repo is updated too. It is updated at the end of every Claude Code session (see `CLAUDE.md`).
 
@@ -46,15 +46,13 @@ It replaces the older handoffs (`ZAZI_handoff.md`, `ZAZImodels-handoff.md` and t
 |---|---|---|
 | Store | https://zazi-pe.github.io/Zazi/ | https://zazi-pe.github.io/Zazi-Modelos/ |
 | Admin | https://zazi-pe.github.io/Zazi/admin.html | https://zazi-pe.github.io/Zazi-Modelos/admin.html |
-| Latest commit when this was rewritten (Nov 12) | `0272845` | `15e3898` |
+| Latest commit when this was rewritten (Nov 20) | `022620c` | `78a9471` |
 
 - Both repos are public, on branch `main`. The account is `Zazi-pe`.
-- **Deploy (both repos):** Settings → Pages → Source = **GitHub Actions**. Every push to `main` runs `.github/workflows/publicar.yml`:
-  - Since Nov 20 it runs as **two jobs**: `armar` (checkout, `node validar.js`, copy files into `_site/`, WebP copies of the photos, configure-pages, upload-pages-artifact) and then `publicar` (deploy-pages). In one job, deploy-pages intermittently failed with "No artifacts named github-pages" (actions/deploy-pages#451; re-running doesn't fix it).
-  1. Checkout.
-  2. `node validar.js`. On errors it stops, and **the last good version stays online**.
-  3. Copy `index.html admin.html productos.json validar.js` plus `fotos/` and `img/` into `_site/`.
-  4. Deploy with `configure-pages@v5`, `upload-pages-artifact@v3` and `deploy-pages@v4`.
+- **Deploy (both repos):** Settings → Pages → Source = **GitHub Actions**. Every push to `main` runs `.github/workflows/publicar.yml`, in **two jobs** (since Nov 20):
+  1. `armar`: checkout; `node validar.js` (on errors it stops, and **the last good version stays online**); copy `index.html admin.html productos.json validar.js shopify.js` plus `fotos/` and `img/` into `_site/`; make the WebP copies of the photos (section 4); `configure-pages@v5`; `upload-pages-artifact@v3`.
+  2. `publicar` (needs `armar`): `deploy-pages@v4`. In a single job, deploy-pages intermittently failed with "No artifacts named github-pages" (actions/deploy-pages#451; re-running didn't fix it), hence the split.
+- After editing the workflow, check the shell of each `run:` step (extract it and run `bash -n`): a missing closing quote once broke both deploys (Nov 20).
 - **Timing:** the site updates about 1–2 minutes after a commit. Runs are visible in each repo's Actions tab.
 
 ### Files in each repo (identical structure)
@@ -74,7 +72,7 @@ fotos/                           product photos; different per repo
 img/                             favicon.png, logo-zazi.png, logo-zazi-blanco.png, yape-qr.jpg; same in both
 ```
 
-- **Zazi `fotos/`:** 23 photos in a flat folder, with legacy names such as `fotos/anda-260x-celeste.jpeg`. Some names have accents (`you-cápsula-blanco-rosa.jpeg`, `you-deportivo-blanco-marrón.jpeg`, `i-run-horizon-marrón-crema.jpeg`); they work, but don't rename them without updating `productos.json`.
+- **Zazi `fotos/`:** the original 23 photos in a flat folder, with legacy names such as `fotos/anda-260x-celeste.jpeg`. Some names have accents (`you-cápsula-blanco-rosa.jpeg`, `you-deportivo-blanco-marrón.jpeg`, `i-run-horizon-marrón-crema.jpeg`); they work, but don't rename them without updating `productos.json`.
 - **Modelos `fotos/`:** `fotos/botines/botin-pasador-marron.jpeg`.
 - **New photos from the admin** go to `fotos/<filtro>/<slug>.jpg` in both.
 - **No longer exist** (removed in the unification): Modelos `config.json` and `scripts/generar-productos.js` (the old photo-driven generator), and Zazi's embedded data and base64 images.
@@ -291,7 +289,7 @@ A full-screen dialog on phone, centered on desktop. It covers:
 
 **Setup in Shopify:** the **Online Store is open** (no password) and products are published to both **Online Store** and **Point of Sale**. That lets `shopify.js` use Shopify's public Storefront API **with no token** (`https://y0mdhy-r0.myshopify.com/api/2026-10/graphql.json`). Only products published to the Online Store are visible to it. As of Nov 18, Shopify's admin still reported 12 products not on the Online Store (the first ones alphabetically, none in the catalogs). Stefano plans to improve the Shopify store itself later; for now it just has to be open.
 
-**What's linked (Nov 18):** the 12 You products (Shopify products "You Urbano Onda", "You Chunky Trazo", "You Deportivo", "You Cápsula", "You Urbano Marco", "You Chunky Relieve", same color names) and Modelos' Botín Pasador Marrón (Shopify "Pasador", color "Marron"). **Anda 260X and the real I-RUN models aren't in Shopify yet** (only a generic "Zapatilla I-RUN" with color "-"), so they stay manual until Stefano adds them; then link them from the admin.
+**What's linked (Nov 20):** every Zazi Anda and You product and Modelos' Botín Pasador Marrón (section 10). Anda 260X was renamed **Anda D318** (created in Shopify with Nuevos modelos, product 15520773570781) and its 5 catalog products connected by SKU; the new Anda models (D268, D263, D269, D308) came in through Pendientes. **The real I-RUN models aren't in Shopify yet** (only a generic "Zapatilla I-RUN" with color "-"), so they stay manual until they're loaded; then connect them from the admin.
 
 **Prices changed by the link:** You is S/ 59.90 in Shopify (the 69.90 in the catalog was outdated; Stefano: the You price can change again later, and Shopify is the source). Pasador is S/ 79.00 in Shopify (catalog had 79.90). Sold-out sizes now follow Shopify's stock; You Deportivo Blanco Marrón is sold out in every size, so the store shows it as "Agotado".
 
@@ -301,7 +299,7 @@ A full-screen dialog on phone, centered on desktop. It covers:
 - Stock is "available or not" (Storefront gives no counts), summed over Shopify's single location.
 - `validar.js`: a `shopify` value must have a numeric `id` and a `color` (error otherwise). The "disponible but all sizes sold out" warning is skipped for linked products, since Shopify decides.
 
-**Not built / ideas (mention, don't build):** linking Anda and I-RUN once they're in Shopify; the Shopify store's own design; showing exact stock counts (would need a Storefront token with inventory access or the worker).
+**Not built / ideas (mention, don't build):** connecting I-RUN once it's in Shopify; the Shopify store's own design; showing exact stock counts (would need a Storefront token with inventory access or the worker).
 
 ### Other
 - **Optional, not requested yet** (mention, don't do unasked):
@@ -328,22 +326,26 @@ A full-screen dialog on phone, centered on desktop. It covers:
    - **Decisions:** vitrina automatic (newest); "Nuevo" 14 days in both; real errors block and minor issues warn; two repos kept with the same URLs; zip-and-upload for big files (no longer needed with Claude Code).
    - **Status at the end:** Stefano tested both admins (publishing, "Nuevo" forcing, size toggles, the error block) and they work. Whether the stores look right on his phone was not confirmed yet.
 4. **Move to Claude Code (Nov 11–12):** the repos were cloned to `~/ClaudeCode/Zazi-pe/`, `CLAUDE.md` files were added, and this handoff became a living document in `docs/`.
-6. **Nuevos modelos → catalog (Nov 19):** Etiquetas' Nuevos modelos can add the created models to a catalog as pending products (`pendientes.json`); the admin got the Pendientes section and the Publicar flow.
-5. **Shopify (Nov 18):** inventory moved from Bsale to Shopify. The label page's worker was rewritten for Shopify (Etiquetas repo). The catalogs got `shopify.js`, the `shopify` field (replacing `sku`), the admin picker, and the 13 You/Pasador products linked. Bsale's catalog plan (worker-served stock, branches, price list 5) was dropped: the stores read Shopify's public API directly.
+5. **Shopify (Nov 18):** inventory moved from Bsale to Shopify. The label page's worker was rewritten for Shopify (Etiquetas repo). The catalogs got `shopify.js`, the `shopify` field (replacing `sku`), connect-by-SKU in the admin (a dropdown picker was tried first and replaced), and the 13 You/Pasador products linked. Bsale's catalog plan (worker-served stock, branches, price list 5) was dropped: the stores read Shopify's public API directly.
+6. **Nuevos modelos → catalog (Nov 19):** Etiquetas' Nuevos modelos can add the created models to a catalog as pending products (`pendientes.json`); the admin got the Pendientes section, the Publicar flow and "Quitar de pendientes". Anda 260X became Anda D318 in Shopify and was connected; D268, D263, D269 and D308 were published from Pendientes.
+7. **Performance (Nov 20):** after a review with the `modern-web-guidance` skill: render first with saved data plus the stock lock (Stefano's rule), WebP copies with `<picture>`, `fetchpriority` on the showcase, and the two-job deploy. Photo quality was raised the same day after Stefano saw pixelation on his iPhone.
 
 ---
 
-## 10. Current data (as of Nov 18, 2026; the admin can change it at any time, so the repo is the truth)
+## 10. Current data (as of Nov 20, 2026; the admin can change it at any time, so the repo is the truth)
 
-### Zazi: 23 products, all `disponible`, all with descriptions
-Every product has `nuevo` on auto. Anda and You have `creado` 2026-09-24; I-RUN has 2026-09-26. The vitrina is the newest, I-RUN Bostep RAVENX (5006).
+### Zazi: 30 products, all `disponible`
+`filtros` also has an `intento` line ("Intento") with no products, a leftover from the first Nuevos modelos test; it doesn't show in the store (chips only appear with products). Ask Stefano before removing it.
 
 | ids | products | source of price and sizes |
 |---|---|---|
-| 3001–3005 | Anda 260X Celeste / Jade / Morado / Negro / Rosa | **Manual** (not in Shopify): S/ 69.90, tallas 35–39 |
-| 4001–4012 | You Urbano Onda, Chunky Trazo, Deportivo, Cápsula, Urbano Marco, Chunky Relieve (2 colors each) | **Shopify** (linked): S/ 59.90 on Nov 18, tallas 35–40, sold-out sizes live |
-| 5001–5006 | I-RUN Horizon (2), STEP Gris Luna, Bostep Majesty Blanco, Urbanas Cloud Blanco Morado, Bostep RAVENX Crema Gris | **Manual** (not in Shopify yet): S/ 99.90, sizes per product (RAVENX 40–44 with 41–44 sold out) |
+| 3001–3005 | Anda D318 Azul Rosa / Verde / Morado / Negro / Rosa (the old Anda 260X, renamed and recolored Nov 19) | **Shopify** (product 15520773570781): S/ 69.90 |
+| 3006–3012 | Anda D268 Blanco Verde, D263 Blanco Verde, D269 Azul, D308 Blanco / Blanco Morado / Morado Verde / Negro (`creado` 2026-11-19, published from Pendientes) | **Shopify**: S/ 69.90 |
+| 4001–4012 | You Urbano Onda, Chunky Trazo, Deportivo, Cápsula, Urbano Marco, Chunky Relieve (2 colors each) | **Shopify**: S/ 59.90, tallas 35–40 |
+| 5001–5006 | I-RUN Horizon (2), STEP Gris Luna, Bostep Majesty Blanco, Urbanas Cloud Blanco Morado, Bostep RAVENX Crema Gris | **Manual** (not in Shopify yet): S/ 99.90, sizes per product |
 
-### Zazi-Modelos: 1 product
+**Zazi `pendientes.json`: 7 waiting** for photo and swatch: Anda D307 Blanco Azul, Azul Rosa, Blanco Verde, Blanco Rosa; Anda D315 Blanco Morado, Rosa, Negro Morado.
+
+### Zazi-Modelos: 1 product, no `pendientes.json`
 - **3001** Botín Pasador Marrón: linea Botines, modelo "Botín Pasador", color "Marrón", `#8B5A3C`, `creado` 2026-10-01, foto `fotos/botines/botin-pasador-marron.jpeg`, no description.
-- **Linked to Shopify** "Pasador" / "Marron": S/ 79.00, tallas 35–39, sold out 36, 38, 39 on Nov 18.
+- **Linked to Shopify** "Pasador" / "Marron": S/ 79.00, tallas 35–39.

@@ -12,7 +12,7 @@ This site: categories sandalias / botas / botines / zapatillas / zapatos, no pro
 - Customers browse a static catalog, add to a cart saved in the browser, and check out via a pre-filled WhatsApp message (payment: Yape or cash).
 - Two catalog repos share the same code: `Zazi` (branded sneakers: Anda, You, I-RUN) and `Zazi-Modelos` (ZAZI's own models: sandalias, botas, botines, zapatillas, zapatos). Both are local siblings in `~/ClaudeCode/Zazi-pe/`, next to `Etiquetas` (the label page and the Shopify worker).
 - Both catalogs are in maintenance (not sent to customers yet), so temporary breakage during work is acceptable.
-- Inventory lives in **Shopify** (moved from Bsale in Nov 2026; one Shopify product = one model with all its colors, variants = color + size). Catalog products linked with a `shopify` field get price, sizes and sold-out sizes live from Shopify (`shopify.js`); everything else stays in `productos.json`. Anda and the real I-RUN models aren't in Shopify yet, so they stay manual.
+- Inventory lives in **Shopify** (moved from Bsale in Nov 2026; one Shopify product = one model with all its colors, variants = color + size). Catalog products linked with a `shopify` field get price, sizes and sold-out sizes live from Shopify (`shopify.js`); everything else stays in `productos.json`. The real I-RUN models aren't in Shopify yet, so they stay manual; Anda and You are connected.
 
 ## How Stefano works
 - He writes in English. All site and admin copy is Spanish (Peru). Code identifiers and comments are in Spanish.
@@ -28,6 +28,8 @@ This site: categories sandalias / botas / botines / zapatillas / zapatos, no pro
 - `pendientes.json` (written by the Etiquetas page's Nuevos modelos, one product per line like `productos.json`) holds products waiting for a photo and swatch. The store and `validar.js` ignore it; the admin shows them in "Pendientes de publicar" and publishes them (photo and swatch required) in one commit.
 - Store and contact data stay in `index.html` (`TIENDA`), never in `productos.json`. The Shopify store address lives in `shopify.js` (shared by store and admin).
 - `shopify.js` reads Shopify's public Storefront API **without a token** (it works because the Online Store is open). Products must be published to the Online Store to be visible there; that's the Shopify setting to check if a linked product stops updating.
+- **Stock lock (Stefano's rule):** the store draws at once with the saved data, but a connected product can't be chosen, added or sent until Shopify answers ("Verificando stock…"). If Shopify fails, buying unlocks with the saved data and a note says stock is confirmed by WhatsApp. Keep this when touching the store.
+- Photos are served as WebP copies made at deploy (`fotos-web/`, 400/800/full, quality 82–85) through `<picture>`, with the original as fallback. Don't lower the quality: q75 looked pixelated on iPhone.
 - Run `node validar.js` before every commit. Errors block the deploy.
 - Some photo names have accents. Don't rename photos without updating `productos.json`.
 - Never write tokens, keys or passwords into any file. The repos are public.
