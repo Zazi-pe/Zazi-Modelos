@@ -50,6 +50,7 @@ It replaces the older handoffs (`ZAZI_handoff.md`, `ZAZImodels-handoff.md` and t
 
 - Both repos are public, on branch `main`. The account is `Zazi-pe`.
 - **Deploy (both repos):** Settings → Pages → Source = **GitHub Actions**. Every push to `main` runs `.github/workflows/publicar.yml`:
+  - Since Nov 20 it runs as **two jobs**: `armar` (checkout, `node validar.js`, copy files into `_site/`, WebP copies of the photos, configure-pages, upload-pages-artifact) and then `publicar` (deploy-pages). In one job, deploy-pages intermittently failed with "No artifacts named github-pages" (actions/deploy-pages#451; re-running doesn't fix it).
   1. Checkout.
   2. `node validar.js`. On errors it stops, and **the last good version stays online**.
   3. Copy `index.html admin.html productos.json validar.js` plus `fotos/` and `img/` into `_site/`.

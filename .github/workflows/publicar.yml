@@ -17,12 +17,12 @@ concurrency:
   group: pages
   cancel-in-progress: false
 
+# Dos trabajos: "armar" revisa, arma el sitio y lo sube; "publicar" lo publica después.
+# En un solo trabajo, deploy-pages a veces no encuentra lo recién subido
+# ("No artifacts named github-pages", actions/deploy-pages#451).
 jobs:
-  publicar:
+  armar:
     runs-on: ubuntu-latest
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
     steps:
       - name: Descargar el repositorio
         uses: actions/checkout@v4
@@ -60,6 +60,13 @@ jobs:
         with:
           path: _site
 
+  publicar:
+    needs: armar
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
       - name: Publicar
         id: deployment
         uses: actions/deploy-pages@v4
