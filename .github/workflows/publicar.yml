@@ -51,7 +51,7 @@ jobs:
               for ancho in 400 800; do
                 cwebp -quiet -q 82 -m 6 -sharp_yuv -resize "$ancho" 0 "$f" -o "_site/fotos-web/${base}-${ancho}.webp" || echo "::warning::No se pudo crear la copia WebP de $rel"
               done
-              cwebp -quiet -q 85 -m 6 -sharp_yuv "$f" -o "_site/fotos-web/${base}-full.webp" || echo "::warning::No se pudo crear la copia WebP de $rel
+              cwebp -quiet -q 85 -m 6 -sharp_yuv "$f" -o "_site/fotos-web/${base}-full.webp" || echo "::warning::No se pudo crear la copia WebP de $rel"
             done
             echo "Fotos: $(du -sh _site/fotos | cut -f1) originales, $(du -sh _site/fotos-web | cut -f1) en WebP"
           fi
