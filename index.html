@@ -10,7 +10,7 @@
 <meta property="og:description" content="Elige tu producto y talla y pide por WhatsApp.">
 <meta property="og:type" content="website">
 <link rel="icon" type="image/png" href="img/favicon.png">
-<script src="shopify.js"></script>
+<script src="shopify.js" defer></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@500;600;700&family=Inter:wght@400;500;600&family=Playfair+Display:ital,wght@1,600&display=swap" rel="stylesheet">
@@ -591,14 +591,10 @@ const DIAS_NUEVO = 14;
     errorCarga = true;
     console.error("No se pudo cargar productos.json", e);
   }
-  // fecha de alta de cada producto (para "Nuevo", el orden y la vitrina)
-  PRODUCTOS.forEach((p) => { p._fecha = Date.parse(p.creado) || 0; });
-  // Productos conectados a Shopify: precio, tallas y agotadas salen de Shopify (shopify.js).
-  // Si Shopify no responde, se quedan los que están guardados en productos.json.
-  if (window.ZaziShopify) {
-    try { await window.ZaziShopify.aplicar(PRODUCTOS); }
-    catch (e) { console.warn("No se pudo leer Shopify; se usan los datos guardados.", e); }
-  }
+  // fecha de alta de cada producto (para "Nuevo", el orden y la vitrina); el estado tal como está guardado
+  PRODUCTOS.forEach((p) => { p._fecha = Date.parse(p.creado) || 0; p._estadoGuardado = p.estado; });
+  // Productos conectados a Shopify: la tienda se dibuja enseguida con lo guardado en productos.json y,
+  // cuando Shopify responde, se actualizan precio, tallas y agotadas (ver "Arranque").
 
   const estado = { filtro: "all", busqueda: "", orden: "destacados", carrito: [] };
   const porId = new Map(PRODUCTOS.map((p) => [p.id, p]));
@@ -627,22 +623,24 @@ const DIAS_NUEVO = 14;
   // Lo más nuevo primero; si tienen la misma fecha, el id más alto
   const porFecha = (a, b) => b._fecha - a._fecha || b.id - a.id;
   // Estado real: si todas las tallas están agotadas, el producto se muestra agotado
-  PRODUCTOS.forEach((p) => {
-    const t = tallasDe(p), ag = (p.agotadas || []).map(String);
-    if (p.estado === "disponible" && t.length && t.every((x) => ag.includes(x))) p.estado = "agotado";
-  });
+  function calcularEstados() {
+    PRODUCTOS.forEach((p) => {
+      const t = tallasDe(p), ag = (p.agotadas || []).map(String);
+      p.estado = p._estadoGuardado === "disponible" && t.length && t.every((x) => ag.includes(x)) ? "agotado" : p._estadoGuardado;
+    });
+  }
+  calcularEstados();
 
   /* ---------- Carrito (se guarda en el navegador) ---------- */
   const CLAVE = SITIO.carrito;
+  const lineaValida = (l) => {
+    const p = PRODUCTOS.find((x) => x.id === l.id);
+    return p && p.estado === "disponible" && tallasDe(p).includes(String(l.talla)) &&
+      !(p.agotadas || []).map(String).includes(String(l.talla)) && l.cant > 0;
+  };
   function cargarCarrito() {
-    try {
-      const datos = JSON.parse(localStorage.getItem(CLAVE) || "[]");
-      return datos.filter((l) => {
-        const p = PRODUCTOS.find((x) => x.id === l.id);
-        return p && p.estado === "disponible" && tallasDe(p).includes(String(l.talla)) &&
-          !(p.agotadas || []).map(String).includes(String(l.talla)) && l.cant > 0;
-      });
-    } catch (e) { return []; }
+    try { return JSON.parse(localStorage.getItem(CLAVE) || "[]").filter(lineaValida); }
+    catch (e) { return []; }
   }
   function guardarCarrito() {
     try { localStorage.setItem(CLAVE, JSON.stringify(estado.carrito)); } catch (e) { /* sin almacenamiento */ }
@@ -716,7 +714,7 @@ const DIAS_NUEVO = 14;
     const p = [...PRODUCTOS].filter((x) => x.foto).sort(porFecha)[0];
     if (!p) { el.hidden = true; $(".hero-in").classList.add("hero-solo"); return; }
     el.innerHTML = `
-      ${p.foto ? `<img src="${esc(p.foto)}" width="576" height="720" alt="${esc(p.nombre)}">` : `<div class="sin-foto" aria-hidden="true">${ICONO_ZAPATILLA}<span>Foto próximamente</span></div>`}
+      ${p.foto ? `<img src="${esc(p.foto)}" width="576" height="720" alt="${esc(p.nombre)}" fetchpriority="high">` : `<div class="sin-foto" aria-hidden="true">${ICONO_ZAPATILLA}<span>Foto próximamente</span></div>`}
       <button class="hero-etiqueta" type="button" data-abrir="${p.id}">
         <span>MODELO EN VITRINA</span>
         <b>${esc(p.nombre)}</b>
@@ -1100,6 +1098,29 @@ const DIAS_NUEVO = 14;
   }
   window.addEventListener("hashchange", abrirDesdeHash);
   abrirDesdeHash();
+
+  /* ---------- Shopify (después de dibujar): precio, tallas y agotadas actuales ----------
+     shopify.js se carga con defer: si aún no está, se espera a que termine de leerse la página. */
+  const shopifyListo = () => window.ZaziShopify ? Promise.resolve() :
+    new Promise((ok) => document.readyState === "loading" ? document.addEventListener("DOMContentLoaded", ok, { once: true }) : ok());
+  if (PRODUCTOS.some((p) => p.shopify)) {
+    try {
+      await shopifyListo();
+      const aplicados = window.ZaziShopify ? await window.ZaziShopify.aplicar(PRODUCTOS) : new Map();
+      if (aplicados.size) {
+        calcularEstados();
+        const antes = estado.carrito.length;
+        estado.carrito = estado.carrito.filter(lineaValida);      // una talla que se agotó sale del carrito
+        if (estado.carrito.length !== antes) guardarCarrito();
+        pintarCatalogo();
+        pintarCarrito();
+        if (modal.open && productoAbierto) {                       // la ficha abierta se actualiza sin cerrarse
+          const elegida = $("#m-cuerpo .m-talla[aria-checked=\"true\"]");
+          abrirProducto(productoAbierto.id, { talla: elegida ? elegida.dataset.talla : null, mantenerScroll: true });
+        }
+      }
+    } catch (e) { console.warn("No se pudo leer Shopify; se usan los datos guardados.", e); }
+  }
 })();
 
 </script>

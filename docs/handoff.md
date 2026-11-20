@@ -142,7 +142,8 @@ There is **no `vitrina` field** anymore; the vitrina is always automatic.
 - **Separate cart keys** exist because both sites share the `zazi-pe.github.io` origin.
 
 **Second script (logic, an async IIFE):**
-- **Shopify:** right after `productos.json` loads, `ZaziShopify.aplicar(PRODUCTOS)` (from `shopify.js`, loaded in `<head>`) overwrites `precio`, `tallas` and `agotadas` of linked products with Shopify's live data, before the "all sizes sold out → agotado" rule and the cart run. If Shopify fails or takes over 6 s, the saved values stay. Unlinked products work as before.
+- **Shopify (Nov 20, render first):** the store draws the showcase, catalog and cart **right away with the values saved in `productos.json`**, then calls `ZaziShopify.aplicar(PRODUCTOS)` (from `shopify.js`, loaded with `defer`; the code waits for `DOMContentLoaded` if it isn't there yet). When Shopify answers it recomputes "agotado" (`calcularEstados()`, from each product's saved `_estadoGuardado`), drops cart lines whose size sold out, redraws the catalog and cart, and refreshes an open product view keeping the chosen size. If Shopify fails or takes over 6 s, the saved values simply stay. Before Nov 20 the page waited for Shopify before drawing anything.
+- **Showcase photo** (`pintarVitrina`, the likely LCP image on phones) has `fetchpriority="high"`; cards keep `loading="lazy"`, `decoding="async"` and `width`/`height`. Fonts: every loaded weight is used (checked Nov 20), so none were trimmed.
 - **Loading:** `fetch("productos.json?v="+Date.now(), {cache:"no-store"})`. If the load fails, it shows "No pudimos cargar el catálogo…" plus a WhatsApp button; with no products, it shows "Estamos preparando el catálogo…".
 - **"Nuevo":** forced by `nuevo` "si"/"no", otherwise within 14 days of `creado`. Sorting goes by date, then id.
 - **Vitrina:** the newest product with a photo, labelled "MODELO EN VITRINA". With no products, the hero becomes text-only (`.hero-solo`).
