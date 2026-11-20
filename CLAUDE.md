@@ -43,6 +43,7 @@ This site: categories sandalias / botas / botines / zapatillas / zapatos, no pro
 **When:** update the handoff as soon as Stefano says anything like "I'll migrate to another chat", "moving to a new session", "let's wrap up", "update the handoff" or "handoff". Do it right away as the last task of the session, without asking for confirmation. Also do it after a big milestone is finished and pushed. If the conversation is getting long, suggest it to him.
 
 **How:**
+0. `docs/handoff.md` is the only handoff document. Never create extra handoff or "new chat" files; put everything in that one file so old and new versions can't contradict each other.
 1. Edit the existing sections of `docs/handoff.md` (current state, decisions, next steps, open questions) so the document describes the project as it is now. Don't just append a session log, and remove anything that is no longer true.
 2. Update the "last updated" date in the title.
 3. Move any new permanent rule into this `CLAUDE.md` as well.
