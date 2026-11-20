@@ -218,6 +218,8 @@ dialog::backdrop{background:rgba(0,0,0,.45)}
 .m-talla[aria-checked="true"]{background:var(--tinta);border-color:var(--tinta);color:#fff}
 .m-talla.agotada{background:var(--piedra);border-color:var(--piedra);color:#9a9a9a;text-decoration:line-through;text-decoration-thickness:1px;cursor:not-allowed}
 .m-talla.agotada:hover{border-color:var(--piedra)}
+.m-talla.verificando:not(.agotada){opacity:.55;cursor:progress}
+.m-talla.verificando:not(.agotada):hover{border-color:var(--linea)}
 .m-tallas-ayuda{font-size:.875rem;color:var(--gris)}
 
 
@@ -609,6 +611,12 @@ const DIAS_NUEVO = 14;
   PRODUCTOS.forEach((p) => { p._fecha = Date.parse(p.creado) || 0; p._estadoGuardado = p.estado; });
   // Productos conectados a Shopify: la tienda se dibuja enseguida con lo guardado en productos.json y,
   // cuando Shopify responde, se actualizan precio, tallas y agotadas (ver "Arranque").
+  // Mientras tanto no se puede elegir talla, añadir ni enviar el pedido de un producto conectado:
+  // así nadie compra con un precio o una talla que ya cambió.
+  let stockShopify = PRODUCTOS.some((p) => p.shopify) ? "verificando" : "listo";   // verificando | listo | fallo
+  const sinConfirmar = new Set();          // conectados cuyo stock no se pudo confirmar (se usa lo guardado)
+  const verificando = (p) => !!(p && p.shopify && stockShopify === "verificando");
+  const stockNoConfirmado = (p) => !!(p && p.shopify && (stockShopify === "fallo" || sinConfirmar.has(p.id)));
 
   const estado = { filtro: "all", busqueda: "", orden: "destacados", carrito: [] };
   const porId = new Map(PRODUCTOS.map((p) => [p.id, p]));
@@ -759,7 +767,9 @@ const DIAS_NUEVO = 14;
     const soloConsulta = p.estado === "disponible" && !hayTallas;     // producto aún sin tallas
     const nota = p.estado === "agotado" ? '<p class="m-nota">Agotado por ahora.</p>'
       : p.estado === "proximamente" ? '<p class="m-nota">Este modelo llega pronto.</p>'
-      : soloConsulta ? '<p class="m-nota">Escríbenos por WhatsApp y te confirmamos tallas y disponibilidad.</p>' : "";
+      : soloConsulta ? '<p class="m-nota">Escríbenos por WhatsApp y te confirmamos tallas y disponibilidad.</p>'
+      : stockNoConfirmado(p) ? '<p class="m-nota">No pudimos confirmar el stock en este momento; te lo confirmamos por WhatsApp.</p>' : "";
+    const enEspera = verificando(p);
 
     // Colores del mismo modelo (misma línea y modelo), en el orden en que se agregaron
     const variantes = p.modelo ? PRODUCTOS.filter((v) => v.filtro === p.filtro && v.modelo === p.modelo)
@@ -785,7 +795,7 @@ const DIAS_NUEVO = 14;
           ${tallas.map((t) => {
             const sinStock = agotadas.includes(t);
             const txt = t === "Único" ? "Única" : esc(t);
-            return `<button type="button" class="m-talla${sinStock ? " agotada" : ""}" role="radio" aria-checked="${unica && !sinStock ? "true" : "false"}" data-talla="${esc(t)}"${sinStock ? ` disabled aria-label="Talla ${txt}, sin stock"` : ` aria-label="Talla ${txt}"`}>${txt}</button>`;
+            return `<button type="button" class="m-talla${sinStock ? " agotada" : ""}${enEspera ? " verificando" : ""}" role="radio" aria-checked="${unica && !sinStock && !enEspera ? "true" : "false"}" data-talla="${esc(t)}"${sinStock ? ` disabled aria-label="Talla ${txt}, sin stock"` : enEspera ? ` disabled aria-label="Talla ${txt}, verificando stock"` : ` aria-label="Talla ${txt}"`}>${txt}</button>`;
           }).join("")}
         </div>
       </div>`;
@@ -813,7 +823,10 @@ const DIAS_NUEVO = 14;
       ${SITIO.descripciones && p.descripcion ? `<p class="m-desc">${esc(p.descripcion)}</p>` : ""}`;
 
     // Talla preseleccionada: la menor con stock del modelo (o la que ya estaba elegida al cambiar de color)
-    if (puedeAgregar) {
+    if (puedeAgregar && enEspera) {
+      $("#m-agregar").textContent = "Verificando stock…";
+      $("#m-sel").hidden = true;
+    } else if (puedeAgregar) {
       const libres = $$("#m-cuerpo .m-talla").filter((b) => !b.disabled);
       const inicial = (opciones.talla && libres.find((b) => b.dataset.talla === opciones.talla)) || libres[0];
       if (inicial) elegirTalla(inicial);
@@ -954,7 +967,11 @@ const DIAS_NUEVO = 14;
     const t = soles(totalCarrito());
     $("#c-total").textContent = t;
     $("#p-total").textContent = t;
-    $("#ir-pago").disabled = !estado.carrito.length;
+    const esperando = estado.carrito.some((l) => verificando(porId.get(l.id)));
+    $("#ir-pago").disabled = !estado.carrito.length || esperando;
+    $("#ir-pago").textContent = esperando ? "Verificando stock…" : "Continuar con el pago";
+    const enviar = $("#vista-pago button[type=submit]");
+    if (enviar) { enviar.disabled = esperando; enviar.textContent = esperando ? "Verificando stock…" : "Enviar pedido por WhatsApp"; }
     $("#c-nota").hidden = !estado.carrito.some((l) => consultar(porId.get(l.id)));
     $("#vaciar").hidden = !estado.carrito.length;
   }
@@ -1048,6 +1065,7 @@ const DIAS_NUEVO = 14;
   $("#vista-pago").addEventListener("submit", (e) => {
     e.preventDefault();
     if (!estado.carrito.length) return;
+    if (estado.carrito.some((l) => verificando(porId.get(l.id)))) return;      // aún sin confirmar stock y precio
     const pago = $("input[name=pago]:checked").value;
     const lineas = estado.carrito.map((l) => {
       const p = porId.get(l.id);
@@ -1117,23 +1135,28 @@ const DIAS_NUEVO = 14;
      shopify.js se carga con defer: si aún no está, se espera a que termine de leerse la página. */
   const shopifyListo = () => window.ZaziShopify ? Promise.resolve() :
     new Promise((ok) => document.readyState === "loading" ? document.addEventListener("DOMContentLoaded", ok, { once: true }) : ok());
-  if (PRODUCTOS.some((p) => p.shopify)) {
+  if (stockShopify === "verificando") {
+    let aplicados = new Map();
     try {
       await shopifyListo();
-      const aplicados = window.ZaziShopify ? await window.ZaziShopify.aplicar(PRODUCTOS) : new Map();
-      if (aplicados.size) {
-        calcularEstados();
-        const antes = estado.carrito.length;
-        estado.carrito = estado.carrito.filter(lineaValida);      // una talla que se agotó sale del carrito
-        if (estado.carrito.length !== antes) guardarCarrito();
-        pintarCatalogo();
-        pintarCarrito();
-        if (modal.open && productoAbierto) {                       // la ficha abierta se actualiza sin cerrarse
-          const elegida = $("#m-cuerpo .m-talla[aria-checked=\"true\"]");
-          abrirProducto(productoAbierto.id, { talla: elegida ? elegida.dataset.talla : null, mantenerScroll: true });
-        }
-      }
-    } catch (e) { console.warn("No se pudo leer Shopify; se usan los datos guardados.", e); }
+      if (!window.ZaziShopify) throw new Error("shopify.js no cargó");
+      aplicados = await window.ZaziShopify.aplicar(PRODUCTOS);
+      PRODUCTOS.forEach((p) => { if (p.shopify && !aplicados.has(p.id)) sinConfirmar.add(p.id); });
+      stockShopify = "listo";
+    } catch (e) {
+      console.warn("No se pudo leer Shopify; se usan los datos guardados.", e);
+      stockShopify = "fallo";                                       // se vende con lo guardado, avisando en la ficha
+    }
+    calcularEstados();
+    const antes = estado.carrito.length;
+    estado.carrito = estado.carrito.filter(lineaValida);            // una talla que se agotó sale del carrito
+    if (estado.carrito.length !== antes) guardarCarrito();
+    pintarCatalogo();
+    pintarCarrito();
+    if (modal.open && productoAbierto) {                             // la ficha abierta se actualiza sin cerrarse
+      const elegida = $("#m-cuerpo .m-talla[aria-checked=\"true\"]");
+      abrirProducto(productoAbierto.id, { talla: elegida ? elegida.dataset.talla : null, mantenerScroll: true });
+    }
   }
 })();
 
