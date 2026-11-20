@@ -14,6 +14,7 @@ Solo cambian sus datos (`productos.json`, `fotos/`).
 | `pendientes.json` | Productos que llegaron desde "Nuevos modelos" (página de Etiquetas), aún sin foto ni cuadrito. No salen en la tienda; se publican desde el admin. Puede no existir. | No |
 | `fotos/` | Fotos de productos. Las nuevas van en `fotos/<línea>/`. | No |
 | `img/` | Logos, favicon y QR de Yape. | Sí |
+| `fotos-web/` (solo en el sitio publicado) | Copias WebP de 400 y 800 px de cada foto, para que los celulares bajen menos. Las crea `publicar.yml` al publicar; no se guardan en el repositorio. Si falta una, la tienda muestra la foto original. | — |
 
 Para probar en la computadora: `python3 -m http.server` en la carpeta que contiene la del repo y abrir
 `http://localhost:8000/Zazi/` (o agregar `?sitio=zazi-modelos` a la dirección).
