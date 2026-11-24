@@ -26,7 +26,7 @@ Para probar en la computadora: `python3 -m http.server` en la carpeta que contie
   "filtros": [["anda","Anda"], ["you","You"]],
   "productos": [
     {"id":4001, "shopify":{"id":"15503136456925","color":"Gris Lila"}, "filtro":"you", "linea":"You",
-     "nombre":"You Urbano Onda Gris Lila", "modelo":"You Urbano Onda", "nombreCliente":"Urbana Plataforma Onda",
+     "nombre":"You Urbano Onda Gris Lila", "modelo":"You Urbano Onda",
      "estilo":"Urbana", "genero":"mujer", "color":"Gris Lila", "colores":["#B0A6BE"],
      "precio":59.9, "tallas":[35,40], "agotadas":["35","36"], "estado":"disponible", "creado":"2026-09-24",
      "foto":"fotos/you-urbano-onda-gris-lila.jpeg", "descripcion":"…"}
@@ -39,10 +39,9 @@ Para probar en la computadora: `python3 -m http.server` en la carpeta que contie
 | `id` | Número único. Cada línea usa un bloque de 1000 (Anda 3000, You 4000…). Sirve para los enlaces `#p3001`. |
 | `shopify` | Opcional. Conexión con Shopify: `id` del producto en Shopify, su `color` (como está en Shopify) y el `sku` con el que se conectó. Se hace una vez desde el admin, escribiendo o escaneando el SKU de cualquier talla. Si está, el precio, las tallas y las agotadas salen de Shopify; lo guardado aquí queda de respaldo por si Shopify no responde. |
 | `filtro` / `linea` | Clave y nombre de la línea o categoría (debe existir en `filtros`). |
-| `nombre` / `modelo` / `color` | Nombre interno completo (sale en el pedido de WhatsApp), modelo sin color y color. Mismo `filtro` + `modelo` = colores del mismo modelo: la tienda muestra **una tarjeta por modelo** con sus cuadritos de color. |
-| `nombreCliente` | Opcional. Nombre que ve el cliente, sin el color ("Urbana Plataforma Onda"). Sin él, se muestra el modelo. Igual en todos los colores del modelo. |
+| `nombre` / `modelo` / `color` | Nombre completo (sale en el pedido de WhatsApp), modelo sin color y color. En la tienda se ve el modelo, con el color aparte. Mismo `filtro` + `modelo` = colores del mismo modelo: la tienda muestra **una tarjeta por modelo** con sus cuadritos de color. |
 | `estilo` | Opcional. "Running", "Urbana"… Sale en la tarjeta (estilo · color) y en "Filtros". Igual en todos los colores. |
-| `genero` | `mujer`, `hombre` o `unisex` (sale en Mujer y en Hombre). Filtros Mujer / Hombre. Igual en todos los colores. |
+| `genero` | `mujer`, `hombre` o `unisex` (sale en Mujer y en Hombre). "Para" dentro de "Filtros". Igual en todos los colores. |
 | `colores` | Tono del cuadrito: 1 o 2 hex. Sin tono, se muestra el nombre del color. |
 | `precio` | Número, o `null` = "Consultar precio". |
 | `tallas` | `[a, b]` = de a hasta b; `["36","38"]` = esas tallas; `["Único"]` = talla única. |
@@ -74,7 +73,7 @@ agotadas son solo de respaldo (los de verdad salen de Shopify).
 | | Zazi | Zazi-Modelos |
 |---|---|---|
 | Carrito guardado en | `zazi-carrito-v1` | `zazi-propios-carrito-v1` |
-| Nombre de la línea en "Filtros" (`grupo`) | Marca | Categoría |
+| Nombre de los chips de línea (`grupo`, "Filtrar por …") | Marca | Categoría |
 | Palabras que la búsqueda acepta para todo (`tipo`) | zapatilla, zapatillas | — |
 | Precio debajo del nombre en la ficha | No | Sí |
 | Descripciones | Sí | No |
@@ -86,5 +85,5 @@ revés, nombre repetido, id repetido o no válido, línea que no existe, estado 
 válido, o sin `genero` cuando algún producto del catálogo ya lo tiene.
 
 **Avisos (se puede publicar):** sin tono de color, disponible con todas las tallas agotadas, agotadas que no
-están en sus tallas, sin fecha de alta, fotos que ningún producto usa, sin estilo o sin nombre para clientes (cuando
-el catálogo ya usa esos campos), colores de un mismo modelo con distinto nombre para clientes, estilo o género.
+están en sus tallas, sin fecha de alta, fotos que ningún producto usa, sin estilo (cuando el catálogo ya usa ese
+campo), colores de un mismo modelo con distinto estilo o género.

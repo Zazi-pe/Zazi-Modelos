@@ -343,7 +343,7 @@ dialog::backdrop{background:rgba(0,0,0,.45)}
   .cat-cabecera{margin-bottom:14px;align-items:baseline}
   .mi-talla{margin:0 -16px 10px;padding:2px 16px}
   #filtros{flex-wrap:nowrap;gap:6px;overflow-x:auto;scrollbar-width:none}
-  #filtros .chip{flex:none;padding:0 14px}
+  #filtros .chip{flex:none;padding:0 12px}
   #filtros .chip-filtros svg{display:none}
   #como-comprar{padding-top:8px}
   .herramientas{grid-template-columns:minmax(0,1fr) 148px;gap:8px;margin-bottom:20px}
@@ -654,8 +654,9 @@ const DIAS_NUEVO = 14;
   const verificando = (p) => !!(p && p.shopify && stockShopify === "verificando");
   const stockNoConfirmado = (p) => !!(p && p.shopify && (stockShopify === "fallo" || sinConfirmar.has(p.id)));
 
-  // genero: "all" | "mujer" | "hombre"; talla: Mi talla (se recuerda); eleccion: color elegido en cada tarjeta
-  const estado = { genero: "all", talla: null, estilos: new Set(), lineas: new Set(), busqueda: "", orden: "destacados", carrito: [], eleccion: new Map() };
+  // linea: marca o categoría (chips de arriba); genero: "all" | "mujer" | "hombre"; talla: Mi talla (se recuerda);
+  // eleccion: color elegido en cada tarjeta
+  const estado = { linea: "all", genero: "all", talla: null, estilos: new Set(), busqueda: "", orden: "destacados", carrito: [], eleccion: new Map() };
   const porId = new Map(PRODUCTOS.map((p) => [p.id, p]));
 
   /* ---------- Utilidades de producto ---------- */
@@ -672,8 +673,8 @@ const DIAS_NUEVO = 14;
   function precioLinea(p, cant) { return consultar(p) ? 0 : p.precio * cant; }
   // Tallas que se pueden comprar ahora de un color
   const libresDe = (p) => p.estado !== "disponible" ? [] : tallasDe(p).filter((t) => !(p.agotadas || []).map(String).includes(t));
-  // Nombre para clientes ("Running Malla Degradé"); sin él, el modelo. El nombre interno (p.nombre) va en el pedido.
-  const nombreVisible = (p) => p.nombreCliente || p.modelo || p.nombre;
+  // En la tarjeta y la ficha se ve el modelo (sin el color); el nombre completo (p.nombre) va en el pedido
+  const nombreVisible = (p) => p.modelo || p.nombre;
   const nombreConColor = (p) => [nombreVisible(p), p.color].filter(Boolean).join(" ");
   const conReferencia = (p) => norm(nombreConColor(p)) === norm(p.nombre) ? nombreConColor(p) : nombreConColor(p) + " (" + p.nombre + ")";
   // "Nuevo": "si" o "no" lo fuerza desde el admin; si no, los agregados en los últimos DIAS_NUEVO días
@@ -737,7 +738,7 @@ const DIAS_NUEVO = 14;
     });
   }
 
-  /* ---------- Filtros: Mujer / Hombre, Mi talla y, dentro de "Filtros", estilo y marca ---------- */
+  /* ---------- Filtros: marca o categoría (chips de arriba), Mi talla y, dentro de "Filtros", Mujer / Hombre y estilo ---------- */
   const CLAVE_TALLA = "zazi-mi-talla";                             // la misma en los dos catálogos
   try { estado.talla = localStorage.getItem(CLAVE_TALLA) || null; } catch (e) { /* sin almacenamiento */ }
   const GENEROS = [["mujer", "Mujer"], ["hombre", "Hombre"]];
@@ -745,16 +746,19 @@ const DIAS_NUEVO = 14;
   const ICONO_FILTROS = '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" aria-hidden="true"><path d="M2 4h12M4.5 8h7M7 12h2"/></svg>';
 
   function pintarFiltros() {
+    // Chips de arriba: "Todos" y cada marca o categoría que tiene productos
+    const lineas = FILTROS.filter(([f]) => PRODUCTOS.some((p) => p.filtro === f));
+    if (estado.linea !== "all" && !lineas.some(([f]) => f === estado.linea)) estado.linea = "all";
     const generos = GENEROS.filter(([g]) => PRODUCTOS.some((p) => esDeGenero(p, g)));
     if (estado.genero !== "all" && !generos.some(([g]) => g === estado.genero)) estado.genero = "all";
     const estilos = [...new Set(PRODUCTOS.map((p) => p.estilo).filter(Boolean))].sort((a, b) => a.localeCompare(b, "es"));
-    const lineas = FILTROS.filter(([f]) => PRODUCTOS.some((p) => p.filtro === f));
     const grupo = (titulo, tipo, items) => items.length < 2 ? "" : `<div class="mf-grupo"><p class="mf-etq">${esc(titulo)}</p>
       <div class="chips" role="group" aria-label="${esc(titulo)}">${items.map(([v, n]) =>
         `<button class="chip" type="button" data-${tipo}="${esc(v)}" aria-pressed="false">${esc(n)}</button>`).join("")}</div></div>`;
-    const panel = grupo("Estilo", "estilo", estilos.map((e) => [e, e])) + grupo(SITIO.grupo, "linea", lineas);
-    $("#filtros").innerHTML = [["all", "Todos"], ...generos].map(([g, n]) =>
-      `<button class="chip" type="button" data-genero="${g}" aria-pressed="false">${esc(n)}</button>`).join("") +
+    const panel = grupo("Para", "genero", generos) + grupo("Estilo", "estilo", estilos.map((e) => [e, e]));
+    $("#filtros").setAttribute("aria-label", "Filtrar por " + SITIO.grupo.toLowerCase());
+    $("#filtros").innerHTML = [["all", "Todos"], ...lineas].map(([f, n]) =>
+      `<button class="chip" type="button" data-linea="${esc(f)}" aria-pressed="false">${esc(n)}</button>`).join("") +
       (panel ? `<button class="chip chip-filtros" type="button" id="ver-filtros" aria-controls="mas-filtros" aria-expanded="false">${ICONO_FILTROS}<span>Filtros</span></button>` : "");
     $("#mas-filtros").innerHTML = panel + '<button class="enlace" type="button" data-quitar-filtros>Quitar filtros</button>';
     if (!panel) $("#mas-filtros").hidden = true;
@@ -771,11 +775,11 @@ const DIAS_NUEVO = 14;
   // Solo marca lo elegido (sin redibujar los botones: no se pierde el foco ni el deslizamiento de la fila)
   function marcarFiltros() {
     const marca = (sel, f) => $$(sel).forEach((b) => b.setAttribute("aria-pressed", String(f(b))));
-    marca("#filtros [data-genero]", (b) => b.dataset.genero === estado.genero);
+    marca("#filtros [data-linea]", (b) => b.dataset.linea === estado.linea);
+    marca("#mas-filtros [data-genero]", (b) => b.dataset.genero === estado.genero);
     marca("#mas-filtros [data-estilo]", (b) => estado.estilos.has(b.dataset.estilo));
-    marca("#mas-filtros [data-linea]", (b) => estado.lineas.has(b.dataset.linea));
     marca("#mi-talla .mt", (b) => b.dataset.talla === estado.talla);
-    const activos = estado.estilos.size + estado.lineas.size, ver = $("#ver-filtros");
+    const activos = estado.estilos.size + (estado.genero !== "all" ? 1 : 0), ver = $("#ver-filtros");
     if (ver) {
       $("span", ver).textContent = "Filtros" + (activos ? " (" + activos + ")" : "");
       ver.setAttribute("aria-expanded", String(!$("#mas-filtros").hidden));
@@ -802,7 +806,7 @@ const DIAS_NUEVO = 14;
   function pasa(p, q) {
     if (estado.genero !== "all" && !esDeGenero(p, estado.genero)) return false;
     if (estado.estilos.size && !estado.estilos.has(p.estilo)) return false;
-    if (estado.lineas.size && !estado.lineas.has(p.filtro)) return false;
+    if (estado.linea !== "all" && p.filtro !== estado.linea) return false;
     const tallas = q.tallas.length ? q.tallas : estado.talla ? [estado.talla] : [];   // la talla escrita manda sobre Mi talla
     if (tallas.length && !tallas.some((t) => libresDe(p).includes(t))) return false;
     const texto = textoDe(p);
@@ -1325,18 +1329,17 @@ const DIAS_NUEVO = 14;
     catch (e) { /* sin almacenamiento */ }
   };
   $("#filtros").addEventListener("click", (e) => {
-    const g = e.target.closest("[data-genero]");
-    if (g) estado.genero = g.dataset.genero;
+    const l = e.target.closest("[data-linea]");
+    if (l) estado.linea = l.dataset.linea;
     else if (e.target.closest("#ver-filtros")) $("#mas-filtros").hidden = !$("#mas-filtros").hidden;
     else return;
     marcarFiltros(); pintarCatalogo();
   });
   $("#mas-filtros").addEventListener("click", (e) => {
-    const b = e.target.closest("[data-estilo],[data-linea]");
-    if (b) {
-      const lista = b.dataset.estilo !== undefined ? estado.estilos : estado.lineas, v = b.dataset.estilo !== undefined ? b.dataset.estilo : b.dataset.linea;
-      if (lista.has(v)) lista.delete(v); else lista.add(v);
-    } else if (e.target.closest("[data-quitar-filtros]")) { estado.estilos.clear(); estado.lineas.clear(); }
+    const g = e.target.closest("[data-genero]"), est = e.target.closest("[data-estilo]");
+    if (g) estado.genero = estado.genero === g.dataset.genero ? "all" : g.dataset.genero;
+    else if (est) { if (estado.estilos.has(est.dataset.estilo)) estado.estilos.delete(est.dataset.estilo); else estado.estilos.add(est.dataset.estilo); }
+    else if (e.target.closest("[data-quitar-filtros]")) { estado.genero = "all"; estado.estilos.clear(); }
     else return;
     marcarFiltros(); pintarCatalogo();
   });
@@ -1349,7 +1352,7 @@ const DIAS_NUEVO = 14;
   $("#buscar").addEventListener("input", (e) => { estado.busqueda = e.target.value; pintarCatalogo(); });
   $("#orden").addEventListener("change", (e) => { estado.orden = e.target.value; pintarCatalogo(); });
   $("#limpiar").addEventListener("click", () => {
-    estado.genero = "all"; estado.estilos.clear(); estado.lineas.clear(); estado.talla = null; guardarTalla();
+    estado.linea = "all"; estado.genero = "all"; estado.estilos.clear(); estado.talla = null; guardarTalla();
     estado.busqueda = ""; $("#buscar").value = "";
     pintarFiltros(); pintarCatalogo();
   });

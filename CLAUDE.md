@@ -1,7 +1,7 @@
 # Zazi-Modelos (catalog: ZAZI's own models)
 
 Store: https://zazi-pe.github.io/Zazi-Modelos/ · Admin: https://zazi-pe.github.io/Zazi-Modelos/admin.html
-This site: categories sandalias / botas / botines / zapatillas / zapatos, no product descriptions, price line shown in the product view, "Filtros" group label "Categoría", cart key `zazi-propios-carrito-v1`.
+This site: categories sandalias / botas / botines / zapatillas / zapatos, no product descriptions, price line shown in the product view, category chips as the main filter, cart key `zazi-propios-carrito-v1`.
 
 ## Start of every session
 1. Run `git pull` first. Stefano edits the catalog from `admin.html`, which commits straight to `main`, so the remote is often ahead.
@@ -24,10 +24,11 @@ This site: categories sandalias / botas / botines / zapatillas / zapatos, no pro
 ## Critical rules
 - **`index.html`, `admin.html`, `validar.js`, `shopify.js`, `.github/workflows/publicar.yml` and `ESTRUCTURA.md` must stay byte-identical in `Zazi` and `Zazi-Modelos`.** Any change to one goes to both (sibling folder `../Zazi-Modelos` or `../Zazi`), committed and pushed in both. Verify with `cmp` before pushing. Site differences belong in the `SITIOS` object in `index.html`, never in diverging files.
 - **`docs/handoff.md` is the same document in both repos.** When you update it, copy it to the sibling repo and commit and push both.
-- `productos.json` is written by the admin: one product per line (one per color), fixed key order (`id, shopify, filtro, linea, nombre, modelo, nombreCliente, estilo, genero, color, colores, precio, tallas, agotadas, estado, nuevo, creado, foto, descripcion`). Don't hand-edit it unless asked; if you must, keep that exact format.
+- `productos.json` is written by the admin: one product per line (one per color), fixed key order (`id, shopify, filtro, linea, nombre, modelo, estilo, genero, color, colores, precio, tallas, agotadas, estado, nuevo, creado, foto, descripcion`). Don't hand-edit it unless asked; if you must, keep that exact format.
 - `pendientes.json` (written by the Etiquetas page's Nuevos modelos, one product per line like `productos.json`) holds products waiting for a photo and swatch. The store and `validar.js` ignore it; the admin shows them in "Pendientes de publicar" and publishes them (photo and swatch required) in one commit.
-- **One card per model:** the store groups colors by `filtro` + `modelo` at display time; never merge colors in the data (ids, Shopify links, carts and `#p<id>` links depend on one entry per color). `nombreCliente`, `estilo` and `genero` are model-level (the admin copies them to every color). `nombre` is the internal name that goes in the WhatsApp order; customers see `nombreCliente` (or `modelo`).
-- `genero` (`mujer`/`hombre`/`unisex`) is required once any product in a catalog has it (validator error); missing `estilo`/`nombreCliente` only warn.
+- **One card per model:** the store groups colors by `filtro` + `modelo` at display time; never merge colors in the data (ids, Shopify links, carts and `#p<id>` links depend on one entry per color). `estilo` and `genero` are model-level (the admin copies them to every color). Customers see `modelo` (our own model names stay; Stefano rejected customer-facing renames like "Running Malla Degradé"); `nombre` goes in the WhatsApp order.
+- The line/category chips (brands in Zazi) stay as the main filter row; Mujer / Hombre and Estilo live in the "Filtros" panel.
+- `genero` (`mujer`/`hombre`/`unisex`) is required once any product in a catalog has it (validator error; both catalogs have it); a missing `estilo` only warns.
 - The product view never preselects a size (except "Talla única"): the button reads "Elige tu talla" until the customer picks one.
 - Payment copy is "Yape, Plin o en efectivo" everywhere (checkout option "Yape o Plin"). Don't mention transferencia unless checkout offers it.
 - Store and contact data stay in `index.html` (`TIENDA`), never in `productos.json`. The Shopify store address lives in `shopify.js` (shared by store and admin).
