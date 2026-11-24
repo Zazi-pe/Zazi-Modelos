@@ -19,13 +19,13 @@
 <script src="shopify.js" defer></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Oswald:wght@500;600;700&family=Inter:wght@400;500;600&family=Playfair+Display:ital,wght@1,600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Oswald:wght@500;600;700&family=Figtree:wght@400;500;600&family=Playfair+Display:ital,wght@1,600&display=swap" rel="stylesheet">
 <style>
 /* ============================================================
    ZAZI — estilos
    Dirección: tienda deportiva limpia (referencia: Gymshark).
    Blanco y negro puro, fotos sobre gris piedra, líneas finas,
-   títulos condensados en mayúsculas (Oswald), texto en Inter.
+   títulos condensados en mayúsculas (Oswald), texto en Figtree.
    El fucsia del logo aparece solo en momentos de marca:
    franja superior, contador del carrito y banda de contacto.
    ============================================================ */
@@ -38,7 +38,7 @@
   --fucsia:#C11A61;
   --alerta:#B3261E;
   --f-titulo:"Oswald","Arial Narrow","Helvetica Neue",Arial,sans-serif;
-  --f-texto:"Inter",system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif;
+  --f-texto:"Figtree",system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif;
   --f-vitrina:"Playfair Display",Georgia,serif;
   --ancho:1240px;
   --alto-cab:64px;
@@ -144,24 +144,30 @@ select.input{appearance:none;padding-right:40px;background-image:url("data:image
 .rejilla{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:36px 16px}
 /* Tarjeta: una por modelo. Foto → cuadritos de color → nombre → estilo · color → precio */
 .card{display:flex;flex-direction:column;min-width:0;color:inherit}
-.card-media{position:relative;display:block;aspect-ratio:4/5;background:var(--piedra);overflow:hidden;touch-action:pan-y pinch-zoom}
-.card-media img{width:100%;height:100%;object-fit:cover;-webkit-user-drag:none;user-select:none;-webkit-touch-callout:none}
-.card-media.arrastrando img{will-change:transform}
-.card.agotado .card-media img{opacity:.5}
-.card-colores{display:flex;align-items:center;gap:6px;margin-top:10px;min-height:32px}
-.card-sw{flex:none;width:32px;height:32px;padding:3px;border:1px solid transparent;border-radius:0;background:#fff;display:grid}
-.card-sw span{display:block;border:1px solid rgba(0,0,0,.12)}
-.card-sw:hover{border-color:#9a9a9a}
-.card-sw[aria-pressed="true"]{border:1.5px solid var(--tinta)}
-.card-sw.texto{width:auto;max-width:96px;padding:0 6px;place-items:center;font-size:.75rem;font-weight:500;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;border-color:var(--linea)}
-.card-mas{min-height:32px;padding:0 4px;background:none;border:0;font-size:.875rem;font-weight:500;text-decoration:underline;text-underline-offset:3px}
+/* Fotos: una por color, en fila; se deslizan con el scroll nativo del navegador (suave como en Gymshark) */
+.card-media{position:relative;display:flex;aspect-ratio:4/5;background:var(--piedra);overflow-x:auto;overflow-y:hidden;scroll-snap-type:x mandatory;overscroll-behavior-x:contain;scrollbar-width:none;-webkit-tap-highlight-color:transparent}
+.card-media::-webkit-scrollbar{display:none}
+.card-foto{position:relative;display:block;flex:0 0 100%;height:100%;scroll-snap-align:start;scroll-snap-stop:always;-webkit-tap-highlight-color:transparent}
+.card-foto:focus,.card-foto:focus-visible{outline:none}
+.card-foto img{width:100%;height:100%;object-fit:cover;-webkit-user-drag:none;user-select:none;-webkit-touch-callout:none}
+.card-foto.agotado img{opacity:.5}
+/* Cuadritos de color: 20 px con 4 px de separación; el elegido con borde negro y filo blanco (como Gymshark) */
+.card-colores{display:flex;align-items:center;gap:4px;margin-top:12px;min-height:20px}
+.card-sw{position:relative;flex:none;width:20px;height:20px;padding:0;border:0;border-radius:0;background:#fff;-webkit-tap-highlight-color:transparent}
+.card-sw span{position:absolute;inset:0;box-shadow:inset 0 0 0 1px rgba(0,0,0,.12)}
+.card-sw[aria-pressed="true"] span{box-shadow:inset 0 0 0 2px var(--tinta),inset 0 0 0 4px #fff}
+.card-sw::after{content:"";position:absolute;inset:-10px -2px}
+.card-sw.texto{width:auto;max-width:96px;padding:0 6px;font-size:.6875rem;font-weight:500;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;box-shadow:inset 0 0 0 1px var(--linea)}
+.card-sw.texto[aria-pressed="true"]{box-shadow:inset 0 0 0 2px var(--tinta)}
+.card-mas{position:relative;min-height:20px;padding:0 4px;background:none;border:0;font-size:.875rem;line-height:20px;-webkit-tap-highlight-color:transparent}
+.card-mas::after{content:"";position:absolute;inset:-10px -4px}
 .card-cuerpo{display:flex;flex-direction:column;gap:2px;padding:8px 2px 0}
-.card-nombre{font-size:.9375rem;font-weight:500;line-height:1.35}
-.card-nombre a{text-decoration:none}
+.card-nombre{font-size:.9375rem;font-weight:400;line-height:1.35}
+.card-nombre a{text-decoration:none;-webkit-tap-highlight-color:transparent}
 .card-nombre a:hover{text-decoration:underline;text-underline-offset:3px}
 .card-sub{font-size:.875rem;color:var(--gris);line-height:1.35}
 .card-pie{display:flex;flex-wrap:wrap;align-items:baseline;column-gap:10px;margin-top:6px}
-.card-precio{font-weight:600;font-size:.9375rem;font-variant-numeric:tabular-nums}
+.card-precio{font-weight:500;font-size:.9375rem;font-variant-numeric:tabular-nums}
 .card-ultimos{font-size:.8125rem;color:var(--gris)}
 .etiqueta,.card-media .tag-nuevo{position:absolute;top:10px;left:10px;padding:4px 10px;background:#fff;color:var(--tinta);font-size:.8125rem;font-weight:500}
 .etiqueta.agotado{background:var(--tinta);color:#fff}
@@ -832,14 +838,17 @@ const DIAS_NUEVO = 14;
     return lista;
   }
 
-  // Tarjeta: foto (se desliza para cambiar de color) → cuadritos de color (máx. 3 y "+N") → nombre → estilo · color → precio
-  function tarjeta({ m, p }) {
-    const marca = p.estado === "agotado" ? '<span class="etiqueta agotado">Agotado</span>'
-      : p.estado === "proximamente" ? '<span class="etiqueta">Próximamente</span>' : "";
-    const nuevo = p.estado === "disponible" && esNuevo(p) ? '<span class="tag-nuevo">Nuevo</span>' : "";
-    const foto = p.foto
-      ? fotoProducto(p, "(max-width: 720px) 50vw, 300px", `width="576" height="720" alt="${esc(nombreConColor(p))}" loading="lazy" decoding="async" draggable="false"`)
+  // Tarjeta: fotos (una por color, se deslizan) → cuadritos de color (máx. 3 y "+N") → nombre → estilo · color → precio
+  function fotoCard(v) {
+    const marca = v.estado === "agotado" ? '<span class="etiqueta agotado">Agotado</span>'
+      : v.estado === "proximamente" ? '<span class="etiqueta">Próximamente</span>' : "";
+    const nuevo = v.estado === "disponible" && esNuevo(v) ? '<span class="tag-nuevo">Nuevo</span>' : "";
+    const foto = v.foto
+      ? fotoProducto(v, "(max-width: 720px) 50vw, 300px", `width="576" height="720" alt="${esc(nombreConColor(v))}" loading="lazy" decoding="async" draggable="false"`)
       : `<div class="sin-foto">${ICONO_ZAPATILLA}<span>Foto próximamente</span></div>`;
+    return `<a class="card-foto${v.estado === "agotado" ? " agotado" : ""}" href="#p${v.id}" data-abrir-card="${v.id}" tabindex="-1" aria-hidden="true">${foto}${marca}${nuevo}</a>`;
+  }
+  function cuadritosCard(m, p) {
     const n = m.variantes.length;
     let muestras = m.variantes.slice(0, 3);
     if (!muestras.includes(p)) muestras = [...muestras.slice(0, 2), p];          // el color que se ve siempre tiene su cuadrito
@@ -848,23 +857,30 @@ const DIAS_NUEVO = 14;
       const attrs = `type="button" class="card-sw${fondo ? "" : " texto"}" data-color="${v.id}" aria-pressed="${v.id === p.id}" aria-label="Color ${esc(nombre)}" title="${esc(nombre)}"`;
       return fondo ? `<button ${attrs}><span style="background:${fondo}"></span></button>` : `<button ${attrs}>${esc(nombre)}</button>`;
     };
-    const colores = !p.color && n < 2 ? "" : `<div class="card-colores" role="group" aria-label="Colores de ${esc(nombreVisible(p))}">${muestras.map(cuadrito).join("")}` +
-      (n > 3 ? `<button class="card-mas" type="button" data-abrir-card="${p.id}" aria-label="Ver los ${n} colores">+${n - 3}</button>` : "") + "</div>";
+    return muestras.map(cuadrito).join("") +
+      (n > 3 ? `<button class="card-mas" type="button" data-abrir-card="${p.id}" aria-label="Ver los ${n} colores">+${n - 3}</button>` : "");
+  }
+  function cuerpoCard(p) {
     const sub = [p.estilo, p.color].filter(Boolean).join(" · ");
     const ultimos = libresDe(p).length === 1 && !esUnica(p) ? '<span class="card-ultimos">Últimos pares</span>' : "";
-    return `<article class="card${p.estado === "agotado" ? " agotado" : ""}" data-modelo="${esc(m.clave)}" data-id="${p.id}">
-      <a class="card-media" href="#p${p.id}" data-abrir-card="${p.id}" tabindex="-1" aria-hidden="true">${foto}${marca}${nuevo}</a>
-      ${colores}
-      <div class="card-cuerpo">
-        <h3 class="card-nombre"><a href="#p${p.id}" data-abrir-card="${p.id}">${esc(nombreVisible(p))}</a></h3>
+    return `<h3 class="card-nombre"><a href="#p${p.id}" data-abrir-card="${p.id}">${esc(nombreVisible(p))}</a></h3>
         ${sub ? `<p class="card-sub">${esc(sub)}</p>` : ""}
-        <p class="card-pie"><span class="card-precio">${precioTxt(p)}</span>${ultimos}</p>
-      </div></article>`;
+        <p class="card-pie"><span class="card-precio">${precioTxt(p)}</span>${ultimos}</p>`;
+  }
+  function tarjeta({ m, p }) {
+    const colores = !p.color && m.variantes.length < 2 ? "" :
+      `<div class="card-colores" role="group" aria-label="Colores de ${esc(nombreVisible(p))}">${cuadritosCard(m, p)}</div>`;
+    return `<article class="card" data-modelo="${esc(m.clave)}" data-id="${p.id}">
+      <div class="card-media">${m.variantes.map(fotoCard).join("")}</div>
+      ${colores}
+      <div class="card-cuerpo">${cuerpoCard(p)}</div></article>`;
   }
 
   function pintarCatalogo() {
     const lista = listaVisible();
     $("#rejilla").innerHTML = lista.map(tarjeta).join("");
+    $$("#rejilla .card").forEach(colocarFoto);
+    pistaDeslizar();
     $("#vacio").hidden = lista.length > 0;
     $("#vacio-txt").textContent = estado.talla && !estado.busqueda.trim()
       ? "Por ahora no tenemos modelos en talla " + estado.talla + " con estos filtros."
@@ -872,67 +888,78 @@ const DIAS_NUEVO = 14;
     $("#conteo").textContent = lista.length === 1 ? "1 modelo" : lista.length + " modelos";
   }
 
-  // Cambiar el color de una tarjeta (cuadrito o deslizar la foto) sin abrir la ficha
-  function cambiarColorCard(card, id, paso) {
-    const m = card && porClave.get(card.dataset.modelo), p = porId.get(Number(id));
-    if (!m || !p || !m.variantes.includes(p)) return;
+  const sinMovimiento = () => matchMedia("(prefers-reduced-motion: reduce)").matches;
+  const indiceDe = (card) => {
+    const m = porClave.get(card.dataset.modelo);
+    return m ? m.variantes.findIndex((v) => v.id === Number(card.dataset.id)) : -1;
+  };
+  // Al dibujar: la fila de fotos queda en el color que muestra la tarjeta
+  function colocarFoto(card) {
+    const i = indiceDe(card), media = $(".card-media", card);
+    if (i > 0) media.scrollLeft = i * media.clientWidth;
+  }
+  // Pone en la tarjeta los datos de un color (cuadritos, estilo · color, precio) sin tocar las fotos
+  function mostrarColor(card, p) {
+    const m = porClave.get(card.dataset.modelo);
+    if (!m || !p || !m.variantes.includes(p) || Number(card.dataset.id) === p.id) return;
+    card.dataset.id = p.id;
     estado.eleccion.set(m.clave, p.id);
-    const caja = document.createElement("div");
-    caja.innerHTML = tarjeta({ m, p });
-    const nueva = caja.firstElementChild;
-    const conFoco = card.contains(document.activeElement);
-    card.replaceWith(nueva);
-    if (conFoco) { const b = $(`.card-sw[data-color="${p.id}"]`, nueva); if (b) b.focus(); }
-    const img = $(".card-media img", nueva);
-    if (paso && img && img.animate && !matchMedia("(prefers-reduced-motion: reduce)").matches)
-      img.animate([{ transform: `translateX(${paso * 35}%)`, opacity: 0.4 }, { transform: "none", opacity: 1 }], { duration: 220, easing: "ease-out" });
+    const fila = $(".card-colores", card);
+    if (fila) {
+      const conFoco = fila.contains(document.activeElement);
+      fila.innerHTML = cuadritosCard(m, p);
+      if (conFoco) { const b = $(`.card-sw[data-color="${p.id}"]`, fila); if (b) b.focus(); }
+    }
+    $(".card-cuerpo", card).innerHTML = cuerpoCard(p);
   }
-
-  /* Deslizar la foto de una tarjeta con el dedo: pasa al color siguiente o al anterior.
-     touch-action: pan-y deja el scroll vertical al navegador; solo se toma un gesto claramente de costado. */
-  let gesto = null, finDeslizar = 0;
+  // Tocar un cuadrito: la foto se desliza hasta ese color
+  function irAColor(card, id) {
+    const m = card && porClave.get(card.dataset.modelo), p = porId.get(Number(id));
+    if (!m || !p) return;
+    const i = m.variantes.indexOf(p), media = $(".card-media", card);
+    mostrarColor(card, p);
+    card._destino = i;                                 // mientras se desliza, no se marcan los colores de paso
+    clearTimeout(card._reloj);
+    card._reloj = setTimeout(() => { card._destino = undefined; }, 900);
+    media.scrollTo({ left: i * media.clientWidth, behavior: sinMovimiento() ? "auto" : "smooth" });
+  }
+  // Deslizar la foto con el dedo: el navegador la mueve (scroll con imán); al pasar la mitad cambia el color
   const rejilla = $("#rejilla");
-  rejilla.addEventListener("pointerdown", (e) => {
-    if (e.pointerType === "mouse" || !e.isPrimary) return;
-    const media = e.target.closest(".card-media"), card = media && media.closest(".card");
-    const m = card && porClave.get(card.dataset.modelo);
-    gesto = m && m.variantes.length > 1 ? { media, card, m, id: e.pointerId, x0: e.clientX, y0: e.clientY, dx: 0, lado: false } : null;
-  });
-  rejilla.addEventListener("pointermove", (e) => {
-    const g = gesto;
-    if (!g || e.pointerId !== g.id) return;
-    const dx = e.clientX - g.x0, dy = e.clientY - g.y0;
-    if (!g.lado) {
-      if (Math.abs(dx) < 10 && Math.abs(dy) < 10) return;
-      if (Math.abs(dy) >= Math.abs(dx)) { gesto = null; return; }          // hacia arriba o abajo: es scroll de la página
-      g.lado = true;
-      try { g.media.setPointerCapture(e.pointerId); } catch (_) { /* sin captura */ }
-      g.media.classList.add("arrastrando");
-    }
-    g.dx = dx;
-    const img = $("img", g.media);
-    if (img) img.style.transform = `translateX(${dx}px)`;
-  });
-  function terminarGesto(e, cancelado) {
-    const g = gesto;
-    if (!g || e.pointerId !== g.id) return;
-    gesto = null;
-    if (!g.lado) return;
-    finDeslizar = Date.now();                                    // el toque que termina el deslizamiento no abre la ficha
-    g.media.classList.remove("arrastrando");
-    const img = $("img", g.media);
-    if (!cancelado && Math.abs(g.dx) >= Math.min(60, g.media.clientWidth * 0.2)) {
-      const lista = g.m.variantes, i = lista.findIndex((v) => v.id === Number(g.card.dataset.id));
-      const paso = g.dx < 0 ? 1 : -1;
-      cambiarColorCard(g.card, lista[(i + paso + lista.length) % lista.length].id, paso);
-    } else if (img) {
-      img.style.transition = "transform .18s ease-out";
-      img.style.transform = "";
-      setTimeout(() => { img.style.transition = ""; }, 200);
-    }
+  rejilla.addEventListener("scroll", (e) => {
+    const media = e.target;
+    if (!media.classList || !media.classList.contains("card-media")) return;
+    const card = media.closest(".card"), m = porClave.get(card.dataset.modelo);
+    if (!m || !media.clientWidth) return;
+    const i = Math.round(media.scrollLeft / media.clientWidth);
+    if (card._destino !== undefined) { if (i !== card._destino) return; card._destino = undefined; }
+    if (m.variantes[i]) mostrarColor(card, m.variantes[i]);
+  }, { capture: true, passive: true });
+
+  // Una sola vez: en el celular, la foto de la primera tarjeta con varios colores se asoma un poco
+  // hacia el color siguiente, para mostrar que se puede deslizar (como en Gymshark)
+  // (se vuelve a preparar cada vez que se redibuja el catálogo, por ejemplo cuando responde Shopify)
+  let pistaHecha = false, vigia = null;
+  function pistaDeslizar() {
+    if (pistaHecha || sinMovimiento() || !matchMedia("(pointer: coarse)").matches || !("IntersectionObserver" in window)) return;
+    if (vigia) vigia.disconnect();
+    const card = $$("#rejilla .card").find((c) => $$(".card-foto", c).length > 1);
+    if (!card) return;
+    const clave = card.dataset.modelo;
+    vigia = new IntersectionObserver((entradas) => {
+      if (pistaHecha || !entradas.some((x) => x.isIntersecting)) return;
+      pistaHecha = true;
+      vigia.disconnect();
+      setTimeout(() => {
+        const actual = $$("#rejilla .card").find((c) => c.dataset.modelo === clave);
+        if (!actual) return;
+        const fotos = $$(".card-foto", actual);
+        const lado = indiceDe(actual) < fotos.length - 1 ? -1 : 1;         // hacia donde hay otra foto
+        fotos.forEach((f) => f.animate([{ transform: "none" }, { transform: `translateX(${lado * 16}%)` }, { transform: "none" }],
+          { duration: 1100, easing: "cubic-bezier(.45,0,.25,1)" }));
+      }, 600);
+    }, { threshold: 0.7 });
+    vigia.observe($(".card-media", card));
   }
-  rejilla.addEventListener("pointerup", (e) => terminarGesto(e, false));
-  rejilla.addEventListener("pointercancel", (e) => terminarGesto(e, true));
 
   /* Catálogo sin modelos todavía, o archivo que no cargó */
   function mensajeCatalogo(tipo) {
@@ -1140,7 +1167,12 @@ const DIAS_NUEVO = 14;
       abrirCarrito();
     }
   });
+  let conPuntero = false;
+  document.addEventListener("pointerdown", () => { conPuntero = true; }, true);
+  document.addEventListener("keydown", () => { conPuntero = false; }, true);
   modal.addEventListener("close", () => {
+    const foco = document.activeElement;
+    if (conPuntero && foco && foco !== document.body && foco.closest("#rejilla, #vitrina")) foco.blur();
     if (!$("#carrito").open) document.documentElement.classList.remove("bloqueado");
     if (/^#p\d+$/.test(location.hash)) history.replaceState(null, "", location.pathname + location.search);
     productoAbierto = null;
@@ -1318,9 +1350,8 @@ const DIAS_NUEVO = 14;
 
   /* ---------- Eventos del catálogo ---------- */
   rejilla.addEventListener("click", (e) => {
-    if (Date.now() - finDeslizar < 400) { e.preventDefault(); return; }     // fue un deslizamiento, no un toque
     const sw = e.target.closest(".card-sw");
-    if (sw) { cambiarColorCard(sw.closest(".card"), sw.dataset.color); return; }
+    if (sw) { irAColor(sw.closest(".card"), sw.dataset.color); return; }
     const a = e.target.closest("[data-abrir-card]");
     if (a) { e.preventDefault(); abrirProducto(a.dataset.abrirCard); }
   });
