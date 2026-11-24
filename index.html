@@ -4,11 +4,17 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>ZAZI — Catálogo Oficial</title>
-<meta name="description" content="Catálogo ZAZI. Elige tu producto y talla, paga por Yape o efectivo y haz tu pedido por WhatsApp.">
+<meta name="description" content="Catálogo ZAZI. Elige tu modelo y tu talla, paga por Yape, Plin o en efectivo y haz tu pedido por WhatsApp.">
 <meta name="theme-color" content="#C11A61">
 <meta property="og:title" content="ZAZI — Catálogo Oficial">
-<meta property="og:description" content="Elige tu producto y talla y pide por WhatsApp.">
+<meta property="og:description" content="Elige tu modelo y tu talla y pide por WhatsApp.">
 <meta property="og:type" content="website">
+<!-- Vista previa al compartir el enlace. publicar.yml cambia esta ruta por la dirección completa del sitio. -->
+<meta property="og:image" content="img/compartir.jpg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="img/compartir.jpg">
 <link rel="icon" type="image/png" href="img/favicon.png">
 <script src="shopify.js" defer></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -88,32 +94,45 @@ h2{font-size:clamp(2rem,4.2vw,2.75rem)}
 .btn-carrito:hover .btn-carrito-txt{text-decoration:underline;text-underline-offset:3px}
 
 /* ---------- Portada ---------- */
-.hero-in{max-width:var(--ancho);margin:0 auto;padding:56px 24px 0;display:grid;grid-template-columns:minmax(0,1.15fr) minmax(0,.85fr);gap:48px;align-items:center}
-.hero-texto h1{font-size:clamp(3.2rem,8.6vw,7.75rem);font-weight:700;line-height:.9;letter-spacing:0;margin-bottom:28px}
-.lead{font-size:1.0625rem;line-height:1.6;color:var(--gris);max-width:46ch;margin-bottom:28px}
+.hero-in{max-width:var(--ancho);margin:0 auto;padding:40px 24px 0;display:grid;grid-template-columns:minmax(0,1fr) minmax(0,360px);gap:48px;align-items:center}
+.hero-texto h1{font-size:clamp(2.6rem,5.6vw,4.75rem);font-weight:700;line-height:.95;letter-spacing:0;margin-bottom:20px}
+.lead{font-size:1.0625rem;line-height:1.6;color:var(--gris);max-width:46ch;margin-bottom:24px}
 .acciones{display:flex;gap:12px;flex-wrap:wrap}
-.hero-foto{position:relative;margin:0;justify-self:end;width:100%;max-width:470px;aspect-ratio:4/5;background:var(--piedra);overflow:hidden}
+.hero-foto{position:relative;margin:0;justify-self:end;width:100%;max-width:360px;aspect-ratio:1/1;background:var(--piedra);overflow:hidden}
 .hero-foto img{width:100%;height:100%;object-fit:cover}
 .hero-etiqueta{position:absolute;left:16px;bottom:16px;display:flex;flex-direction:column;align-items:flex-start;gap:3px;max-width:calc(100% - 32px);padding:12px 16px;background:#fff;border:0;border-radius:var(--radio);text-align:left;box-shadow:0 2px 10px rgba(0,0,0,.08)}
 .hero-etiqueta span{font-size:.66rem;letter-spacing:.14em;color:var(--fucsia);font-weight:600;text-transform:uppercase}
 .hero-etiqueta b{font-family:var(--f-vitrina);font-style:italic;font-weight:600;font-size:1.15rem;line-height:1.25}
-.hero-datos{grid-column:1/-1;margin-top:24px;display:grid;grid-template-columns:repeat(3,1fr);border-top:1px solid var(--linea);border-bottom:1px solid var(--linea)}
-.hero-datos li{padding:24px 24px 26px 0;display:flex;flex-direction:column;gap:6px}
-.hero-datos li+li{padding-left:24px;border-left:1px solid var(--linea)}
-.hero-datos b{font-family:var(--f-titulo);font-weight:500;font-size:2.1rem;line-height:1}
-.hero-datos span{font-size:.875rem;color:var(--gris)}
 
 /* ---------- Secciones y catálogo ---------- */
 .seccion{max-width:var(--ancho);margin:0 auto;padding:88px 24px}
 .cat-cabecera{display:flex;justify-content:space-between;align-items:flex-end;gap:16px;flex-wrap:wrap;margin-bottom:24px}
 .sub{margin-top:10px;color:var(--gris);max-width:52ch}
 .conteo{font-size:.875rem;color:var(--gris);font-variant-numeric:tabular-nums}
-.chips{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:16px}
+#catalogo{padding-top:48px}
+.chips{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:12px}
 .chip{min-height:40px;padding:0 18px;border:0;border-radius:999px;background:var(--piedra);font-size:.875rem;font-weight:500}
-.chip span{display:none}
 .chip:hover{background:var(--linea)}
 .chip[aria-pressed="true"]{background:var(--tinta);color:#fff}
-.herramientas{display:grid;grid-template-columns:1fr 260px;gap:12px;margin-bottom:32px}
+/* "Filtros": abre estilos y marca (o categoría) */
+.chip-filtros{margin-left:auto;display:inline-flex;align-items:center;gap:8px;background:#fff;border:1px solid var(--linea)}
+.chip-filtros svg{width:16px;height:16px}
+.chip-filtros[aria-expanded="true"]{border-color:var(--tinta)}
+.mas-filtros{display:flex;flex-direction:column;gap:14px;padding:16px;margin-bottom:12px;background:var(--piedra);border-radius:var(--radio)}
+.mf-grupo{display:flex;flex-direction:column;gap:8px}
+.mf-etq,.mt-etq{font-size:.8125rem;font-weight:600;letter-spacing:.06em;text-transform:uppercase}
+.mas-filtros .chips{margin:0}
+.mas-filtros .chip{background:#fff}
+.mas-filtros .chip[aria-pressed="true"]{background:var(--tinta)}
+.mas-filtros .enlace{align-self:flex-start}
+/* Mi talla: una fila de tallas (se desliza de costado en el celular) */
+.mi-talla{display:flex;align-items:center;gap:8px;margin:0 -24px 12px;padding:2px 24px;overflow-x:auto;scrollbar-width:none}
+.mi-talla::-webkit-scrollbar{display:none}
+.mt-etq{flex:none;margin-right:4px}
+.mt{flex:none;min-width:44px;min-height:40px;padding:0 8px;border:1px solid var(--linea);border-radius:var(--radio);background:#fff;font-size:.9375rem;font-weight:500;font-variant-numeric:tabular-nums}
+.mt:hover{border-color:var(--tinta)}
+.mt[aria-pressed="true"]{background:var(--tinta);border-color:var(--tinta);color:#fff}
+.herramientas{display:grid;grid-template-columns:1fr 240px;gap:10px;margin-bottom:28px}
 .campo{display:block}
 .input{width:100%;min-height:48px;padding:0 14px;background:#fff;border:1px solid var(--linea);border-radius:var(--radio);font-size:.9375rem}
 .input:hover{border-color:#cfcfcf}
@@ -123,19 +142,27 @@ select.input{appearance:none;padding-right:40px;background-image:url("data:image
 #buscar{padding-left:42px;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='18' height='18' viewBox='0 0 24 24' fill='none' stroke='%23767676' stroke-width='2'%3E%3Ccircle cx='11' cy='11' r='7'/%3E%3Cpath d='M20 20l-3.5-3.5'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:14px center}
 
 .rejilla{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:36px 16px}
-.card{display:flex;flex-direction:column;text-decoration:none;color:inherit}
-.card-media{position:relative;aspect-ratio:4/5;background:var(--piedra);overflow:hidden}
-.card-media img{width:100%;height:100%;object-fit:cover}
+/* Tarjeta: una por modelo. Foto → cuadritos de color → nombre → estilo · color → precio */
+.card{display:flex;flex-direction:column;min-width:0;color:inherit}
+.card-media{position:relative;display:block;aspect-ratio:4/5;background:var(--piedra);overflow:hidden;touch-action:pan-y pinch-zoom}
+.card-media img{width:100%;height:100%;object-fit:cover;-webkit-user-drag:none;user-select:none;-webkit-touch-callout:none}
+.card-media.arrastrando img{will-change:transform}
 .card.agotado .card-media img{opacity:.5}
-.card-cuerpo{display:flex;flex-direction:column;gap:2px;padding:12px 2px 0}
-.card-nombre{order:1;font-size:.9375rem;font-weight:500;line-height:1.35}
-.card-linea{order:2;font-size:.875rem;color:var(--gris)}
-.card-desc{display:none}
-.card-pie{order:3;display:flex;justify-content:space-between;align-items:baseline;gap:8px;margin-top:6px}
+.card-colores{display:flex;align-items:center;gap:6px;margin-top:10px;min-height:32px}
+.card-sw{flex:none;width:32px;height:32px;padding:3px;border:1px solid transparent;border-radius:0;background:#fff;display:grid}
+.card-sw span{display:block;border:1px solid rgba(0,0,0,.12)}
+.card-sw:hover{border-color:#9a9a9a}
+.card-sw[aria-pressed="true"]{border:1.5px solid var(--tinta)}
+.card-sw.texto{width:auto;max-width:96px;padding:0 6px;place-items:center;font-size:.75rem;font-weight:500;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;border-color:var(--linea)}
+.card-mas{min-height:32px;padding:0 4px;background:none;border:0;font-size:.875rem;font-weight:500;text-decoration:underline;text-underline-offset:3px}
+.card-cuerpo{display:flex;flex-direction:column;gap:2px;padding:8px 2px 0}
+.card-nombre{font-size:.9375rem;font-weight:500;line-height:1.35}
+.card-nombre a{text-decoration:none}
+.card-nombre a:hover{text-decoration:underline;text-underline-offset:3px}
+.card-sub{font-size:.875rem;color:var(--gris);line-height:1.35}
+.card-pie{display:flex;flex-wrap:wrap;align-items:baseline;column-gap:10px;margin-top:6px}
 .card-precio{font-weight:600;font-size:.9375rem;font-variant-numeric:tabular-nums}
-.card-tallas{font-size:.8125rem;color:var(--gris)}
-.card:hover .card-nombre{text-decoration:underline;text-underline-offset:3px}
-.card:focus-visible{outline-offset:4px}
+.card-ultimos{font-size:.8125rem;color:var(--gris)}
 .etiqueta,.card-media .tag-nuevo{position:absolute;top:10px;left:10px;padding:4px 10px;background:#fff;color:var(--tinta);font-size:.8125rem;font-weight:500}
 .etiqueta.agotado{background:var(--tinta);color:#fff}
 .tag-nuevo{display:inline-block;background:var(--piedra);color:var(--tinta);font-size:.875rem;font-weight:400;padding:4px 10px}
@@ -221,6 +248,9 @@ dialog::backdrop{background:rgba(0,0,0,.45)}
 .m-talla.verificando:not(.agotada){opacity:.55;cursor:progress}
 .m-talla.verificando:not(.agotada):hover{border-color:var(--linea)}
 .m-tallas-ayuda{font-size:.875rem;color:var(--gris)}
+.m-tallas-ayuda a{color:var(--tinta);text-underline-offset:3px}
+.m-falta{font-size:.875rem;font-weight:500;color:var(--alerta)}
+.m-tallas.falta .m-talla:not(:disabled){border-color:var(--alerta)}
 
 
 /* Panel del carrito (sube desde abajo) */
@@ -288,11 +318,7 @@ dialog::backdrop{background:rgba(0,0,0,.45)}
 
 /* ---------- Tablet y celular ---------- */
 @media (max-width:960px){
-  .hero-in{grid-template-columns:1fr;gap:32px;padding-top:40px}
-  .hero-foto{justify-self:stretch;max-width:none;aspect-ratio:1/1}
-  .hero-datos{grid-template-columns:1fr;margin-top:8px}
-  .hero-datos li,.hero-datos li+li{padding:18px 0;border-left:0}
-  .hero-datos li+li{border-top:1px solid var(--linea)}
+  .hero-in{grid-template-columns:minmax(0,1fr) minmax(0,260px);gap:32px;padding-top:32px}
   .pasos{grid-template-columns:1fr}
   .pasos li,.pasos li+li{padding:24px 0;border-left:0}
   .pasos li+li{border-top:1px solid var(--linea)}
@@ -304,13 +330,25 @@ dialog::backdrop{background:rgba(0,0,0,.45)}
   .nav{display:none}
   .btn-carrito-txt{display:none}
   .franja{font-size:.75rem;padding:8px 12px}
-  .hero-texto .acciones{flex-direction:column;align-items:stretch}
-  .hero-in{padding:32px 16px 0}
+  /* Celular: portada corta para que los modelos se vean en la primera pantalla */
+  .hero-in{grid-template-columns:1fr;padding:20px 16px 0}
+  .hero-foto,.solo-escritorio{display:none}
+  .hero-texto h1{font-size:2rem;margin-bottom:10px}
+  .hero-texto .lead{font-size:.9375rem;line-height:1.5;margin-bottom:14px}
+  .hero-texto .btn{min-height:40px;padding:0 16px;font-size:.875rem}
   .seccion{padding:64px 16px}
+  #catalogo{padding-top:24px}
+  #catalogo h2{font-size:1.75rem}
+  #catalogo .sub{display:none}
+  .cat-cabecera{margin-bottom:14px;align-items:baseline}
+  .mi-talla{margin:0 -16px 10px;padding:2px 16px}
+  #filtros{flex-wrap:nowrap;gap:6px;overflow-x:auto;scrollbar-width:none}
+  #filtros .chip{flex:none;padding:0 14px}
+  #filtros .chip-filtros svg{display:none}
   #como-comprar{padding-top:8px}
-  .herramientas{grid-template-columns:1fr}
+  .herramientas{grid-template-columns:minmax(0,1fr) 148px;gap:8px;margin-bottom:20px}
+  #orden{font-size:.875rem;padding-left:10px;padding-right:30px;background-position:right 10px center}
   .rejilla{grid-template-columns:repeat(2,1fr);gap:28px 10px}
-  .card-pie{flex-direction:column;align-items:flex-start;gap:2px}
   .contacto-in{padding:56px 16px}
   .wa-flotante span{display:none}
   .wa-flotante{width:52px;height:52px;padding:0;justify-content:center}
@@ -358,23 +396,15 @@ dialog::backdrop{background:rgba(0,0,0,.45)}
   <section class="hero">
     <div class="hero-in">
       <div class="hero-texto">
-        <h1>Bienvenida a ZAZI.</h1>
-        <p class="lead">Productos seleccionados uno por uno.<br>
-        En ZAZI cada pedido pasa por revisión antes de llegar
-        a tus manos — sin sorpresas, sin apuros.</p>
+        <h1>Te damos la bienvenida a ZAZI.</h1>
+        <p class="lead">Cada par pasa por revisión antes de llegar a tus manos. Elige tu modelo y tu talla, y pide por WhatsApp.</p>
         <div class="acciones">
-          <a class="btn btn-solid" href="#catalogo">Ver catálogo</a>
+          <a class="btn btn-solid solo-escritorio" href="#catalogo">Ver catálogo</a>
           <a class="btn btn-line" data-wa href="#contacto">Contactar por WhatsApp</a>
         </div>
       </div>
 
       <figure class="hero-foto" id="vitrina"></figure>
-
-      <ul class="hero-datos" id="hero-datos" hidden>
-        <li><b>100%</b><span>Control de calidad par por par</span></li>
-        <li><b>24H</b><span>Atención por WhatsApp</span></li>
-        <li><b>35-46</b><span>Tallas 35 a 39 mujer, 40 a 46 hombre</span></li>
-      </ul>
     </div>
   </section>
 
@@ -382,22 +412,25 @@ dialog::backdrop{background:rgba(0,0,0,.45)}
     <div class="cat-cabecera">
       <div>
         <h2 id="t-catalogo">Catálogo</h2>
-        <p class="sub">Elige el modelo y la talla. Pagas por Yape o en efectivo.</p>
+        <p class="sub">Elige el modelo y la talla. Pagas por Yape, Plin o en efectivo.</p>
       </div>
       <p class="conteo" id="conteo" aria-live="polite">Cargando…</p>
     </div>
 
-    <div class="chips" id="filtros" role="group" aria-label="Filtrar por línea"></div>
+    <div class="chips" id="filtros" role="group" aria-label="Filtrar el catálogo"></div>
+    <div class="mas-filtros" id="mas-filtros" hidden></div>
+    <div class="mi-talla" id="mi-talla" role="group" aria-label="Mi talla"></div>
 
     <div class="herramientas">
       <label class="campo">
         <span class="sr">Buscar modelo</span>
-        <input class="input" id="buscar" type="search" placeholder="Buscar producto..." autocomplete="off">
+        <input class="input" id="buscar" type="search" placeholder="Buscar: negra, running, 38…" autocomplete="off">
       </label>
       <label class="campo">
         <span class="sr">Ordenar por</span>
         <select class="input" id="orden">
           <option value="destacados">Recomendados</option>
+          <option value="nuevos">Nuevos</option>
           <option value="menor">Precio: de menor a mayor</option>
           <option value="mayor">Precio: de mayor a menor</option>
         </select>
@@ -406,7 +439,7 @@ dialog::backdrop{background:rgba(0,0,0,.45)}
 
     <div class="rejilla" id="rejilla"></div>
     <div class="vacio" id="vacio" hidden>
-      <p>No encontramos modelos con esa búsqueda.</p>
+      <p id="vacio-txt">No encontramos modelos con esa búsqueda.</p>
       <button class="btn btn-line" id="limpiar" type="button">Ver todo el catálogo</button>
     </div>
     <div class="vacio" id="catalogo-msg" hidden>
@@ -426,8 +459,8 @@ dialog::backdrop{background:rgba(0,0,0,.45)}
       </li>
       <li>
         <span class="paso-n" aria-hidden="true">2</span>
-        <h3>Paga por Yape, Plin o transferencia</h3>
-        <p>Con Yape, envías el comprobante por WhatsApp.</p>
+        <h3>Paga por Yape, Plin o en efectivo</h3>
+        <p>Con Yape o Plin, envías el comprobante por WhatsApp. En efectivo, pagas al recibir tu pedido.</p>
       </li>
       <li>
         <span class="paso-n" aria-hidden="true">3</span>
@@ -509,12 +542,12 @@ dialog::backdrop{background:rgba(0,0,0,.45)}
 
       <fieldset class="grupo">
         <legend>Método de pago</legend>
-        <label class="opcion"><input type="radio" name="pago" value="Yape" checked> <span><b>Yape</b><small>Envías el comprobante por WhatsApp.</small></span></label>
+        <label class="opcion"><input type="radio" name="pago" value="Yape" checked> <span><b>Yape o Plin</b><small>Envías el comprobante por WhatsApp.</small></span></label>
         <label class="opcion"><input type="radio" name="pago" value="Efectivo"> <span><b>Efectivo</b><small>Pagas al coordinar delivery.</small></span></label>
       </fieldset>
 
       <div class="yape" id="yape">
-        <p>Yape a nombre de <b id="y-titular"></b></p>
+        <p>Yape o Plin a nombre de <b id="y-titular"></b></p>
         <div class="yape-num">
           <b id="y-numero"></b>
           <button class="btn btn-line btn-chico" id="copiar" type="button">Copiar número</button>
@@ -549,9 +582,11 @@ const TIENDA = {
 
 /* Lo que cambia entre los dos catálogos. Cada sitio se reconoce por su dirección
    (zazi-pe.github.io/Zazi/ o zazi-pe.github.io/Zazi-Modelos/). */
+/* grupo: nombre de la línea en "Filtros" (Marca en Zazi, Categoría en Modelos).
+   tipo: palabras que la búsqueda acepta para todos los productos (en Zazi todo es zapatilla). */
 const SITIOS = {
-  "zazi":         { carrito: "zazi-carrito-v1",         datosPortada: true,  precioEnFicha: false, descripciones: true },
-  "zazi-modelos": { carrito: "zazi-propios-carrito-v1", datosPortada: false, precioEnFicha: true,  descripciones: false }
+  "zazi":         { carrito: "zazi-carrito-v1",         precioEnFicha: false, descripciones: true,  grupo: "Marca",     tipo: "zapatilla zapatillas" },
+  "zazi-modelos": { carrito: "zazi-propios-carrito-v1", precioEnFicha: true,  descripciones: false, grupo: "Categoría", tipo: "" }
 };
 
 /* Los productos agregados en los últimos días llevan la etiqueta "Nuevo"
@@ -619,7 +654,8 @@ const DIAS_NUEVO = 14;
   const verificando = (p) => !!(p && p.shopify && stockShopify === "verificando");
   const stockNoConfirmado = (p) => !!(p && p.shopify && (stockShopify === "fallo" || sinConfirmar.has(p.id)));
 
-  const estado = { filtro: "all", busqueda: "", orden: "destacados", carrito: [] };
+  // genero: "all" | "mujer" | "hombre"; talla: Mi talla (se recuerda); eleccion: color elegido en cada tarjeta
+  const estado = { genero: "all", talla: null, estilos: new Set(), lineas: new Set(), busqueda: "", orden: "destacados", carrito: [], eleccion: new Map() };
   const porId = new Map(PRODUCTOS.map((p) => [p.id, p]));
 
   /* ---------- Utilidades de producto ---------- */
@@ -633,13 +669,13 @@ const DIAS_NUEVO = 14;
     return t.map(String);
   }
   const esUnica = (p) => tallasDe(p).length === 1 && tallasDe(p)[0] === "Único";
-  function textoTallas(p) {
-    const t = tallasDe(p);
-    if (esUnica(p)) return "Talla única";
-    if (p.tallas.length === 2 && typeof p.tallas[0] === "number") return "Tallas " + p.tallas[0] + " al " + p.tallas[1];
-    return "Tallas " + t.join(", ");
-  }
   function precioLinea(p, cant) { return consultar(p) ? 0 : p.precio * cant; }
+  // Tallas que se pueden comprar ahora de un color
+  const libresDe = (p) => p.estado !== "disponible" ? [] : tallasDe(p).filter((t) => !(p.agotadas || []).map(String).includes(t));
+  // Nombre para clientes ("Running Malla Degradé"); sin él, el modelo. El nombre interno (p.nombre) va en el pedido.
+  const nombreVisible = (p) => p.nombreCliente || p.modelo || p.nombre;
+  const nombreConColor = (p) => [nombreVisible(p), p.color].filter(Boolean).join(" ");
+  const conReferencia = (p) => norm(nombreConColor(p)) === norm(p.nombre) ? nombreConColor(p) : nombreConColor(p) + " (" + p.nombre + ")";
   // "Nuevo": "si" o "no" lo fuerza desde el admin; si no, los agregados en los últimos DIAS_NUEVO días
   const esNuevo = (p) => p.nuevo === "si" ? true : p.nuevo === "no" ? false :
     DIAS_NUEVO > 0 && p._fecha > 0 && Date.now() - p._fecha < DIAS_NUEVO * 864e5;
@@ -677,70 +713,245 @@ const DIAS_NUEVO = 14;
     guardarCarrito(); pintarCarrito();
   }
 
-  /* ---------- Filtros y catálogo ---------- */
-  function pintarFiltros() {
-    const cuenta = (f) => PRODUCTOS.filter((p) => p.filtro === f).length;
-    const items = [["all", "Todos", PRODUCTOS.length], ...FILTROS.filter(([f]) => cuenta(f)).map(([f, n]) => [f, n, cuenta(f)])];
-    $("#filtros").innerHTML = items.map(([f, n, c]) =>
-      `<button class="chip" type="button" data-filtro="${f}" aria-pressed="${f === estado.filtro}">${esc(n)} <span>${c}</span></button>`).join("");
+  /* ---------- Modelos: una tarjeta por modelo ----------
+     Mismo filtro + mismo modelo = colores del mismo modelo (igual que en la ficha). productos.json sigue con un
+     producto por color, así los ids, Shopify, el carrito y los enlaces #p<id> no cambian. */
+  let MODELOS = [];
+  const porClave = new Map();          // clave del modelo -> { clave, variantes, libres, fecha }
+  const modeloDe = new Map();          // id del producto -> su modelo
+  // Primero el color con más tallas disponibles; los agotados quedan al final
+  const ordenColores = (a, b) => libresDe(b).length - libresDe(a).length || a._fecha - b._fecha || a.id - b.id;
+  function armarModelos() {
+    porClave.clear(); modeloDe.clear();
+    PRODUCTOS.forEach((p) => {
+      const clave = p.filtro + "|" + (p.modelo || "#" + p.id);
+      if (!porClave.has(clave)) porClave.set(clave, { clave, variantes: [] });
+      porClave.get(clave).variantes.push(p);
+      modeloDe.set(p.id, porClave.get(clave));
+    });
+    MODELOS = [...porClave.values()];
+    MODELOS.forEach((m) => {
+      m.variantes.sort(ordenColores);
+      m.libres = new Set(m.variantes.flatMap(libresDe));          // tallas disponibles en algún color
+      m.fecha = Math.max(...m.variantes.map((v) => v._fecha));
+    });
   }
 
+  /* ---------- Filtros: Mujer / Hombre, Mi talla y, dentro de "Filtros", estilo y marca ---------- */
+  const CLAVE_TALLA = "zazi-mi-talla";                             // la misma en los dos catálogos
+  try { estado.talla = localStorage.getItem(CLAVE_TALLA) || null; } catch (e) { /* sin almacenamiento */ }
+  const GENEROS = [["mujer", "Mujer"], ["hombre", "Hombre"]];
+  const esDeGenero = (p, g) => p.genero === g || p.genero === "unisex";   // unisex sale en los dos
+  const ICONO_FILTROS = '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" aria-hidden="true"><path d="M2 4h12M4.5 8h7M7 12h2"/></svg>';
+
+  function pintarFiltros() {
+    const generos = GENEROS.filter(([g]) => PRODUCTOS.some((p) => esDeGenero(p, g)));
+    if (estado.genero !== "all" && !generos.some(([g]) => g === estado.genero)) estado.genero = "all";
+    const estilos = [...new Set(PRODUCTOS.map((p) => p.estilo).filter(Boolean))].sort((a, b) => a.localeCompare(b, "es"));
+    const lineas = FILTROS.filter(([f]) => PRODUCTOS.some((p) => p.filtro === f));
+    const grupo = (titulo, tipo, items) => items.length < 2 ? "" : `<div class="mf-grupo"><p class="mf-etq">${esc(titulo)}</p>
+      <div class="chips" role="group" aria-label="${esc(titulo)}">${items.map(([v, n]) =>
+        `<button class="chip" type="button" data-${tipo}="${esc(v)}" aria-pressed="false">${esc(n)}</button>`).join("")}</div></div>`;
+    const panel = grupo("Estilo", "estilo", estilos.map((e) => [e, e])) + grupo(SITIO.grupo, "linea", lineas);
+    $("#filtros").innerHTML = [["all", "Todos"], ...generos].map(([g, n]) =>
+      `<button class="chip" type="button" data-genero="${g}" aria-pressed="false">${esc(n)}</button>`).join("") +
+      (panel ? `<button class="chip chip-filtros" type="button" id="ver-filtros" aria-controls="mas-filtros" aria-expanded="false">${ICONO_FILTROS}<span>Filtros</span></button>` : "");
+    $("#mas-filtros").innerHTML = panel + '<button class="enlace" type="button" data-quitar-filtros>Quitar filtros</button>';
+    if (!panel) $("#mas-filtros").hidden = true;
+    // Mi talla: las tallas que hoy tienen stock en el catálogo (y la elegida, aunque ya no tenga)
+    const tallas = [...new Set(PRODUCTOS.flatMap(libresDe).concat(estado.talla ? [estado.talla] : []))]
+      .filter((t) => /^\d+$/.test(t)).sort((a, b) => a - b);
+    const fila = $("#mi-talla"), desliz = fila.scrollLeft;
+    fila.hidden = !tallas.length;
+    fila.innerHTML = '<span class="mt-etq" aria-hidden="true">Mi talla</span>' + tallas.map((t) =>
+      `<button class="mt" type="button" data-talla="${esc(t)}" aria-pressed="false" aria-label="Mi talla: ${esc(t)}">${esc(t)}</button>`).join("");
+    fila.scrollLeft = desliz;
+    marcarFiltros();
+  }
+  // Solo marca lo elegido (sin redibujar los botones: no se pierde el foco ni el deslizamiento de la fila)
+  function marcarFiltros() {
+    const marca = (sel, f) => $$(sel).forEach((b) => b.setAttribute("aria-pressed", String(f(b))));
+    marca("#filtros [data-genero]", (b) => b.dataset.genero === estado.genero);
+    marca("#mas-filtros [data-estilo]", (b) => estado.estilos.has(b.dataset.estilo));
+    marca("#mas-filtros [data-linea]", (b) => estado.lineas.has(b.dataset.linea));
+    marca("#mi-talla .mt", (b) => b.dataset.talla === estado.talla);
+    const activos = estado.estilos.size + estado.lineas.size, ver = $("#ver-filtros");
+    if (ver) {
+      $("span", ver).textContent = "Filtros" + (activos ? " (" + activos + ")" : "");
+      ver.setAttribute("aria-expanded", String(!$("#mas-filtros").hidden));
+    }
+    const quitar = $("#mas-filtros [data-quitar-filtros]");
+    if (quitar) quitar.hidden = !activos;
+  }
+
+  /* ---------- Búsqueda: sin tildes ni mayúsculas, "negra" encuentra "Negro", cada palabra en cualquier dato,
+     y un número se toma como talla (solo modelos con esa talla disponible) ---------- */
+  const VACIAS = new Set(["de", "del", "la", "el", "los", "las", "en", "con", "y", "para", "talla", "tallas", "color", "modelo"]);
+  const raiz = (w) => (w.length > 3 ? w.replace(/(as|os|es|a|o|s)$/, "") : w);      // negra/negro → negr
+  const TEXTO_GENERO = { mujer: "mujer", hombre: "hombre", unisex: "unisex mujer hombre" };
+  const textoDe = (p) => p._texto || (p._texto = norm([nombreVisible(p), p.nombre, p.modelo, p.linea, p.color, p.estilo, TEXTO_GENERO[p.genero], SITIO.tipo].filter(Boolean).join(" ")));
+  function consulta() {
+    const palabras = [], tallas = [];
+    norm(estado.busqueda).split(/[^a-z0-9]+/).filter(Boolean).forEach((w) => {
+      if (/^\d{2}$/.test(w)) tallas.push(w);
+      else if (!VACIAS.has(w)) palabras.push(raiz(w));
+    });
+    return { palabras, tallas };
+  }
+  // ¿Este color entra con los filtros de ahora?
+  function pasa(p, q) {
+    if (estado.genero !== "all" && !esDeGenero(p, estado.genero)) return false;
+    if (estado.estilos.size && !estado.estilos.has(p.estilo)) return false;
+    if (estado.lineas.size && !estado.lineas.has(p.filtro)) return false;
+    const tallas = q.tallas.length ? q.tallas : estado.talla ? [estado.talla] : [];   // la talla escrita manda sobre Mi talla
+    if (tallas.length && !tallas.some((t) => libresDe(p).includes(t))) return false;
+    const texto = textoDe(p);
+    return q.palabras.every((w) => texto.includes(w));
+  }
+
+  // Lista de tarjetas: { m: modelo, p: color que muestra }
   function listaVisible() {
-    // Búsqueda por varias palabras: "you negro" muestra solo lo que tiene ambas
-    const palabras = norm(estado.busqueda).split(/\s+/).filter(Boolean);
-    let lista = PRODUCTOS.filter((p) => (estado.filtro === "all" || p.filtro === estado.filtro) &&
-      palabras.every((w) => norm(p.nombre + " " + p.linea).includes(w)));
-    const valor = (p, vacio) => (consultar(p) ? vacio : p.precio);
-    // "Recomendados" muestra primero lo último agregado al catálogo
-    if (estado.orden === "destacados") lista = [...lista].sort(porFecha);
-    if (estado.orden === "menor") lista = [...lista].sort((a, b) => valor(a, Infinity) - valor(b, Infinity) || porFecha(a, b));
-    if (estado.orden === "mayor") lista = [...lista].sort((a, b) => valor(b, -Infinity) - valor(a, -Infinity) || porFecha(a, b));
+    const q = consulta(), lista = [];
+    MODELOS.forEach((m) => {
+      const entran = m.variantes.filter((p) => pasa(p, q));
+      if (!entran.length) return;
+      const elegido = porId.get(estado.eleccion.get(m.clave));
+      lista.push({ m, p: elegido && entran.includes(elegido) ? elegido : entran[0] });
+    });
+    const nuevos = (a, b) => b.m.fecha - a.m.fecha || b.p.id - a.p.id;
+    const valor = (x, vacio) => (consultar(x.p) ? vacio : x.p.precio);
+    // "Recomendados": primero los modelos con más tallas disponibles, para que casi todos vean su talla arriba
+    if (estado.orden === "destacados") lista.sort((a, b) => b.m.libres.size - a.m.libres.size || nuevos(a, b));
+    if (estado.orden === "nuevos") lista.sort(nuevos);
+    if (estado.orden === "menor") lista.sort((a, b) => valor(a, Infinity) - valor(b, Infinity) || nuevos(a, b));
+    if (estado.orden === "mayor") lista.sort((a, b) => valor(b, -Infinity) - valor(a, -Infinity) || nuevos(a, b));
     return lista;
   }
 
-  function tarjeta(p) {
+  // Tarjeta: foto (se desliza para cambiar de color) → cuadritos de color (máx. 3 y "+N") → nombre → estilo · color → precio
+  function tarjeta({ m, p }) {
     const marca = p.estado === "agotado" ? '<span class="etiqueta agotado">Agotado</span>'
       : p.estado === "proximamente" ? '<span class="etiqueta">Próximamente</span>' : "";
+    const nuevo = p.estado === "disponible" && esNuevo(p) ? '<span class="tag-nuevo">Nuevo</span>' : "";
     const foto = p.foto
-      ? fotoProducto(p, "(max-width: 720px) 50vw, 300px", `width="576" height="720" alt="${esc(p.nombre)}" loading="lazy" decoding="async"`)
+      ? fotoProducto(p, "(max-width: 720px) 50vw, 300px", `width="576" height="720" alt="${esc(nombreConColor(p))}" loading="lazy" decoding="async" draggable="false"`)
       : `<div class="sin-foto">${ICONO_ZAPATILLA}<span>Foto próximamente</span></div>`;
-    return `<a class="card${p.estado === "agotado" ? " agotado" : ""}" href="#p${p.id}" data-id="${p.id}">
-      <div class="card-media">${foto}${marca}${p.estado === "disponible" && esNuevo(p) ? '<span class="tag-nuevo">Nuevo</span>' : ""}</div>
+    const n = m.variantes.length;
+    let muestras = m.variantes.slice(0, 3);
+    if (!muestras.includes(p)) muestras = [...muestras.slice(0, 2), p];          // el color que se ve siempre tiene su cuadrito
+    const cuadrito = (v) => {
+      const fondo = fondoColor(v), nombre = v.color || v.nombre;
+      const attrs = `type="button" class="card-sw${fondo ? "" : " texto"}" data-color="${v.id}" aria-pressed="${v.id === p.id}" aria-label="Color ${esc(nombre)}" title="${esc(nombre)}"`;
+      return fondo ? `<button ${attrs}><span style="background:${fondo}"></span></button>` : `<button ${attrs}>${esc(nombre)}</button>`;
+    };
+    const colores = !p.color && n < 2 ? "" : `<div class="card-colores" role="group" aria-label="Colores de ${esc(nombreVisible(p))}">${muestras.map(cuadrito).join("")}` +
+      (n > 3 ? `<button class="card-mas" type="button" data-abrir-card="${p.id}" aria-label="Ver los ${n} colores">+${n - 3}</button>` : "") + "</div>";
+    const sub = [p.estilo, p.color].filter(Boolean).join(" · ");
+    const ultimos = libresDe(p).length === 1 && !esUnica(p) ? '<span class="card-ultimos">Últimos pares</span>' : "";
+    return `<article class="card${p.estado === "agotado" ? " agotado" : ""}" data-modelo="${esc(m.clave)}" data-id="${p.id}">
+      <a class="card-media" href="#p${p.id}" data-abrir-card="${p.id}" tabindex="-1" aria-hidden="true">${foto}${marca}${nuevo}</a>
+      ${colores}
       <div class="card-cuerpo">
-        <span class="card-linea">${esc(p.linea)}</span>
-        <h3 class="card-nombre">${esc(p.nombre)}</h3>
-        <p class="card-desc">${esc(p.descripcion)}</p>
-        <div class="card-pie"><span class="card-precio">${precioTxt(p)}</span><span class="card-tallas">${esc(textoTallas(p))}</span></div>
-      </div></a>`;
+        <h3 class="card-nombre"><a href="#p${p.id}" data-abrir-card="${p.id}">${esc(nombreVisible(p))}</a></h3>
+        ${sub ? `<p class="card-sub">${esc(sub)}</p>` : ""}
+        <p class="card-pie"><span class="card-precio">${precioTxt(p)}</span>${ultimos}</p>
+      </div></article>`;
   }
 
   function pintarCatalogo() {
     const lista = listaVisible();
     $("#rejilla").innerHTML = lista.map(tarjeta).join("");
     $("#vacio").hidden = lista.length > 0;
+    $("#vacio-txt").textContent = estado.talla && !estado.busqueda.trim()
+      ? "Por ahora no tenemos modelos en talla " + estado.talla + " con estos filtros."
+      : "No encontramos modelos con esa búsqueda.";
     $("#conteo").textContent = lista.length === 1 ? "1 modelo" : lista.length + " modelos";
-    $$("#filtros .chip").forEach((b) => b.setAttribute("aria-pressed", String(b.dataset.filtro === estado.filtro)));
   }
+
+  // Cambiar el color de una tarjeta (cuadrito o deslizar la foto) sin abrir la ficha
+  function cambiarColorCard(card, id, paso) {
+    const m = card && porClave.get(card.dataset.modelo), p = porId.get(Number(id));
+    if (!m || !p || !m.variantes.includes(p)) return;
+    estado.eleccion.set(m.clave, p.id);
+    const caja = document.createElement("div");
+    caja.innerHTML = tarjeta({ m, p });
+    const nueva = caja.firstElementChild;
+    const conFoco = card.contains(document.activeElement);
+    card.replaceWith(nueva);
+    if (conFoco) { const b = $(`.card-sw[data-color="${p.id}"]`, nueva); if (b) b.focus(); }
+    const img = $(".card-media img", nueva);
+    if (paso && img && img.animate && !matchMedia("(prefers-reduced-motion: reduce)").matches)
+      img.animate([{ transform: `translateX(${paso * 35}%)`, opacity: 0.4 }, { transform: "none", opacity: 1 }], { duration: 220, easing: "ease-out" });
+  }
+
+  /* Deslizar la foto de una tarjeta con el dedo: pasa al color siguiente o al anterior.
+     touch-action: pan-y deja el scroll vertical al navegador; solo se toma un gesto claramente de costado. */
+  let gesto = null, finDeslizar = 0;
+  const rejilla = $("#rejilla");
+  rejilla.addEventListener("pointerdown", (e) => {
+    if (e.pointerType === "mouse" || !e.isPrimary) return;
+    const media = e.target.closest(".card-media"), card = media && media.closest(".card");
+    const m = card && porClave.get(card.dataset.modelo);
+    gesto = m && m.variantes.length > 1 ? { media, card, m, id: e.pointerId, x0: e.clientX, y0: e.clientY, dx: 0, lado: false } : null;
+  });
+  rejilla.addEventListener("pointermove", (e) => {
+    const g = gesto;
+    if (!g || e.pointerId !== g.id) return;
+    const dx = e.clientX - g.x0, dy = e.clientY - g.y0;
+    if (!g.lado) {
+      if (Math.abs(dx) < 10 && Math.abs(dy) < 10) return;
+      if (Math.abs(dy) >= Math.abs(dx)) { gesto = null; return; }          // hacia arriba o abajo: es scroll de la página
+      g.lado = true;
+      try { g.media.setPointerCapture(e.pointerId); } catch (_) { /* sin captura */ }
+      g.media.classList.add("arrastrando");
+    }
+    g.dx = dx;
+    const img = $("img", g.media);
+    if (img) img.style.transform = `translateX(${dx}px)`;
+  });
+  function terminarGesto(e, cancelado) {
+    const g = gesto;
+    if (!g || e.pointerId !== g.id) return;
+    gesto = null;
+    if (!g.lado) return;
+    finDeslizar = Date.now();                                    // el toque que termina el deslizamiento no abre la ficha
+    g.media.classList.remove("arrastrando");
+    const img = $("img", g.media);
+    if (!cancelado && Math.abs(g.dx) >= Math.min(60, g.media.clientWidth * 0.2)) {
+      const lista = g.m.variantes, i = lista.findIndex((v) => v.id === Number(g.card.dataset.id));
+      const paso = g.dx < 0 ? 1 : -1;
+      cambiarColorCard(g.card, lista[(i + paso + lista.length) % lista.length].id, paso);
+    } else if (img) {
+      img.style.transition = "transform .18s ease-out";
+      img.style.transform = "";
+      setTimeout(() => { img.style.transition = ""; }, 200);
+    }
+  }
+  rejilla.addEventListener("pointerup", (e) => terminarGesto(e, false));
+  rejilla.addEventListener("pointercancel", (e) => terminarGesto(e, true));
 
   /* Catálogo sin modelos todavía, o archivo que no cargó */
   function mensajeCatalogo(tipo) {
-    ["#filtros", ".herramientas", "#conteo", "#rejilla", "#vacio"].forEach((s) => { $(s).hidden = true; });
+    ["#filtros", "#mas-filtros", "#mi-talla", ".herramientas", "#conteo", "#rejilla", "#vacio"].forEach((s) => { $(s).hidden = true; });
     $("#catalogo-msg p").textContent = tipo === "error"
       ? "No pudimos cargar el catálogo en este momento. Escríbenos por WhatsApp y te ayudamos con tu pedido."
       : "Estamos preparando el catálogo. Muy pronto verás aquí nuestros modelos.";
     $("#catalogo-msg").hidden = false;
   }
 
-  /* ---------- Vitrina: muestra el producto más nuevo ---------- */
+  /* ---------- Vitrina: muestra el producto más nuevo (solo en pantallas grandes: en el celular la portada es corta) ---------- */
+  const pantallaGrande = matchMedia("(min-width: 721px)");
   function pintarVitrina() {
     const el = $("#vitrina");
     const p = [...PRODUCTOS].filter((x) => x.foto).sort(porFecha)[0];
     if (!p) { el.hidden = true; $(".hero-in").classList.add("hero-solo"); return; }
+    if (!pantallaGrande.matches) { el.innerHTML = ""; return; }      // así el celular no baja esa foto
+    if (el.childElementCount) return;
     el.innerHTML = `
-      ${p.foto ? fotoProducto(p, "(max-width: 960px) 100vw, 470px", `width="576" height="720" alt="${esc(p.nombre)}" fetchpriority="high"`) : `<div class="sin-foto" aria-hidden="true">${ICONO_ZAPATILLA}<span>Foto próximamente</span></div>`}
+      ${p.foto ? fotoProducto(p, "360px", `width="576" height="720" alt="${esc(nombreConColor(p))}" fetchpriority="high"`) : `<div class="sin-foto" aria-hidden="true">${ICONO_ZAPATILLA}<span>Foto próximamente</span></div>`}
       <button class="hero-etiqueta" type="button" data-abrir="${p.id}">
         <span>MODELO EN VITRINA</span>
-        <b>${esc(p.nombre)}</b>
+        <b>${esc(nombreConColor(p))}</b>
       </button>`;
   }
 
@@ -760,7 +971,7 @@ const DIAS_NUEVO = 14;
     const scrollPrevio = modal.scrollTop;
     productoAbierto = p;
     $("#m-media").innerHTML = p.foto
-      ? fotoProducto(p, "(max-width: 720px) 100vw, 480px", `width="576" height="720" alt="${esc(p.nombre)}"`)
+      ? fotoProducto(p, "(max-width: 720px) 100vw, 480px", `width="576" height="720" alt="${esc(nombreConColor(p))}"`)
       : `<div class="sin-foto">${ICONO_ZAPATILLA}<span>Foto próximamente</span></div>`;
 
     const hayTallas = tallasDe(p).length > 0;
@@ -772,9 +983,8 @@ const DIAS_NUEVO = 14;
       : stockNoConfirmado(p) ? '<p class="m-nota">No pudimos confirmar el stock en este momento; te lo confirmamos por WhatsApp.</p>' : "";
     const enEspera = verificando(p);
 
-    // Colores del mismo modelo (misma línea y modelo), en el orden en que se agregaron
-    const variantes = p.modelo ? PRODUCTOS.filter((v) => v.filtro === p.filtro && v.modelo === p.modelo)
-      .sort((a, b) => a._fecha - b._fecha || a.id - b.id) : [p];
+    // Colores del mismo modelo (misma línea y modelo), en el mismo orden que en la tarjeta
+    const variantes = (modeloDe.get(p.id) || { variantes: [p] }).variantes;
     const botonColor = (v) => {
       const fondo = fondoColor(v);
       const attrs = `type="button" class="m-color${fondo ? "" : " texto"}" role="radio" aria-checked="${v.id === p.id}" data-variante="${v.id}" aria-label="${esc(v.color || v.nombre)}" title="${esc(v.color || v.nombre)}"`;
@@ -799,6 +1009,8 @@ const DIAS_NUEVO = 14;
             return `<button type="button" class="m-talla${sinStock ? " agotada" : ""}${enEspera ? " verificando" : ""}" role="radio" aria-checked="${unica && !sinStock && !enEspera ? "true" : "false"}" data-talla="${esc(t)}"${sinStock ? ` disabled aria-label="Talla ${txt}, sin stock"` : enEspera ? ` disabled aria-label="Talla ${txt}, verificando stock"` : ` aria-label="Talla ${txt}"`}>${txt}</button>`;
           }).join("")}
         </div>
+        <p class="m-falta" id="m-falta" role="alert" hidden>Elige una talla para añadirla al carrito.</p>
+        <p class="m-tallas-ayuda">¿Dudas con tu talla? <a href="${esc(wa("Hola " + TIENDA.nombre + ", tengo una duda con la talla de " + conReferencia(p) + "."))}" target="_blank" rel="noopener">Escríbenos</a></p>
       </div>`;
     const textoBoton = !puedeAgregar ? (p.estado === "agotado" ? "Agotado" : "Próximamente") : "Añadir al carrito";
     const bloqueOpciones = (bloqueColor || bloqueTallas) ? `<div class="m-opciones" id="m-opciones">${bloqueColor}${bloqueTallas}</div>` : "";
@@ -809,11 +1021,11 @@ const DIAS_NUEVO = 14;
         </button>`;
     // producto sin tallas: en vez de comprar, se consulta por WhatsApp
     const boton = soloConsulta
-      ? `<a class="btn btn-solid" href="${esc(wa("Hola " + TIENDA.nombre + ", quiero consultar por el modelo " + p.nombre + " (" + p.linea + ")."))}" target="_blank" rel="noopener">Consultar por WhatsApp</a>`
+      ? `<a class="btn btn-solid" href="${esc(wa("Hola " + TIENDA.nombre + ", quiero consultar por el modelo " + conReferencia(p) + "."))}" target="_blank" rel="noopener">Consultar por WhatsApp</a>`
       : `<button class="btn btn-solid" type="button" id="m-agregar" disabled>${textoBoton}</button>`;
     if (!opciones.mantenerScroll) $("#m-cuerpo").style.paddingBottom = "";   // producto nuevo: sin espacio extra
     $("#m-cuerpo").innerHTML = `
-      <h2 class="m-nombre" id="m-nombre">${esc(p.nombre)}</h2>
+      <h2 class="m-nombre" id="m-nombre">${esc(nombreVisible(p))}</h2>
       <p class="m-marca">${esc(p.linea)}</p>
       ${SITIO.precioEnFicha ? `<p class="m-precio">${precioTxt(p)}</p>` : ""}
       ${nota}
@@ -823,14 +1035,16 @@ const DIAS_NUEVO = 14;
       </div>
       ${SITIO.descripciones && p.descripcion ? `<p class="m-desc">${esc(p.descripcion)}</p>` : ""}`;
 
-    // Talla preseleccionada: la menor con stock del modelo (o la que ya estaba elegida al cambiar de color)
+    // Ninguna talla viene elegida (la elige el cliente); se mantiene la que eligió al cambiar de color.
+    // Talla única: no hay nada que elegir.
     if (puedeAgregar && enEspera) {
       $("#m-agregar").textContent = "Verificando stock…";
       $("#m-sel").hidden = true;
     } else if (puedeAgregar) {
       const libres = $$("#m-cuerpo .m-talla").filter((b) => !b.disabled);
-      const inicial = (opciones.talla && libres.find((b) => b.dataset.talla === opciones.talla)) || libres[0];
+      const inicial = (opciones.talla && libres.find((b) => b.dataset.talla === opciones.talla)) || (unica && libres[0]);
       if (inicial) elegirTalla(inicial);
+      else if (libres.length) { $("#m-agregar").disabled = false; $("#m-agregar").textContent = "Elige tu talla"; $("#m-sel").hidden = true; }
       else { $("#m-agregar").textContent = "Sin stock"; $("#m-sel").hidden = true; }
     }
     if (!modal.open) modal.showModal();
@@ -864,6 +1078,9 @@ const DIAS_NUEVO = 14;
     $("#m-talla-elegida").textContent = ": " + (t === "Único" ? "Única" : t);
     const sel = $("#m-sel-txt");
     if (sel) sel.textContent = t === "Único" ? "Talla única" : "Talla " + t;
+    $("#m-sel").hidden = false;
+    $("#m-cuerpo .m-tallas").classList.remove("falta");
+    $("#m-falta").hidden = true;
     const agregarBtn = $("#m-agregar");
     agregarBtn.disabled = false;
     agregarBtn.innerHTML = textoAgregar(productoAbierto);
@@ -884,8 +1101,17 @@ const DIAS_NUEVO = 14;
     const sinMovimiento = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
     // destino fijo: tocar varias veces durante la animación no lo empuja más allá
     modal.scrollTo({ top: modal.scrollTop + Math.max(mover, 0), behavior: sinMovimiento ? "auto" : "smooth" });
-    const elegida = $("#m-cuerpo .m-talla[aria-checked=\"true\"]");
+    const elegida = $("#m-cuerpo .m-talla[aria-checked=\"true\"]") || $("#m-cuerpo .m-talla:not(:disabled)");
     if (elegida) elegida.focus({ preventScroll: true });
+  }
+  // "Elige tu talla" sin talla elegida: lleva a las tallas y las marca
+  function pedirTalla() {
+    const bloque = $("#m-cuerpo .m-tallas");
+    if (!bloque) return;
+    bloque.classList.add("falta");
+    $("#m-falta").hidden = false;
+    actualizarBarra();
+    irAOpciones();
   }
 
   modal.addEventListener("click", (e) => {
@@ -904,7 +1130,7 @@ const DIAS_NUEVO = 14;
     const boton = e.target.closest("#m-agregar");
     if (boton && !boton.disabled && productoAbierto) {
       const elegida = $("#m-cuerpo .m-talla[aria-checked=\"true\"]");
-      if (!elegida) return;
+      if (!elegida) { pedirTalla(); return; }
       agregar(productoAbierto.id, elegida.dataset.talla);
       modal.close();
       abrirCarrito();
@@ -951,8 +1177,8 @@ const DIAS_NUEVO = 14;
           <div class="c-foto">${foto}</div>
           <div class="c-info">
             ${esNuevo(p) ? '<span class="tag-nuevo">Nuevo</span>' : ""}
-            <span class="c-nombre">${esc(p.nombre)}</span>
-            <span class="c-meta">${esc(p.linea)} · ${l.talla === "Único" ? "Talla única" : "Talla " + esc(l.talla)}</span>
+            <span class="c-nombre">${esc(nombreVisible(p))}</span>
+            <span class="c-meta">${p.color ? esc(p.color) + " · " : ""}${l.talla === "Único" ? "Talla única" : "Talla " + esc(l.talla)}</span>
             <div class="c-fila">
               <span class="c-precio">${consultar(p) ? "Por confirmar" : soles(precioLinea(p, l.cant))}</span>
               <div class="cant">
@@ -1071,7 +1297,7 @@ const DIAS_NUEVO = 14;
     const lineas = estado.carrito.map((l) => {
       const p = porId.get(l.id);
       const talla = l.talla === "Único" ? "talla única" : "talla " + l.talla;
-      return `• ${l.cant} × ${p.nombre} (${talla}) — ${consultar(p) ? "precio por confirmar" : soles(precioLinea(p, l.cant))}`;
+      return `• ${l.cant} × ${conReferencia(p)}, ${talla} — ${consultar(p) ? "precio por confirmar" : soles(precioLinea(p, l.cant))}`;
     });
     const hayPorConfirmar = estado.carrito.some((l) => consultar(porId.get(l.id)));
     const partes = ["Hola " + TIENDA.nombre + ", quiero hacer este pedido:", "", ...lineas, "",
@@ -1082,25 +1308,50 @@ const DIAS_NUEVO = 14;
       const el = $("#" + c.id);
       if (el && el.value.trim()) partes.push(c.label + ": " + el.value.trim());
     });
-    partes.push("Pago: " + (pago === "Yape" ? "Yape (adjunto mi comprobante)" : "Efectivo"));
+    partes.push("Pago: " + (pago === "Yape" ? "Yape o Plin (adjunto mi comprobante)" : "Efectivo"));
     window.open(wa(partes.join("\n")), "_blank", "noopener");
   });
 
   /* ---------- Eventos del catálogo ---------- */
-  $("#rejilla").addEventListener("click", (e) => {
-    const a = e.target.closest("a.card");
-    if (!a) return;
-    e.preventDefault();
-    abrirProducto(a.dataset.id);
+  rejilla.addEventListener("click", (e) => {
+    if (Date.now() - finDeslizar < 400) { e.preventDefault(); return; }     // fue un deslizamiento, no un toque
+    const sw = e.target.closest(".card-sw");
+    if (sw) { cambiarColorCard(sw.closest(".card"), sw.dataset.color); return; }
+    const a = e.target.closest("[data-abrir-card]");
+    if (a) { e.preventDefault(); abrirProducto(a.dataset.abrirCard); }
   });
+  const guardarTalla = () => {
+    try { if (estado.talla) localStorage.setItem(CLAVE_TALLA, estado.talla); else localStorage.removeItem(CLAVE_TALLA); }
+    catch (e) { /* sin almacenamiento */ }
+  };
   $("#filtros").addEventListener("click", (e) => {
-    const b = e.target.closest(".chip"); if (!b) return;
-    estado.filtro = b.dataset.filtro; pintarCatalogo();
+    const g = e.target.closest("[data-genero]");
+    if (g) estado.genero = g.dataset.genero;
+    else if (e.target.closest("#ver-filtros")) $("#mas-filtros").hidden = !$("#mas-filtros").hidden;
+    else return;
+    marcarFiltros(); pintarCatalogo();
+  });
+  $("#mas-filtros").addEventListener("click", (e) => {
+    const b = e.target.closest("[data-estilo],[data-linea]");
+    if (b) {
+      const lista = b.dataset.estilo !== undefined ? estado.estilos : estado.lineas, v = b.dataset.estilo !== undefined ? b.dataset.estilo : b.dataset.linea;
+      if (lista.has(v)) lista.delete(v); else lista.add(v);
+    } else if (e.target.closest("[data-quitar-filtros]")) { estado.estilos.clear(); estado.lineas.clear(); }
+    else return;
+    marcarFiltros(); pintarCatalogo();
+  });
+  $("#mi-talla").addEventListener("click", (e) => {
+    const b = e.target.closest(".mt");
+    if (!b) return;
+    estado.talla = estado.talla === b.dataset.talla ? null : b.dataset.talla;      // tocar la misma la quita
+    guardarTalla(); marcarFiltros(); pintarCatalogo();
   });
   $("#buscar").addEventListener("input", (e) => { estado.busqueda = e.target.value; pintarCatalogo(); });
   $("#orden").addEventListener("change", (e) => { estado.orden = e.target.value; pintarCatalogo(); });
   $("#limpiar").addEventListener("click", () => {
-    estado.filtro = "all"; estado.busqueda = ""; $("#buscar").value = ""; pintarCatalogo();
+    estado.genero = "all"; estado.estilos.clear(); estado.lineas.clear(); estado.talla = null; guardarTalla();
+    estado.busqueda = ""; $("#buscar").value = "";
+    pintarFiltros(); pintarCatalogo();
   });
   document.addEventListener("click", (e) => {
     const b = e.target.closest("[data-abrir]");
@@ -1116,9 +1367,10 @@ const DIAS_NUEVO = 14;
 
   /* ---------- Arranque ---------- */
   pintarCamposEntrega();
-  $("#hero-datos").hidden = !SITIO.datosPortada;
   pintarVitrina();
+  pantallaGrande.addEventListener("change", pintarVitrina);
   estado.carrito = cargarCarrito();
+  armarModelos();
   pintarFiltros();
   pintarCatalogo();
   pintarCarrito();
@@ -1149,6 +1401,8 @@ const DIAS_NUEVO = 14;
       stockShopify = "fallo";                                       // se vende con lo guardado, avisando en la ficha
     }
     calcularEstados();
+    armarModelos();                                                  // orden de colores y tallas con el stock real
+    pintarFiltros();
     const antes = estado.carrito.length;
     estado.carrito = estado.carrito.filter(lineaValida);            // una talla que se agotó sale del carrito
     if (estado.carrito.length !== antes) guardarCarrito();

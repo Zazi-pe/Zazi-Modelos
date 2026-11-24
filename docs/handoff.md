@@ -1,4 +1,4 @@
-# ZAZI catalogs — handoff (living document, last updated November 20, 2026)
+# ZAZI catalogs — handoff (living document, last updated November 24, 2026)
 
 Living handoff for the two catalog repos, **Zazi** and **Zazi-Modelos**. The same file lives in both repos at `docs/handoff.md`; whenever it's updated, the copy in the other repo is updated too. It is updated at the end of every Claude Code session (see `CLAUDE.md`).
 
@@ -14,7 +14,7 @@ It replaces the older handoffs (`ZAZI_handoff.md`, `ZAZImodels-handoff.md` and t
 - **ZAZI** is a shoe store in Lima, Peru. Its legal entity is SP SHOP S.A.C.
 - **Stefano** (Stefano Mateo Portalatino Tapia) works there and is a backend developer. His mother heads the business, so Stefano doesn't control every decision.
 - **How customers buy:** they browse a static catalog site, add to a cart saved in the browser, and check out by sending a pre-filled WhatsApp message.
-  - **Payment:** Yape (with QR) or cash. Yape and Plin are interoperable in Peru, so "Yape, Plin o transferencia" in "Cómo comprar" is intentional, not a mismatch.
+  - **Payment:** Yape (with QR) or cash. Yape and Plin are interoperable in Peru, so the site says **"Yape, Plin o en efectivo"** everywhere (meta description, catalog intro, "Cómo comprar", checkout option "Yape o Plin", WhatsApp message "Yape o Plin"). Transferencia isn't offered at checkout, so it isn't mentioned (Nov 24).
   - **Delivery:** motorizado in Lima, Shalom to all of Peru, pickup at the almacén (Cercado de Lima), or coordinate by WhatsApp.
 - **Two catalogs:**
   - **Zazi** (`Zazi-pe/Zazi`): branded sneakers, used as a showcase for new arrivals. Lines: Anda, You, I-RUN.
@@ -46,7 +46,7 @@ It replaces the older handoffs (`ZAZI_handoff.md`, `ZAZImodels-handoff.md` and t
 |---|---|---|
 | Store | https://zazi-pe.github.io/Zazi/ | https://zazi-pe.github.io/Zazi-Modelos/ |
 | Admin | https://zazi-pe.github.io/Zazi/admin.html | https://zazi-pe.github.io/Zazi-Modelos/admin.html |
-| Latest commit when this was rewritten (Nov 20) | `022620c` | `78a9471` |
+| Last big change | Nov 24 catalog redesign (see `git log`) | same, shared code only |
 
 - Both repos are public, on branch `main`. The account is `Zazi-pe`.
 - **Deploy (both repos):** Settings → Pages → Source = **GitHub Actions**. Every push to `main` runs `.github/workflows/publicar.yml`, in **two jobs** (since Nov 20):
@@ -69,7 +69,8 @@ docs/handoff.md                  this document; same in both
 productos.json                   catalog data; DIFFERENT per repo
 pendientes.json                  products waiting for photo + swatch, written by Etiquetas' Nuevos modelos; may not exist; DIFFERENT per repo
 fotos/                           product photos; different per repo
-img/                             favicon.png, logo-zazi.png, logo-zazi-blanco.png, yape-qr.jpg; same in both
+img/                             favicon.png, logo-zazi.png, logo-zazi-blanco.png, yape-qr.jpg (same in both);
+                                 compartir.jpg (link preview, 1200×630; DIFFERENT per repo)
 ```
 
 - **Zazi `fotos/`:** the original 23 photos in a flat folder, with legacy names such as `fotos/anda-260x-celeste.jpeg`. Some names have accents (`you-cápsula-blanco-rosa.jpeg`, `you-deportivo-blanco-marrón.jpeg`, `i-run-horizon-marrón-crema.jpeg`); they work, but don't rename them without updating `productos.json`.
@@ -88,39 +89,44 @@ Written by the admin. Each product is on one line, with keys in a fixed order.
 {
   "filtros": [["zapatillas","Zapatillas"],["anda","Anda"],["you","You"],["irun","I-RUN"]],
   "productos": [
-    {"id":4001,"shopify":{"id":"15503136456925","color":"Gris Lila"},"filtro":"you","linea":"You","nombre":"You Urbano Onda Gris Lila","modelo":"You Urbano Onda","color":"Gris Lila","colores":["#B0A6BE"],"precio":59.9,"tallas":[35,40],"agotadas":["35","36","37","38"],"estado":"disponible","creado":"2026-09-24","foto":"fotos/you-urbano-onda-gris-lila.jpeg","descripcion":"…"}
+    {"id":4001,"shopify":{"id":"15503136456925","color":"Gris Lila"},"filtro":"you","linea":"You","nombre":"You Urbano Onda Gris Lila","modelo":"You Urbano Onda","nombreCliente":"Urbana Plataforma Onda","estilo":"Urbana","genero":"mujer","color":"Gris Lila","colores":["#B0A6BE"],"precio":59.9,"tallas":[35,40],"agotadas":["35","36","37","38"],"estado":"disponible","creado":"2026-09-24","foto":"fotos/you-urbano-onda-gris-lila.jpeg","descripcion":"…"}
   ]
 }
 ```
 
-**Key order:** `id, shopify, filtro, linea, nombre, modelo, color, colores, precio, tallas, agotadas, estado, nuevo, creado, foto, descripcion`. Optional fields are omitted when empty: `shopify`, `agotadas`, `nuevo` (absent means auto) and `descripcion`.
+**Key order:** `id, shopify, filtro, linea, nombre, modelo, nombreCliente, estilo, genero, color, colores, precio, tallas, agotadas, estado, nuevo, creado, foto, descripcion`. Optional fields are omitted when empty: `shopify`, `nombreCliente`, `estilo`, `genero` (until filled in), `agotadas`, `nuevo` (absent means auto) and `descripcion`.
+
+**One entry per color, one card per model:** `productos.json` keeps one product per color (ids, Shopify links, carts and deep links don't change); the store groups colors by `filtro` + `modelo` at display time (Nov 24).
 
 | Field | Meaning |
 |---|---|
 | `id` | Unique integer and stable identity, used in deep links `#p<id>` and in carts. Each line takes a block of 1000 (Zazi: Anda 3xxx, You 4xxx, I-RUN 5xxx). A new product gets the highest id in its line's block + 1; a new line opens the next block (minimum 3000). |
 | `shopify` | Optional link to Shopify: `{"id": "<Shopify product id>", "color": "<Color option value as in Shopify>", "sku": "<SKU used to connect>"}` (`sku` is only a record of which SKU was scanned; links made before Nov 18 evening don't have it). When present, the store takes **price, sizes and sold-out sizes** from Shopify for that color; the values saved here are only a fallback (refreshed each time the product is saved in the admin). The catalog `color` stays for display, so "Marrón" can link to Shopify's "Marron". Replaced the old empty `sku` field (Nov 18). |
 | `filtro` / `linea` | Line or category key (must exist in `filtros`) and its display name. |
-| `nombre` / `modelo` / `color` | Full display name (accents allowed), model without color, and color. **Same `filtro` + same `modelo` = colors of one model** (swatches in the product view). |
+| `nombre` / `modelo` / `color` | **Internal** full name (accents allowed; goes in the WhatsApp order as a reference so the store knows the exact pair), model without color, and color. **Same `filtro` + same `modelo` = colors of one model** (one card in the grid, swatches in the card and the product view). |
+| `nombreCliente` | Customer-facing name without the color, pattern "style + defining feature" (e.g. "Running Malla Degradé"). Shown on cards, product view, cart. Missing → the store shows `modelo`. Model-level: the admin copies it to every color of the model. |
+| `estilo` | "Running", "Urbana", "Chunky"… Card grey line (`estilo · color`) and the "Filtros" panel. Model-level. |
+| `genero` | `mujer`, `hombre` or `unisex` (unisex appears under both chips). Drives the Mujer / Hombre chips. Model-level. Required (error) once any product in the catalog has it. |
 | `colores` | Swatch: 1 hex (solid) or 2 (diagonal split). Empty or invalid shows the color **name as a text chip**. |
 | `precio` | Number, or `null` for "Consultar precio" (cart says "Por confirmar"). |
 | `tallas` | `[a,b]` (two numbers) is the range a…b; `["36","38"]` lists specific sizes; `["Único"]` is one size ("Talla única"). The admin only writes ranges or `["Único"]`. |
 | `agotadas` | Sold-out sizes, as strings. |
 | `estado` | `disponible`, `agotado` or `proximamente`. If every size is sold out, the store shows "agotado". |
 | `nuevo` | Absent = automatic (shows "Nuevo" for `DIAS_NUEVO` = 14 days after `creado`). `"si"` or `"no"` forces it. Set from the admin (Automático / Sí / No). |
-| `creado` | Date the product was added, `YYYY-MM-DD`, set by the admin in Lima time. It controls the "Recomendados" order (newest first, ties broken by higher id), "Nuevo", and the **vitrina (automatic: the newest product with a photo)**. |
+| `creado` | Date the product was added, `YYYY-MM-DD`, set by the admin in Lima time. It controls the "Nuevos" sort, "Nuevo", and the **vitrina (automatic: the newest product with a photo)**. |
 | `foto` | Path in the repo. |
 | `descripcion` | Shown only where the site setting `descripciones` is on (Zazi). |
 
 **`filtros`:**
 - **Zazi:** `[["zapatillas","Zapatillas"],["anda","Anda"],["you","You"],["irun","I-RUN"]]`. "Zapatillas" is intentionally kept unused.
 - **Modelos:** `[["sandalias","Sandalias"],["botas","Botas"],["botines","Botines"],["zapatillas","Zapatillas"],["zapatos","Zapatos"]]`.
-- **How chips show:** a chip appears only if it has products, plus "Todos".
+- **Where they show (Nov 24):** no longer as the main chips. They're inside the "Filtros" panel under `SITIOS.grupo` ("Marca" in Zazi, "Categoría" in Modelos), only if there are 2 or more with products. Decision: kept (not dropped) because some customers do look for a brand, but out of the main row since most don't know the supplier lines.
 
 There is **no `vitrina` field** anymore; the vitrina is always automatic.
 
 ---
 
-## 4. Store: `index.html` (shared, about 61 KB)
+## 4. Store: `index.html` (shared, about 75 KB)
 
 **Structure:** one file with HTML, CSS and two `<script>` blocks. It is based on the Zazi design (clean sport store, references Gymshark and KHY):
 - **Fonts:** Oswald for titles, Inter for text, Playfair Display italic for the vitrina name.
@@ -132,10 +138,12 @@ There is **no `vitrina` field** anymore; the vitrina is always automatic.
 - `DIAS_NUEVO = 14`.
 - Rule: store data stays in `index.html`, never in `productos.json`.
 
-| `SITIOS` key | `carrito` (localStorage key) | `datosPortada` (hero stats band 100% / 24H / 35-46) | `precioEnFicha` (price line under name in product view) | `descripciones` |
-|---|---|---|---|---|
-| `zazi` | `zazi-carrito-v1` | true | false | true |
-| `zazi-modelos` | `zazi-propios-carrito-v1` | false | true | false |
+| `SITIOS` key | `carrito` (localStorage key) | `precioEnFicha` (price line under name in product view) | `descripciones` | `grupo` (label of the line group in "Filtros") | `tipo` (words search accepts for every product) |
+|---|---|---|---|---|---|
+| `zazi` | `zazi-carrito-v1` | false | true | "Marca" | "zapatilla zapatillas" |
+| `zazi-modelos` | `zazi-propios-carrito-v1` | true | false | "Categoría" | "" |
+
+`datosPortada` (the 100% / 24H / 35-46 stats band) was removed on Nov 24 together with the band: the size claim was false (largest size in stock is 44) and the band pushed the products 2.5 screens down.
 
 - **Which site am I:** the first segment of `location.pathname`, lowercased (`zazi` / `zazi-modelos`). Override with `?sitio=zazi-modelos` for local testing; the default is `zazi`.
 - **Separate cart keys** exist because both sites share the `zazi-pe.github.io` origin.
@@ -145,24 +153,32 @@ There is **no `vitrina` field** anymore; the vitrina is always automatic.
 - **Lighter photos (Nov 20):** `publicar.yml` installs `webp` and runs `cwebp -q 82 -m 6 -sharp_yuv -resize 400|800` plus a full-size copy at `-q 85` on every photo into `_site/fotos-web/<same path>-400.webp`, `-800.webp` and `-full.webp` (srcset declares it as `1024w`; quality 75 and a max of 800 px looked pixelated on 3x iPhones, fixed Nov 20) (only in the published site, not in the repo). The store wraps product photos in `<picture>` (`fotoProducto()`, `picture{display:contents}` so the CSS is unchanged) with a WebP `srcset` and `sizes` per place: cards `(max-width: 720px) 50vw, 300px`, showcase `(max-width: 960px) 100vw, 470px`, product view `(max-width: 720px) 100vw, 480px`, cart `96px`. If a WebP copy is missing (local testing, or a conversion failed), `zaziSinWebp()` removes the `<source>` and the original photo shows.
 - **Showcase photo** (`pintarVitrina`, the likely LCP image on phones) has `fetchpriority="high"`; cards keep `loading="lazy"`, `decoding="async"` and `width`/`height`. Fonts: every loaded weight is used (checked Nov 20), so none were trimmed.
 - **Loading:** `fetch("productos.json?v="+Date.now(), {cache:"no-store"})`. If the load fails, it shows "No pudimos cargar el catálogo…" plus a WhatsApp button; with no products, it shows "Estamos preparando el catálogo…".
-- **"Nuevo":** forced by `nuevo` "si"/"no", otherwise within 14 days of `creado`. Sorting goes by date, then id.
-- **Vitrina:** the newest product with a photo, labelled "MODELO EN VITRINA". With no products, the hero becomes text-only (`.hero-solo`).
-- **Filters:** "Todos" plus the `filtros` entries that have products. The chip counts are hidden by CSS.
-- **Search:** multi-word AND, accent and case insensitive, over `nombre + linea`. "you gris" shows only items with both words.
-- **Sort:** "Recomendados" is by date. The price sorts put no-price products last.
-- **Cards:** photo (4:5, `object-fit:cover`), linea, nombre, price, sizes text, and badges "Nuevo", "Agotado" (greyed) or "Próximamente".
+- **"Nuevo":** forced by `nuevo` "si"/"no", otherwise within 14 days of `creado`.
+- **Hero (Nov 24, short so products show on the first phone screen):** "Te damos la bienvenida a ZAZI." (neutral; it used to say "Bienvenida"), one line of copy, "Ver catálogo" (desktop only) and "Contactar por WhatsApp". The stats band is gone. The fuchsia delivery bar and the floating WhatsApp button stay. On a 375×812 phone the grid starts at about 560 px.
+- **Vitrina:** the newest product with a photo, labelled "MODELO EN VITRINA" with the customer name + color. **Shown only on screens wider than 720 px** (square, max 360 px); on phones it isn't drawn at all, so its photo isn't downloaded. With no products, the hero becomes text-only (`.hero-solo`).
+- **Models (Nov 24):** `armarModelos()` groups products by `filtro` + `modelo` into `MODELOS` (`porClave`, `modeloDe`). Colors inside a model are ordered by number of available sizes (desc), so sold-out colors go last; `m.libres` = sizes available in any color. Re-run after Shopify answers.
+- **Filters row:** chips "Todos · Mujer · Hombre" (a chip only shows if some product has that gender; unisex counts for both) plus a "Filtros (n)" button that opens a panel with **Estilo** and **Marca/Categoría** chips (multi-select within a group, OR) and "Quitar filtros". On phones the row doesn't wrap.
+- **Mi talla:** a row of size buttons (only sizes in stock somewhere in the catalog, plus the chosen one), scrolls sideways on phones. Choosing a size shows only models with that size available in at least one color, and each card opens on a color that has it. Tapping it again clears it. Saved in `localStorage["zazi-mi-talla"]` (shared by both catalogs; nothing preselected on a first visit).
+- **Count:** "16 modelos" counts models, not colors, and follows every filter.
+- **Search (`consulta()`, `pasa()`):** per color, every word must match somewhere in customer name, internal name, model, line, color, style, gender words (unisex = "unisex mujer hombre") and `SITIOS.tipo`. Accent/case-insensitive; words longer than 3 letters lose a final `a/o/as/os/es/s` so negra = negro, blancas = blanco, mujeres = mujer; filler words (de, la, talla, color…) are ignored. A two-digit number is a size: only colors with that size available (it overrides Mi talla). The card shows the first matching color ("blanco 38" opens on the white color with 38).
+- **Sort:** "Recomendados" (default) = models with the most available sizes first, then newest; "Nuevos" = newest model first; the price sorts put no-price products last.
+- **Cards (one per model, Gymshark style):** photo (4:5) with "Nuevo" / "Agotado" / "Próximamente" badge → row of square swatches (max 3, selected one with a black border, two-tone diagonal like the product view, color name as text if no hex) and "+N" (opens the product view) → customer name → grey line `estilo · color` → price, plus a subtle grey "Últimos pares" when the shown color has only one size left. No sizes on the card, no line name. Tapping a swatch switches photo, color and price on the card (`cambiarColorCard`, remembered in `estado.eleccion`); tapping the photo or name opens the product view on that color. **Swipe:** touch/pen pointer events on `.card-media` (`touch-action: pan-y pinch-zoom`, so vertical scrolling stays with the browser); a gesture counts as a swipe only if it moves more sideways than vertically after 10 px, and switches color past 20% of the width (max 60 px), with a short slide-in (skipped with reduced motion). The click right after a swipe is ignored. Mouse doesn't swipe (desktop uses the swatches). A card is "Agotado" when the color it shows is sold out; it shows a sold-out color first only if every color is sold out.
 - **Product view** (`<dialog id="modal">`, deep link `#p<id>`):
-  - **Header:** name, linea, and the price line if `precioEnFicha`.
-  - **Swatches:** every product with the same filtro + modelo, ordered by `creado` then id; a text chip if there's no hex.
-  - **Size grid:** 3 per row. Sold-out sizes are grey with a strike-through and disabled. The smallest in-stock size is preselected, and changing color keeps the size when possible.
-  - **Sticky bar:** if the button's natural spot is below the visible area, it sticks to the bottom with "Talla X ⌄" on the left and "Añadir - S/ 69.90" on the right. Tapping "Talla X" auto-scrolls to center the options.
+  - **Header:** customer name (`nombreCliente`, else `modelo`), linea, and the price line if `precioEnFicha`.
+  - **Swatches:** the model's colors in the same order as the card; a text chip if there's no hex.
+  - **Size grid:** 3 per row. Sold-out sizes are grey with a strike-through and disabled. **No size is preselected (Nov 24)**, except "Talla única"; changing color keeps a size the customer already chose. Under the grid: "¿Dudas con tu talla? Escríbenos" (WhatsApp with the product and its internal name prefilled).
+  - **Button without a size:** reads "Elige tu talla" (enabled). Tapping it scrolls to the sizes, outlines the free ones in red and shows "Elige una talla para añadirla al carrito." After a size is chosen: "Añadir al carrito - S/ 69.90".
+  - **Sticky bar:** if the button's natural spot is below the visible area, it sticks to the bottom. Without a size it's a single full-width "Elige tu talla"; with a size it's "Talla X ⌄" on the left and "Añadir - S/ 69.90" on the right. Tapping "Talla X" auto-scrolls to center the options.
   - **Auto-scroll fix:** adds `padding-bottom` when there isn't enough room, and uses `scrollTo` to a fixed target so repeated taps can't land on "Añadir". Ported from Modelos; it matters when there's no description.
   - **No sizes:** "Consultar por WhatsApp" instead of the add button.
   - **Description** below the button, if enabled for the site.
 - **Cart** (`<dialog id="carrito">`, slides up from the bottom):
   - Quantity +/−, remove, "Vaciar carrito" (with confirmation), total.
   - Saved lines are dropped on load if the product, size or sold-out status no longer fits.
-  - Checkout view: delivery fields that depend on the chosen option, Yape/Efectivo (Yape preselected on purpose, with the QR `img/yape-qr.jpg`), and send via `wa.me/51959161270?text=…`.
+  - Lines show the customer name and "Color · Talla X".
+  - Checkout view: delivery fields that depend on the chosen option, "Yape o Plin"/Efectivo (Yape preselected on purpose, with the QR `img/yape-qr.jpg`), and send via `wa.me/51959161270?text=…`.
+  - **Order message line:** `• 1 × <customer name> <color> (<internal nombre>), talla 38 — S/ 69.90`; the part in parentheses is left out when it would repeat the same text (no `nombreCliente` yet).
+- **Link preview (Nov 24):** `og:image` / `twitter:card summary_large_image` point to `img/compartir.jpg` (1200×630, fuchsia band with the white logo + product photos; made with a small Swift/AppKit script since there's no image tool on the Mac). The deploy (`publicar.yml`, step "Dirección completa de la imagen para compartir") rewrites that path to `https://zazi-pe.github.io/<repo>/img/compartir.jpg`, so the shared `index.html` stays identical. Per-product previews for `#p<id>` links are not possible as-is (crawlers don't run JS and never see the `#` part); they would need a small static page per product generated at deploy (e.g. `p/3001.html` with its own `og:image` that redirects to `/#p3001`).
 - **Other pieces:** floating WhatsApp button, "Cómo comprar" (3 steps), the fuchsia contact band, and the footer.
 - **Known leftover:** `#aviso` / `mostrarAviso()` exist but aren't used, which is harmless.
 
@@ -200,7 +216,7 @@ Same detection as the store, via a `CATALOGOS` map:
 - **"Quitar de pendientes"** (red button in the Publicar editor, with a confirm): removes it from `pendientes.json` in its own commit without publishing. For a model created wrong: also delete it in Shopify by hand, then create it again from Nuevos modelos.
 
 ### List screen
-- Search (multi-word), line chips, and a "Nuevo" button.
+- Search (multi-word, also over customer name and style), line chips, and a "Nuevo" button.
 - **Rows, newest first:**
   - Photo, name, price and estado, plus "Nuevo" if it currently shows and "En vitrina" (computed).
   - **Tappable size chips:** tap to mark a size sold out or restock it, the fastest action. **Connected products** show a green "Shopify" tag, their live price and sizes from Shopify, and size chips that can't be tapped (Shopify decides). **Products not connected** show a red "Sin conectar a Shopify" tag; a connected product Shopify no longer has shows red "Shopify: no se encontró".
@@ -212,7 +228,8 @@ Same detection as the store, via a `CATALOGOS` map:
 A full-screen dialog on phone, centered on desktop. It covers:
 - **Photo:** chosen from the camera roll, then center-cropped to 4:5, resized to 800×1000 and saved as JPEG of 220 KB or less (quality steps 0.85 → 0.6).
 - **Line/categoría:** existing or a new one.
-- **Name fields:** modelo, color, and nombre (auto-built from modelo + color, editable).
+- **Name fields:** modelo, color, and **"Nombre interno"** (`nombre`, auto-built from modelo + color, editable; goes in the WhatsApp order).
+- **For customers (Nov 24):** "Nombre para clientes" (`nombreCliente`, optional), "Estilo" (`estilo`, free text with suggestions from the styles already used) and **"Para": Mujer / Hombre / Unisex** (`genero`, **required to save**). These three are model-level: saving one color copies them to every other color with the same line + model (they show as changed rows). A new color ("Añadir otro color") or a pending product takes them from another color of the same model.
 - **Swatch:** 1–2 color pickers, auto-filled from any product with the same color name until edited by hand.
 - **Price:** a number or "Por confirmar".
 - **Sizes:** desde/hasta or talla única, plus a sold-out size grid.
@@ -220,7 +237,7 @@ A full-screen dialog on phone, centered on desktop. It covers:
 - **"Nuevo":** Automático / Sí / No, with a note like "Agregado el … Muestra Nuevo hasta el …".
 - **Description:** Zazi only.
 - **Shopify (connection, done once per product):** a product that isn't connected shows red **"Sin conectar a Shopify"** and a field to **type or scan the SKU of any size** of that model and color (Enter or "Conectar"). `ZaziShopify.buscarSku()` finds it through Shopify's public search, and the product shows green **"Conectado a Shopify: <Shopify title> · <color>"** plus "Desde Shopify: S/ 59.90 · tallas 35 al 40 · agotadas: …". While connected, the price, sizes and sold-out fields are hidden; saving copies Shopify's values into the product as a fallback. "Cambiar conexión" shows the SKU field again; "Desconectar" (with confirmation) brings the manual fields back, prefilled. If the connected product or color disappears from the Online Store, the status turns red and asks for a new SKU. (A first version used a dropdown of all Shopify products; Stefano found it unreliable, replaced the same day.)
-- **Actions:** "Añadir otro color de este modelo" copies line, model, price and sizes; the new color gets connected with its own SKU. "Eliminar producto" asks for confirmation; its photo is deleted from the repo if no other product uses it.
+- **Actions:** "Añadir otro color de este modelo" copies line, model, customer name, style, gender, price and sizes; the new color gets connected with its own SKU. "Eliminar producto" asks for confirmation; its photo is deleted from the repo if no other product uses it.
 - **New products:** get `creado` = today in Lima time and the next id in their block. The photo is named on save as `fotos/<filtro>/<slug(nombre)>.jpg`, with `-2`, `-3`… added if the name is taken.
 
 ### Publish
@@ -257,6 +274,8 @@ A full-screen dialog on phone, centered on desktop. It covers:
 - no tallas, or a reversed range
 - `estado` invalid
 - `nuevo` not auto/si/no
+- `genero` not mujer/hombre/unisex, or **missing while any other product in the catalog has it** ("once the field exists"; so a catalog that hasn't adopted it, like Modelos today, still passes)
+- `estilo` or `nombreCliente` present but not text
 
 **Warnings (publishing allowed):**
 - sold-out sizes outside the product's sizes
@@ -264,6 +283,8 @@ A full-screen dialog on phone, centered on desktop. It covers:
 - a color with no valid hex (shows as a text chip)
 - `creado` missing or invalid
 - photos in `fotos/` that no product uses
+- no `estilo` / no `nombreCliente`, only once some product in the catalog has one
+- colors of one model (same `filtro` + `modelo`) with different `nombreCliente`, `estilo` or `genero`
 
 ---
 
@@ -304,9 +325,13 @@ A full-screen dialog on phone, centered on desktop. It covers:
 ### Other
 - **Optional, not requested yet** (mention, don't do unasked):
   - checkout fields aren't `required` (for example, a Shalom order can be sent without DNI)
-  - no `og:image` or link preview
-  - the hero says sizes go up to 46 ("Tallas 35 a 39 mujer, 40 a 46 hombre"), but the largest size in the data is 44
   - `#aviso` dead code
+- **Catalog redesign follow-ups (Nov 24):**
+  - **Waiting on Stefano:** approve the customer names / style / gender table and the 7 drafted descriptions (D268, D263, D269, D308 ×4); then write them into `productos.json` (Zazi) and the Botín (Modelos). Once one product has `genero`, every product needs it (validator error).
+  - **Confirm** that the Yape holder name shown at checkout ("Rosario Tapia Carrasco", `TIENDA.yape.titular`) matches exactly what Yape displays.
+  - Etiquetas' Nuevos modelos doesn't send `genero` / `estilo` / `nombreCliente` in `pendientes.json`; the admin fills them from another color of the same model, or asks for "Para" when publishing a brand-new model. Adding them to Nuevos modelos is optional.
+  - Not built (mentioned only): preselecting Mi talla in the product view, a size guide, multiple photos per color (a gallery), per-product link previews (see section 4), delivery costs in the cart.
+  - Photos (consistent background, no other brands' boxes such as the red DXLU one, more angles) are Stefano's to redo later.
 - **Not discussed:** Culqi payment links. Stefano has a Culqi account; an on-site Culqi checkout was discussed once, never built. Never put a Culqi secret key in the site.
 - **Not discussed:** analytics, SEO, custom domain.
 
@@ -329,12 +354,13 @@ A full-screen dialog on phone, centered on desktop. It covers:
 5. **Shopify (Nov 18):** inventory moved from Bsale to Shopify. The label page's worker was rewritten for Shopify (Etiquetas repo). The catalogs got `shopify.js`, the `shopify` field (replacing `sku`), connect-by-SKU in the admin (a dropdown picker was tried first and replaced), and the 13 You/Pasador products linked. Bsale's catalog plan (worker-served stock, branches, price list 5) was dropped: the stores read Shopify's public API directly.
 6. **Nuevos modelos → catalog (Nov 19):** Etiquetas' Nuevos modelos can add the created models to a catalog as pending products (`pendientes.json`); the admin got the Pendientes section, the Publicar flow and "Quitar de pendientes". Anda 260X became Anda D318 in Shopify and was connected; D268, D263, D269 and D308 were published from Pendientes.
 7. **Performance (Nov 20):** after a review with the `modern-web-guidance` skill: render first with saved data plus the stock lock (Stefano's rule), WebP copies with `<picture>`, `fetchpriority` on the showcase, and the two-job deploy. Photo quality was raised the same day after Stefano saw pixelation on his iPhone.
+8. **Catalog redesign (Nov 24), "browse like Gymshark":** after an audit on an iPhone-sized screen (fast, but hard to tell styles, sizes and what each shoe is). One card per model with square swatches and swipe; no sizes on cards; Mujer / Hombre chips, "Mi talla", "Filtros" (estilo + marca); live model count; forgiving search; "Recomendados" by available sizes + "Nuevos"; no preselected size in the product view ("Elige tu talla") plus a size-help WhatsApp link; short neutral hero without the stats band; consistent payment copy; link preview image. New data fields `nombreCliente`, `estilo`, `genero` in the admin and the validator. Shared code changed in both repos; the field values are still to be filled in after Stefano approves them.
 
 ---
 
 ## 10. Current data (as of Nov 20, 2026; the admin can change it at any time, so the repo is the truth)
 
-### Zazi: 30 products, all `disponible`
+### Zazi: 30 products (16 models), all `disponible`; `nombreCliente` / `estilo` / `genero` not filled in yet
 `filtros` also has an `intento` line ("Intento") with no products, a leftover from the first Nuevos modelos test; it doesn't show in the store (chips only appear with products). Ask Stefano before removing it.
 
 | ids | products | source of price and sizes |

@@ -37,6 +37,15 @@ jobs:
           if [ -d fotos ]; then cp -r fotos _site/; fi
           if [ -d img ]; then cp -r img _site/; fi
 
+      # Vista previa al compartir el enlace (WhatsApp, Instagram): la imagen necesita la dirección completa,
+      # que cambia en cada catálogo (zazi-pe.github.io/Zazi/ o /Zazi-Modelos/).
+      - name: Dirección completa de la imagen para compartir
+        run: |
+          dueno="$(echo "$GITHUB_REPOSITORY_OWNER" | tr '[:upper:]' '[:lower:]')"; repo="${GITHUB_REPOSITORY#*/}"
+          url="https://${dueno}.github.io/${repo}/img/compartir.jpg"
+          sed -i "s|content=\"img/compartir.jpg\"|content=\"${url}\"|g" _site/index.html
+          echo "Imagen para compartir: ${url} ($(grep -c "${url}" _site/index.html) etiquetas)"
+
       # Copias livianas de las fotos en _site/fotos-web/: WebP de 400 y 800 px de ancho y una del tamaño
       # original (-full, para pantallas 3x). La tienda las usa con <picture>; si alguna falta, muestra la original.
       # Calidad 82-85: a 75 se notaba en celulares (texturas pixeladas).

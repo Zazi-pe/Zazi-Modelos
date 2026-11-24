@@ -9,6 +9,9 @@
 
   const ESTADOS = ["disponible", "agotado", "proximamente"];
   const NUEVO = ["auto", "si", "no"];
+  const GENEROS = ["mujer", "hombre", "unisex"];
+  // Datos para clientes, iguales en todos los colores de un modelo (el admin los copia a todos)
+  const DE_MODELO = { nombreCliente: "nombre para clientes", estilo: "estilo", genero: "Mujer/Hombre" };
   const norm = (t) => String(t || "").normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().trim();
   const hexOk = (h) => typeof h === "string" && /^#[0-9a-f]{3,8}$/i.test(h);
 
@@ -37,6 +40,9 @@
     const existe = archivos ? new Set(archivos) : null;
 
     const ids = new Map(), nombres = new Map();
+    // Un campo "existe" en el catálogo cuando algún producto lo tiene; desde ahí se exige (o se avisa) en todos
+    const usa = (k) => productos.some((p) => p && typeof p === "object" && p[k] !== undefined && p[k] !== "");
+    const usaGenero = usa("genero"), usaEstilo = usa("estilo"), usaNombreCliente = usa("nombreCliente");
     productos.forEach((p) => {
       if (!p || typeof p !== "object") { err(null, "Hay un producto vacío o mal escrito."); return; }
       // identidad
@@ -83,6 +89,30 @@
       if (p.color && !(Array.isArray(p.colores) && p.colores.some(hexOk))) aviso(p, "No tiene el tono del cuadrito de color (se mostrará el nombre del color).");
       if (p.nuevo !== undefined && !NUEVO.includes(p.nuevo)) err(p, "El valor de \"Nuevo\" no es válido (" + p.nuevo + ").");
       if (!p.creado || isNaN(Date.parse(p.creado))) aviso(p, "No tiene fecha de alta (no podrá salir como Nuevo ni en la vitrina).");
+
+      // para clientes: Mujer/Hombre (bloquea), estilo y nombre para clientes (avisan)
+      if (p.genero !== undefined && !GENEROS.includes(p.genero)) err(p, "El valor de Mujer/Hombre no es válido (" + p.genero + ").");
+      else if (p.genero === undefined && usaGenero) err(p, "Falta indicar si es para mujer, hombre o unisex.");
+      if (p.estilo !== undefined && typeof p.estilo !== "string") err(p, "El estilo no es válido.");
+      else if (usaEstilo && !String(p.estilo || "").trim()) aviso(p, "No tiene estilo (Running, Urbana…); no saldrá en el filtro de estilos.");
+      if (p.nombreCliente !== undefined && typeof p.nombreCliente !== "string") err(p, "El nombre para clientes no es válido.");
+      else if (usaNombreCliente && !String(p.nombreCliente || "").trim()) aviso(p, "No tiene nombre para clientes (la tienda muestra el modelo).");
+    });
+
+    // colores de un mismo modelo (misma línea + modelo) con distinto nombre para clientes, estilo o Mujer/Hombre
+    const modelos = new Map();
+    productos.forEach((p) => {
+      if (!p || typeof p !== "object" || !String(p.modelo || "").trim()) return;
+      const k = p.filtro + "|" + p.modelo;
+      if (!modelos.has(k)) modelos.set(k, []);
+      modelos.get(k).push(p);
+    });
+    modelos.forEach((lista) => {
+      if (lista.length < 2) return;
+      Object.keys(DE_MODELO).forEach((k) => {
+        if (new Set(lista.map((p) => norm(p[k]))).size > 1)
+          aviso(lista[0], "Sus colores no tienen el mismo " + DE_MODELO[k] + " (" + lista[0].modelo + "); la tarjeta usa el del color que muestra.");
+      });
     });
 
     // fotos que ningún producto usa
