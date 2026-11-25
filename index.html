@@ -213,7 +213,7 @@ dialog::backdrop{background:rgba(0,0,0,.45)}
 /* Ficha de producto */
 #modal{width:min(880px,calc(100vw - 32px));max-height:calc(100dvh - 48px);margin:auto;overflow:auto;border-radius:12px}
 .modal-in{display:grid;grid-template-columns:1fr 1fr}
-.modal-media{background:var(--piedra)}
+.modal-media{background:var(--piedra) center/cover no-repeat}
 .modal-media img,.modal-media .sin-foto{width:100%;height:100%;aspect-ratio:4/5;object-fit:cover}
 .modal-cuerpo{--pad-m:32px;padding:48px var(--pad-m) 28px;display:flex;flex-direction:column;gap:22px;min-width:0;align-self:stretch}
 .m-nombre{font-size:clamp(1.6rem,3vw,2.1rem);padding-right:36px}
@@ -841,11 +841,15 @@ const DIAS_NUEVO = 14;
   }
 
   // Tarjeta: fotos (una por color, se deslizan) → cuadritos de color (máx. 3 y "+N") → nombre → estilo · color → precio
-  /* Fotos de la tarjeta: al dibujar se baja solo la del color que se ve. Cuando la página terminó de cargar,
-     se agrega la del color siguiente (como Gymshark: así el primer deslizamiento no espera; antes de eso
-     competiría con las fotos visibles y la página tardaría más). Las de los demás colores se bajan cuando
-     el cliente toca la tarjeta, la desliza o toca un cuadrito. Las tarjetas de la primera fila cargan su
-     foto enseguida y con prioridad: es lo más grande que se ve al abrir la página. */
+  /* Fotos de la tarjeta, por turnos:
+     1) Al abrir: solo la foto del color que se ve; la primera fila enseguida y con prioridad (es lo más
+        grande que se ve al abrir la página). Las demás tarjetas, cuando se acercan a la pantalla.
+     2) Con la página ya cargada, en segundo plano (de a dos, de arriba hacia abajo): la foto que se ve en
+        todas las tarjetas, luego la del color siguiente (así el primer deslizamiento no espera, como en
+        Gymshark) y al final los demás colores. Antes de terminar de cargar no se adelanta nada: competiría
+        con las fotos visibles y la página tardaría más (medido: 4,3 s → 6,2 s en un celular con 4G lento).
+        Con "ahorro de datos" o conexión 2G no se adelanta nada.
+     3) Si el cliente toca una tarjeta, la desliza o toca un cuadrito, sus fotos se ponen enseguida. */
   const PRIMERAS = 4;                                          // tarjetas con foto prioritaria (primera fila)
   // prioridad: "alta" (primera fila) o nada (las demás: se bajan cuando se acercan a la pantalla)
   function imgCard(v, prioridad) {
@@ -863,15 +867,31 @@ const DIAS_NUEVO = 14;
   function ponerFoto(a) {
     const v = porId.get(Number(a.dataset.abrirCard));
     a.removeAttribute("data-sin-cargar");
-    a.removeAttribute("data-siguiente");
     if (v) a.insertAdjacentHTML("afterbegin", imgCard(v, ""));
   }
-  // Con la página ya cargada: la foto del color siguiente de cada tarjeta (lazy: solo las que están cerca)
-  function adelantarSiguientes() {
-    if (document.readyState !== "complete") return;
-    $$("#rejilla .card-foto[data-siguiente][data-sin-cargar]").forEach(ponerFoto);
+  const ahorroDatos = () => { const c = navigator.connection; return !!(c && (c.saveData || /2g/.test(c.effectiveType || ""))); };
+  let turnoFondo = 0;                                          // un redibujado del catálogo empieza una cola nueva
+  async function bajarEnFondo() {
+    if (document.readyState !== "complete" || ahorroDatos()) return;
+    const turno = ++turnoFondo;
+    const cards = $$("#rejilla .card");
+    const foto = (a) => () => { if (a.hasAttribute("data-sin-cargar")) ponerFoto(a); return $("img", a); };
+    const pasos = [
+      ...cards.map((c) => foto($(`.card-foto[data-abrir-card="${c.dataset.id}"]`, c))),       // la que se ve
+      ...cards.flatMap((c) => $$(".card-foto[data-siguiente]", c).map(foto)),                 // el color siguiente
+      ...cards.flatMap((c) => $$(".card-foto[data-sin-cargar]", c).map(foto))                 // los demás colores
+    ];
+    const bajar = (img) => new Promise((listo) => {
+      if (!img) return listo();
+      img.loading = "eager";
+      if (img.complete) return listo();
+      img.addEventListener("load", listo, { once: true });
+      img.addEventListener("error", listo, { once: true });
+    });
+    const trabajador = async () => { while (pasos.length && turno === turnoFondo) await bajar(pasos.shift()()); };
+    await Promise.all([trabajador(), trabajador()]);
   }
-  window.addEventListener("load", () => setTimeout(adelantarSiguientes, 300));
+  window.addEventListener("load", () => setTimeout(bajarEnFondo, 300));
   // Pone las fotos que faltan de una tarjeta (los otros colores)
   function cargarFotos(card) {
     if (!card || card._fotos) return;
@@ -913,7 +933,7 @@ const DIAS_NUEVO = 14;
     $("#rejilla").innerHTML = lista.map((x, n) => tarjeta(x, n)).join("");
     $$("#rejilla .card").forEach(colocarFoto);
     pistaDeslizar();
-    setTimeout(adelantarSiguientes, 300);                   // si se redibuja con la página ya cargada
+    setTimeout(bajarEnFondo, 300);                          // si se redibuja con la página ya cargada
     $("#vacio").hidden = lista.length > 0;
     $("#vacio-txt").textContent = estado.talla && !estado.busqueda.trim()
       ? "Por ahora no tenemos modelos en talla " + estado.talla + " con estos filtros."
@@ -1038,6 +1058,8 @@ const DIAS_NUEVO = 14;
     if (!p) return;
     const scrollPrevio = modal.scrollTop;
     productoAbierto = p;
+    // debajo, la foto de la tarjeta (ya está bajada): se ve al instante y la versión grande la cubre al llegar
+    $("#m-media").style.backgroundImage = p.foto ? `url("${fotoWeb(p.foto, 800)}")` : "";
     $("#m-media").innerHTML = p.foto
       ? fotoProducto(p, "(max-width: 720px) 100vw, 480px", `width="576" height="720" alt="${esc(nombreConColor(p))}"`)
       : `<div class="sin-foto">${ICONO_ZAPATILLA}<span>Foto próximamente</span></div>`;
