@@ -841,34 +841,42 @@ const DIAS_NUEVO = 14;
   }
 
   // Tarjeta: fotos (una por color, se deslizan) → cuadritos de color (máx. 3 y "+N") → nombre → estilo · color → precio
-  /* Fotos de la tarjeta: al dibujar se bajan la del color que se ve y, con prioridad baja, la del color
-     siguiente (como Gymshark: así el primer deslizamiento no espera). Las de los demás colores se bajan
-     cuando el cliente toca la tarjeta, la desliza o toca un cuadrito. Las tarjetas de la primera fila
-     cargan su foto enseguida y con prioridad: es lo más grande que se ve al abrir la página. */
+  /* Fotos de la tarjeta: al dibujar se baja solo la del color que se ve. Cuando la página terminó de cargar,
+     se agrega la del color siguiente (como Gymshark: así el primer deslizamiento no espera; antes de eso
+     competiría con las fotos visibles y la página tardaría más). Las de los demás colores se bajan cuando
+     el cliente toca la tarjeta, la desliza o toca un cuadrito. Las tarjetas de la primera fila cargan su
+     foto enseguida y con prioridad: es lo más grande que se ve al abrir la página. */
   const PRIMERAS = 4;                                          // tarjetas con foto prioritaria (primera fila)
-  // prioridad: "alta" (primera fila), "baja" (el color siguiente) o nada (las demás, cuando se acercan)
+  // prioridad: "alta" (primera fila) o nada (las demás: se bajan cuando se acercan a la pantalla)
   function imgCard(v, prioridad) {
-    const carga = prioridad === "alta" ? 'loading="eager" fetchpriority="high"'
-      : prioridad === "baja" ? 'loading="lazy" fetchpriority="low"' : 'loading="lazy"';
+    const carga = prioridad === "alta" ? 'loading="eager" fetchpriority="high"' : 'loading="lazy"';
     return v.foto
       ? fotoProducto(v, "(max-width: 720px) 50vw, 300px", `width="576" height="720" alt="${esc(nombreConColor(v))}" ${carga} decoding="async" draggable="false"`)
       : `<div class="sin-foto">${ICONO_ZAPATILLA}<span>Foto próximamente</span></div>`;
   }
-  function fotoCard(v, conImagen, prioridad) {
+  function fotoCard(v, conImagen, prioridad, siguiente) {
     const marca = v.estado === "agotado" ? '<span class="etiqueta agotado">Agotado</span>'
       : v.estado === "proximamente" ? '<span class="etiqueta">Próximamente</span>' : "";
     const nuevo = v.estado === "disponible" && esNuevo(v) ? '<span class="tag-nuevo">Nuevo</span>' : "";
-    return `<a class="card-foto${v.estado === "agotado" ? " agotado" : ""}" href="#p${v.id}" data-abrir-card="${v.id}"${conImagen ? "" : " data-sin-cargar"} tabindex="-1" aria-hidden="true">${conImagen ? imgCard(v, prioridad) : ""}${marca}${nuevo}</a>`;
+    return `<a class="card-foto${v.estado === "agotado" ? " agotado" : ""}" href="#p${v.id}" data-abrir-card="${v.id}"${conImagen ? "" : " data-sin-cargar"}${siguiente ? " data-siguiente" : ""} tabindex="-1" aria-hidden="true">${conImagen ? imgCard(v, prioridad) : ""}${marca}${nuevo}</a>`;
   }
+  function ponerFoto(a) {
+    const v = porId.get(Number(a.dataset.abrirCard));
+    a.removeAttribute("data-sin-cargar");
+    a.removeAttribute("data-siguiente");
+    if (v) a.insertAdjacentHTML("afterbegin", imgCard(v, ""));
+  }
+  // Con la página ya cargada: la foto del color siguiente de cada tarjeta (lazy: solo las que están cerca)
+  function adelantarSiguientes() {
+    if (document.readyState !== "complete") return;
+    $$("#rejilla .card-foto[data-siguiente][data-sin-cargar]").forEach(ponerFoto);
+  }
+  window.addEventListener("load", () => setTimeout(adelantarSiguientes, 300));
   // Pone las fotos que faltan de una tarjeta (los otros colores)
   function cargarFotos(card) {
     if (!card || card._fotos) return;
     card._fotos = true;
-    $$(".card-foto[data-sin-cargar]", card).forEach((a) => {
-      const v = porId.get(Number(a.dataset.abrirCard));
-      a.removeAttribute("data-sin-cargar");
-      if (v) a.insertAdjacentHTML("afterbegin", imgCard(v, ""));
-    });
+    $$(".card-foto[data-sin-cargar]", card).forEach(ponerFoto);
   }
   function cuadritosCard(m, p) {
     const n = m.variantes.length;
@@ -895,8 +903,7 @@ const DIAS_NUEVO = 14;
     const colores = !p.color && m.variantes.length < 2 ? "" :
       `<div class="card-colores" role="group" aria-label="Colores de ${esc(nombreVisible(p))}">${cuadritosCard(m, p)}</div>`;
     return `<article class="card" data-modelo="${esc(m.clave)}" data-id="${p.id}">
-      <div class="card-media">${m.variantes.map((v) => fotoCard(v, v === p || v === siguiente,
-        v === p ? (n < PRIMERAS ? "alta" : "") : "baja")).join("")}</div>
+      <div class="card-media">${m.variantes.map((v) => fotoCard(v, v === p, n < PRIMERAS ? "alta" : "", v === siguiente)).join("")}</div>
       ${colores}
       <div class="card-cuerpo">${cuerpoCard(p)}</div></article>`;
   }
@@ -906,6 +913,7 @@ const DIAS_NUEVO = 14;
     $("#rejilla").innerHTML = lista.map((x, n) => tarjeta(x, n)).join("");
     $$("#rejilla .card").forEach(colocarFoto);
     pistaDeslizar();
+    setTimeout(adelantarSiguientes, 300);                   // si se redibuja con la página ya cargada
     $("#vacio").hidden = lista.length > 0;
     $("#vacio-txt").textContent = estado.talla && !estado.busqueda.trim()
       ? "Por ahora no tenemos modelos en talla " + estado.talla + " con estos filtros."
