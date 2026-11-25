@@ -72,6 +72,7 @@ agotadas son solo de respaldo (los de verdad salen de Shopify).
 
 | | Zazi | Zazi-Modelos |
 |---|---|---|
+| Título de la página (`titulo`; publicar.yml lo escribe en el HTML) | ZAZI — Zapatillas Catálogo Oficial | (sin titulo: ZAZI — Catálogo Oficial) |
 | Carrito guardado en | `zazi-carrito-v1` | `zazi-propios-carrito-v1` |
 | Nombre de los chips de línea (`grupo`, "Filtrar por …") | Marca | Categoría |
 | Palabras que la búsqueda acepta para todo (`tipo`) | zapatilla, zapatillas | — |

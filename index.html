@@ -588,10 +588,11 @@ const TIENDA = {
 
 /* Lo que cambia entre los dos catálogos. Cada sitio se reconoce por su dirección
    (zazi-pe.github.io/Zazi/ o zazi-pe.github.io/Zazi-Modelos/). */
-/* grupo: nombre de la línea en "Filtros" (Marca en Zazi, Categoría en Modelos).
+/* titulo: el de la pestaña y de Google (publicar.yml lo escribe en el HTML publicado); sin él queda "ZAZI — Catálogo Oficial".
+   grupo: nombre de la línea en "Filtros" (Marca en Zazi, Categoría en Modelos).
    tipo: palabras que la búsqueda acepta para todos los productos (en Zazi todo es zapatilla). */
 const SITIOS = {
-  "zazi":         { carrito: "zazi-carrito-v1",         precioEnFicha: false, descripciones: true,  grupo: "Marca",     tipo: "zapatilla zapatillas" },
+  "zazi":         { titulo: "ZAZI — Zapatillas Catálogo Oficial", carrito: "zazi-carrito-v1", precioEnFicha: false, descripciones: true,  grupo: "Marca",     tipo: "zapatilla zapatillas" },
   "zazi-modelos": { carrito: "zazi-propios-carrito-v1", precioEnFicha: true,  descripciones: false, grupo: "Categoría", tipo: "" }
 };
 
@@ -636,6 +637,7 @@ const DIAS_NUEVO = 14;
   /* ---------- Qué catálogo es (por la dirección; para probar: ?sitio=zazi-modelos) ---------- */
   const nombreSitio = (new URLSearchParams(location.search).get("sitio") || location.pathname.split("/").filter(Boolean)[0] || "zazi").toLowerCase();
   const SITIO = SITIOS[nombreSitio] || SITIOS.zazi;
+  if (SITIO.titulo) document.title = SITIO.titulo;
 
   /* ---------- Datos del catálogo (productos.json) ---------- */
   let PRODUCTOS = [], FILTROS = [], errorCarga = false;
@@ -839,14 +841,30 @@ const DIAS_NUEVO = 14;
   }
 
   // Tarjeta: fotos (una por color, se deslizan) → cuadritos de color (máx. 3 y "+N") → nombre → estilo · color → precio
-  function fotoCard(v) {
+  /* Fotos de la tarjeta: al dibujar solo se baja la del color que se ve (las de los otros colores se bajan
+     cuando el cliente toca la tarjeta, la desliza o toca un cuadrito). Las tarjetas de la primera fila
+     cargan su foto enseguida y con prioridad: es lo más grande que se ve al abrir la página. */
+  const PRIMERAS = 4;                                          // tarjetas con foto prioritaria (primera fila)
+  function imgCard(v, prioridad) {
+    return v.foto
+      ? fotoProducto(v, "(max-width: 720px) 50vw, 300px", `width="576" height="720" alt="${esc(nombreConColor(v))}" ${prioridad ? 'loading="eager" fetchpriority="high"' : 'loading="lazy"'} decoding="async" draggable="false"`)
+      : `<div class="sin-foto">${ICONO_ZAPATILLA}<span>Foto próximamente</span></div>`;
+  }
+  function fotoCard(v, conImagen, prioridad) {
     const marca = v.estado === "agotado" ? '<span class="etiqueta agotado">Agotado</span>'
       : v.estado === "proximamente" ? '<span class="etiqueta">Próximamente</span>' : "";
     const nuevo = v.estado === "disponible" && esNuevo(v) ? '<span class="tag-nuevo">Nuevo</span>' : "";
-    const foto = v.foto
-      ? fotoProducto(v, "(max-width: 720px) 50vw, 300px", `width="576" height="720" alt="${esc(nombreConColor(v))}" loading="lazy" decoding="async" draggable="false"`)
-      : `<div class="sin-foto">${ICONO_ZAPATILLA}<span>Foto próximamente</span></div>`;
-    return `<a class="card-foto${v.estado === "agotado" ? " agotado" : ""}" href="#p${v.id}" data-abrir-card="${v.id}" tabindex="-1" aria-hidden="true">${foto}${marca}${nuevo}</a>`;
+    return `<a class="card-foto${v.estado === "agotado" ? " agotado" : ""}" href="#p${v.id}" data-abrir-card="${v.id}"${conImagen ? "" : " data-sin-cargar"} tabindex="-1" aria-hidden="true">${conImagen ? imgCard(v, prioridad) : ""}${marca}${nuevo}</a>`;
+  }
+  // Pone las fotos que faltan de una tarjeta (los otros colores)
+  function cargarFotos(card) {
+    if (!card || card._fotos) return;
+    card._fotos = true;
+    $$(".card-foto[data-sin-cargar]", card).forEach((a) => {
+      const v = porId.get(Number(a.dataset.abrirCard));
+      a.removeAttribute("data-sin-cargar");
+      if (v) a.insertAdjacentHTML("afterbegin", imgCard(v, false));
+    });
   }
   function cuadritosCard(m, p) {
     const n = m.variantes.length;
@@ -867,18 +885,18 @@ const DIAS_NUEVO = 14;
         ${sub ? `<p class="card-sub">${esc(sub)}</p>` : ""}
         <p class="card-pie"><span class="card-precio">${precioTxt(p)}</span>${ultimos}</p>`;
   }
-  function tarjeta({ m, p }) {
+  function tarjeta({ m, p }, n) {
     const colores = !p.color && m.variantes.length < 2 ? "" :
       `<div class="card-colores" role="group" aria-label="Colores de ${esc(nombreVisible(p))}">${cuadritosCard(m, p)}</div>`;
     return `<article class="card" data-modelo="${esc(m.clave)}" data-id="${p.id}">
-      <div class="card-media">${m.variantes.map(fotoCard).join("")}</div>
+      <div class="card-media">${m.variantes.map((v) => fotoCard(v, v === p, n < PRIMERAS)).join("")}</div>
       ${colores}
       <div class="card-cuerpo">${cuerpoCard(p)}</div></article>`;
   }
 
   function pintarCatalogo() {
     const lista = listaVisible();
-    $("#rejilla").innerHTML = lista.map(tarjeta).join("");
+    $("#rejilla").innerHTML = lista.map((x, n) => tarjeta(x, n)).join("");
     $$("#rejilla .card").forEach(colocarFoto);
     pistaDeslizar();
     $("#vacio").hidden = lista.length > 0;
@@ -917,6 +935,7 @@ const DIAS_NUEVO = 14;
     const m = card && porClave.get(card.dataset.modelo), p = porId.get(Number(id));
     if (!m || !p) return;
     const i = m.variantes.indexOf(p), media = $(".card-media", card);
+    cargarFotos(card);
     mostrarColor(card, p);
     card._destino = i;                                 // mientras se desliza, no se marcan los colores de paso
     clearTimeout(card._reloj);
@@ -930,10 +949,12 @@ const DIAS_NUEVO = 14;
     if (!media.classList || !media.classList.contains("card-media")) return;
     const card = media.closest(".card"), m = porClave.get(card.dataset.modelo);
     if (!m || !media.clientWidth) return;
+    if (Math.abs(media.scrollLeft - indiceDe(card) * media.clientWidth) > 2) cargarFotos(card);
     const i = Math.round(media.scrollLeft / media.clientWidth);
     if (card._destino !== undefined) { if (i !== card._destino) return; card._destino = undefined; }
     if (m.variantes[i]) mostrarColor(card, m.variantes[i]);
   }, { capture: true, passive: true });
+  rejilla.addEventListener("pointerdown", (e) => { const media = e.target.closest(".card-media"); if (media) cargarFotos(media.closest(".card")); }, { passive: true });
 
   // Una sola vez: en el celular, la foto de la primera tarjeta con varios colores se asoma un poco
   // hacia el color siguiente, para mostrar que se puede deslizar (como en Gymshark)
@@ -952,6 +973,7 @@ const DIAS_NUEVO = 14;
       setTimeout(() => {
         const actual = $$("#rejilla .card").find((c) => c.dataset.modelo === clave);
         if (!actual) return;
+        cargarFotos(actual);
         const fotos = $$(".card-foto", actual);
         const lado = indiceDe(actual) < fotos.length - 1 ? -1 : 1;         // hacia donde hay otra foto
         fotos.forEach((f) => f.animate([{ transform: "none" }, { transform: `translateX(${lado * 16}%)` }, { transform: "none" }],
