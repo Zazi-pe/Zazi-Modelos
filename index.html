@@ -841,13 +841,17 @@ const DIAS_NUEVO = 14;
   }
 
   // Tarjeta: fotos (una por color, se deslizan) → cuadritos de color (máx. 3 y "+N") → nombre → estilo · color → precio
-  /* Fotos de la tarjeta: al dibujar solo se baja la del color que se ve (las de los otros colores se bajan
-     cuando el cliente toca la tarjeta, la desliza o toca un cuadrito). Las tarjetas de la primera fila
+  /* Fotos de la tarjeta: al dibujar se bajan la del color que se ve y, con prioridad baja, la del color
+     siguiente (como Gymshark: así el primer deslizamiento no espera). Las de los demás colores se bajan
+     cuando el cliente toca la tarjeta, la desliza o toca un cuadrito. Las tarjetas de la primera fila
      cargan su foto enseguida y con prioridad: es lo más grande que se ve al abrir la página. */
   const PRIMERAS = 4;                                          // tarjetas con foto prioritaria (primera fila)
+  // prioridad: "alta" (primera fila), "baja" (el color siguiente) o nada (las demás, cuando se acercan)
   function imgCard(v, prioridad) {
+    const carga = prioridad === "alta" ? 'loading="eager" fetchpriority="high"'
+      : prioridad === "baja" ? 'loading="lazy" fetchpriority="low"' : 'loading="lazy"';
     return v.foto
-      ? fotoProducto(v, "(max-width: 720px) 50vw, 300px", `width="576" height="720" alt="${esc(nombreConColor(v))}" ${prioridad ? 'loading="eager" fetchpriority="high"' : 'loading="lazy"'} decoding="async" draggable="false"`)
+      ? fotoProducto(v, "(max-width: 720px) 50vw, 300px", `width="576" height="720" alt="${esc(nombreConColor(v))}" ${carga} decoding="async" draggable="false"`)
       : `<div class="sin-foto">${ICONO_ZAPATILLA}<span>Foto próximamente</span></div>`;
   }
   function fotoCard(v, conImagen, prioridad) {
@@ -863,7 +867,7 @@ const DIAS_NUEVO = 14;
     $$(".card-foto[data-sin-cargar]", card).forEach((a) => {
       const v = porId.get(Number(a.dataset.abrirCard));
       a.removeAttribute("data-sin-cargar");
-      if (v) a.insertAdjacentHTML("afterbegin", imgCard(v, false));
+      if (v) a.insertAdjacentHTML("afterbegin", imgCard(v, ""));
     });
   }
   function cuadritosCard(m, p) {
@@ -886,10 +890,13 @@ const DIAS_NUEVO = 14;
         <p class="card-pie"><span class="card-precio">${precioTxt(p)}</span>${ultimos}</p>`;
   }
   function tarjeta({ m, p }, n) {
+    // el color al que se llega con el primer deslizamiento (el anterior si el que se ve es el último)
+    const i = m.variantes.indexOf(p), siguiente = m.variantes[i + 1] || m.variantes[i - 1];
     const colores = !p.color && m.variantes.length < 2 ? "" :
       `<div class="card-colores" role="group" aria-label="Colores de ${esc(nombreVisible(p))}">${cuadritosCard(m, p)}</div>`;
     return `<article class="card" data-modelo="${esc(m.clave)}" data-id="${p.id}">
-      <div class="card-media">${m.variantes.map((v) => fotoCard(v, v === p, n < PRIMERAS)).join("")}</div>
+      <div class="card-media">${m.variantes.map((v) => fotoCard(v, v === p || v === siguiente,
+        v === p ? (n < PRIMERAS ? "alta" : "") : "baja")).join("")}</div>
       ${colores}
       <div class="card-cuerpo">${cuerpoCard(p)}</div></article>`;
   }
