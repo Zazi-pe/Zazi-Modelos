@@ -255,17 +255,27 @@ dialog::backdrop{background:rgba(0,0,0,.45)}
 .m-tallas-ayuda{font-size:.875rem;color:var(--gris)}
 .m-tallas-ayuda a{color:var(--tinta);text-underline-offset:3px}
 /* Guía de tallas (debajo de "¿Dudas con tu talla?") */
-.m-guia{border:1px solid var(--linea);border-radius:var(--radio);padding:0 14px}
-.m-guia summary{cursor:pointer;list-style:none;display:flex;justify-content:space-between;align-items:center;min-height:44px;font-size:.9375rem;font-weight:500}
-.m-guia summary::-webkit-details-marker{display:none}
-.m-guia summary::after{content:"";width:8px;height:8px;border-right:1.5px solid currentColor;border-bottom:1.5px solid currentColor;transform:rotate(45deg) translateY(-3px);transition:transform .15s}
-.m-guia[open] summary::after{transform:rotate(225deg) translate(-2px,-1px)}
-.m-guia p{font-size:.875rem;color:var(--gris);padding-bottom:10px}
-.m-guia table{width:100%;border-collapse:collapse;font-size:.9375rem;font-variant-numeric:tabular-nums;margin-bottom:12px}
-.m-guia .m-tallas-ayuda{padding:2px 0 14px;color:var(--gris)}
-.m-guia th{text-align:left;font-weight:600;font-size:.8125rem;letter-spacing:.04em;text-transform:uppercase;padding:8px 0;border-bottom:1px solid var(--tinta)}
-.m-guia td{padding:8px 0;border-bottom:1px solid var(--linea)}
-.m-guia th:last-child,.m-guia td:last-child{text-align:right}
+/* Enlace "Guía de tallas" debajo de las tallas (abre la ventana #guia) */
+.m-guia-btn{align-self:flex-start;display:inline-flex;align-items:center;gap:8px;min-height:40px;padding:0;background:none;border:0;font-size:.9375rem;font-weight:500;text-decoration:underline;text-underline-offset:3px}
+.m-guia-btn svg{width:18px;height:18px;flex:none}
+/* Ventana de la guía de tallas: sube desde abajo, tabla de 7 filas visibles y el resto con scroll */
+#guia{position:fixed;inset:auto 0 0 0;margin:0 auto;width:min(560px,100vw);max-height:90dvh;border-radius:14px 14px 0 0;box-shadow:0 -12px 32px rgba(0,0,0,.18);background:#fff}
+#guia[open]{display:flex;flex-direction:column}
+.g-cab{position:relative;display:flex;align-items:center;min-height:64px;padding:12px 128px 12px 20px;border-bottom:1px solid var(--linea)}
+.g-cab h2{font-size:1.4rem;letter-spacing:.03em;line-height:1.1}
+.g-cerrar{position:absolute;right:12px;top:50%;transform:translateY(-50%);display:inline-flex;align-items:center;gap:8px;min-height:44px;padding:0 16px;border:1px solid var(--tinta);border-radius:999px;background:#fff;font-size:.9375rem;font-weight:600}
+.g-cerrar svg{width:18px;height:18px}
+.g-cerrar:hover{background:var(--piedra)}
+.g-cuerpo{display:flex;flex-direction:column;gap:16px;padding:16px 20px calc(20px + env(safe-area-inset-bottom,0px));overflow:auto}
+.g-nota{font-size:.9375rem;line-height:1.5;padding:12px 14px;background:var(--piedra);border-radius:var(--radio)}
+.g-tabla{--fila:52px;max-height:calc(var(--fila) * 8);overflow-y:auto;overscroll-behavior:contain;scrollbar-width:thin;scrollbar-color:#b5b5b5 transparent}
+.g-tabla::-webkit-scrollbar{width:6px}
+.g-tabla::-webkit-scrollbar-thumb{background:#b5b5b5;border-radius:3px}
+.g-tabla table{width:100%;border-collapse:collapse;font-variant-numeric:tabular-nums}
+.g-tabla th{position:sticky;top:0;z-index:1;height:var(--fila);background:#fff;font-size:1rem;font-weight:500;text-align:center;box-shadow:inset 0 -1.5px 0 var(--linea)}
+.g-tabla td{height:var(--fila);font-size:1.0625rem;text-align:center;border-bottom:1px solid var(--linea)}
+.g-dudas{text-align:center;font-size:.9375rem;color:var(--gris)}
+.g-dudas a{color:var(--tinta);font-weight:500;text-underline-offset:3px}
 .m-falta{font-size:.875rem;font-weight:500;color:var(--alerta)}
 .m-tallas.falta .m-talla:not(:disabled){border-color:var(--alerta)}
 
@@ -351,7 +361,7 @@ dialog::backdrop{background:rgba(0,0,0,.45)}
 /* ---------- Movimiento: solo como respuesta a una acción ---------- */
 @media (prefers-reduced-motion:no-preference){
   #modal[open]{animation:subir .22s ease-out}
-  #carrito[open]{animation:hoja-sube .34s cubic-bezier(.2,.8,.2,1)}
+  #carrito[open],#guia[open]{animation:hoja-sube .34s cubic-bezier(.2,.8,.2,1)}
   @keyframes subir{from{transform:translateY(16px);opacity:0}}
   @keyframes hoja-sube{from{transform:translateY(100%)}}
 }
@@ -614,6 +624,15 @@ dialog::backdrop{background:rgba(0,0,0,.45)}
       <div class="fin" id="fin"></div>
     </div>
   </div>
+</dialog>
+
+<!-- Guía de tallas (se abre desde la ficha con "Guía de tallas") -->
+<dialog id="guia" aria-labelledby="g-titulo">
+  <div class="g-cab">
+    <h2 id="g-titulo">Guía de tallas</h2>
+    <button class="g-cerrar" type="button" data-cerrar>Cerrar <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
+  </div>
+  <div class="g-cuerpo" id="g-cuerpo"></div>
 </dialog>
 
 <div id="aviso" role="status" aria-live="polite" hidden></div>
@@ -1101,20 +1120,31 @@ const DIAS_NUEVO = 14;
     return !c.length ? null : c.length === 1 ? c[0] : `linear-gradient(135deg, ${c[0]} 50%, ${c[1]} 50%)`;
   };
 
-  /* Guía de tallas: largo del pie por talla (35 = 21.5 cm, 1 cm más por talla). Si el modelo es pequeño (casilla
-     "Modelo pequeño" del admin, p.pequeno), cada talla corresponde a 1 cm menos: quien calza 25.5 cm pide 40, no 39. */
+  /* Guía de tallas: largo del pie por talla, de la 35 a la 47 (35 = 21.5 cm, 1 cm más por talla). Si el modelo es
+     pequeño (casilla "Modelo pequeño" del admin, p.pequeno), cada talla corresponde a 1 cm menos: quien calza 25.5 cm
+     pide 40, no 39. En la ficha solo va el enlace; la tabla se abre en una ventana que sube desde abajo (#guia). */
+  const TALLAS_GUIA = [35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47];
+  const dudasTalla = (p) => `¿Dudas con tu talla? <a href="${esc(wa("Hola " + TIENDA.nombre + ", tengo una duda con la talla de " + conReferencia(p) + "."))}" target="_blank" rel="noopener">Escríbenos</a>`;
+  const ICONO_REGLA = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round" aria-hidden="true"><rect x="2.5" y="8" width="19" height="8" rx="1"/><path d="M6.5 8v3M10.5 8v4M14.5 8v3M18.5 8v4"/></svg>';
   function guiaTallas(p, tallas) {
-    // dentro de la guía, al final: "¿Dudas con tu talla? Escríbenos" (WhatsApp con el modelo ya escrito)
-    const dudas = `<p class="m-tallas-ayuda">¿Dudas con tu talla? <a href="${esc(wa("Hola " + TIENDA.nombre + ", tengo una duda con la talla de " + conReferencia(p) + "."))}" target="_blank" rel="noopener">Escríbenos</a></p>`;
-    const nums = tallas.filter((t) => /^\d+$/.test(t)).map(Number);
-    if (!nums.length) return dudas;                     // sin tallas en números (talla única): solo la ayuda
-    const cm = (t) => (21.5 + (t - 35) - (p.pequeno ? 1 : 0)).toFixed(1);
-    return `<details class="m-guia"><summary>Guía de tallas</summary>
-      ${p.pequeno ? "<p>Este modelo es pequeño: la tabla ya está ajustada (pide una talla más que la de siempre).</p>" : ""}
-      <table><thead><tr><th>Talla</th><th>Largo del pie</th></tr></thead>
-      <tbody>${nums.map((t) => `<tr><td>${t}</td><td>${cm(t)} cm</td></tr>`).join("")}</tbody></table>
-      ${dudas}</details>`;
+    // talla única (sin números): no hay tabla, solo la ayuda por WhatsApp
+    if (!tallas.some((t) => /^\d+$/.test(t))) return `<p class="m-tallas-ayuda">${dudasTalla(p)}</p>`;
+    return `<button class="m-guia-btn" type="button" data-guia>${ICONO_REGLA}Guía de tallas</button>`;
   }
+  const guia = $("#guia");
+  function abrirGuia(p) {
+    const cm = (t) => (21.5 + (t - 35) - (p.pequeno ? 1 : 0)).toFixed(1);
+    $("#g-cuerpo").innerHTML = `
+      ${p.pequeno ? `<p class="g-nota"><b>${esc(nombreVisible(p))} es un modelo pequeño:</b> esta tabla ya está ajustada, por eso pide una talla más que la de siempre.</p>` : ""}
+      <div class="g-tabla" tabindex="0" aria-label="Tabla de tallas">
+        <table><thead><tr><th scope="col">Talla</th><th scope="col">Largo del pie</th></tr></thead>
+        <tbody>${TALLAS_GUIA.map((t) => `<tr><td>${t}</td><td>${cm(t)} cm</td></tr>`).join("")}</tbody></table>
+      </div>
+      <p class="g-dudas">${dudasTalla(p)}</p>`;
+    if (!guia.open) guia.showModal();
+    $(".g-tabla", guia).scrollTop = 0;
+  }
+  guia.addEventListener("click", (e) => { if (e.target === guia || e.target.closest("[data-cerrar]")) guia.close(); });
 
   function abrirProducto(id, opciones = {}) {
     const p = porId.get(Number(id));
@@ -1270,6 +1300,7 @@ const DIAS_NUEVO = 14;
   modal.addEventListener("click", (e) => {
     if (e.target === modal || e.target.closest("[data-cerrar]")) { modal.close(); return; }
     if (e.target.closest("#m-sel")) { irAOpciones(); return; }
+    if (e.target.closest("[data-guia]")) { if (productoAbierto) abrirGuia(productoAbierto); return; }
     const color = e.target.closest(".m-color");
     if (color) {
       if (Number(color.dataset.variante) !== productoAbierto.id) {
