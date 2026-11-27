@@ -39,7 +39,7 @@ Para probar en la computadora: `python3 -m http.server` en la carpeta que contie
 | `id` | Número único. Cada línea usa un bloque de 1000 (Anda 3000, You 4000…). Sirve para los enlaces `#p3001`. |
 | `shopify` | Opcional. Conexión con Shopify: `id` del producto en Shopify, su `color` (como está en Shopify) y el `sku` con el que se conectó. Se hace una vez desde el admin, escribiendo o escaneando el SKU de cualquier talla. Si está, el precio, las tallas y las agotadas salen de Shopify; lo guardado aquí queda de respaldo por si Shopify no responde. |
 | `filtro` / `linea` | Clave y nombre de la línea o categoría (debe existir en `filtros`). |
-| `nombre` / `modelo` / `color` | Nombre completo (sale en el pedido de WhatsApp), modelo sin color y color. En la tienda se ve el modelo, con el color aparte. Mismo `filtro` + `modelo` = colores del mismo modelo: la tienda muestra **una tarjeta por modelo** con sus cuadritos de color. |
+| `nombre` / `modelo` / `color` | Nombre completo (es el que se ve en la tienda y en el pedido de WhatsApp; el admin lo arma una vez con Línea + Modelo + Color y luego no cambia solo), modelo sin color y color. Mismo `filtro` + `modelo` = colores del mismo modelo: la tienda muestra **una tarjeta por modelo** con sus cuadritos de color. |
 | `estilo` | Opcional. "Running", "Urbana"… Sale en la tarjeta (estilo · color) y en "Filtros". Igual en todos los colores. |
 | `pequeno` | Opcional: `true` si el modelo es pequeño (horma pequeña). La guía de tallas baja 1 cm cada talla (40 = 25.5 cm). Se marca en el admin; igual en todos los colores. |
 | `genero` | `mujer`, `hombre` o `unisex` (sale en Mujer y en Hombre). "Para" dentro de "Filtros". Igual en todos los colores. |

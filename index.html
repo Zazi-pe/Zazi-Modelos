@@ -747,9 +747,9 @@ const DIAS_NUEVO = 14;
   function precioLinea(p, cant) { return consultar(p) ? 0 : p.precio * cant; }
   // Tallas que se pueden comprar ahora de un color
   const libresDe = (p) => p.estado !== "disponible" ? [] : tallasDe(p).filter((t) => !(p.agotadas || []).map(String).includes(t));
-  // En la tarjeta y la ficha se ve el modelo (sin el color); el nombre completo (p.nombre) va en el pedido
-  const nombreVisible = (p) => p.modelo || p.nombre;
-  const nombreConColor = (p) => [nombreVisible(p), p.color].filter(Boolean).join(" ");
+  // En la tarjeta, la ficha y el pedido se ve el nombre completo (p.nombre, del admin: Línea + Modelo + Color)
+  const nombreVisible = (p) => p.nombre || [p.modelo, p.color].filter(Boolean).join(" ");
+  const nombreConColor = nombreVisible;
   const conReferencia = (p) => norm(nombreConColor(p)) === norm(p.nombre) ? nombreConColor(p) : nombreConColor(p) + " (" + p.nombre + ")";
   // "Nuevo": "si" o "no" lo fuerza desde el admin; si no, los agregados en los últimos DIAS_NUEVO días
   const esNuevo = (p) => p.nuevo === "si" ? true : p.nuevo === "no" ? false :
@@ -988,7 +988,7 @@ const DIAS_NUEVO = 14;
     // el color al que se llega con el primer deslizamiento (el anterior si el que se ve es el último)
     const i = m.variantes.indexOf(p), siguiente = m.variantes[i + 1] || m.variantes[i - 1];
     const colores = !p.color && m.variantes.length < 2 ? "" :
-      `<div class="card-colores" role="group" aria-label="Colores de ${esc(nombreVisible(p))}">${cuadritosCard(m, p)}</div>`;
+      `<div class="card-colores" role="group" aria-label="Colores de ${esc(p.modelo || nombreVisible(p))}">${cuadritosCard(m, p)}</div>`;
     return `<article class="card" data-modelo="${esc(m.clave)}" data-id="${p.id}">
       <div class="card-media">${m.variantes.map((v) => fotoCard(v, v === p, n < PRIMERAS ? "alta" : "", v === siguiente)).join("")}</div>
       ${colores}
@@ -1135,7 +1135,7 @@ const DIAS_NUEVO = 14;
   function abrirGuia(p) {
     const cm = (t) => (21.5 + (t - 35) - (p.pequeno ? 1 : 0)).toFixed(1);
     $("#g-cuerpo").innerHTML = `
-      ${p.pequeno ? `<p class="g-nota"><b>${esc(nombreVisible(p))} es un modelo pequeño:</b> esta tabla ya está ajustada, por eso pide una talla más que la de siempre.</p>` : ""}
+      ${p.pequeno ? `<p class="g-nota"><b>${esc(p.modelo || nombreVisible(p))} es un modelo pequeño:</b> esta tabla ya está ajustada, por eso pide una talla más que la de siempre.</p>` : ""}
       <div class="g-tabla" tabindex="0" aria-label="Tabla de tallas">
         <table><thead><tr><th scope="col">Talla</th><th scope="col">Largo del pie</th></tr></thead>
         <tbody>${TALLAS_GUIA.map((t) => `<tr><td>${t}</td><td>${cm(t)} cm</td></tr>`).join("")}</tbody></table>

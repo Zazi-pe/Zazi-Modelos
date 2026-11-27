@@ -387,7 +387,7 @@ dialog::backdrop{background:rgba(0,0,0,.45)}
 
   /* Qué catálogo es (por la dirección; para probar: ?sitio=zazi-modelos) */
   const CATALOGOS = {
-    "zazi":         { repo: "Zazi-pe/Zazi",         titulo: "Zazi",    otro: "zazi-modelos", otroTitulo: "Modelos", descripciones: true,  grupo: "línea" },
+    "zazi":         { repo: "Zazi-pe/Zazi",         titulo: "Zazi",    otro: "zazi-modelos", otroTitulo: "Modelos", descripciones: true,  grupo: "línea", marcaEnNombre: true },
     "zazi-modelos": { repo: "Zazi-pe/Zazi-Modelos", titulo: "Modelos", otro: "zazi",         otroTitulo: "Zazi",    descripciones: false, grupo: "categoría" }
   };
   const nombreSitio = (new URLSearchParams(location.search).get("sitio") || location.pathname.split("/").filter(Boolean)[0] || "zazi").toLowerCase();
@@ -678,7 +678,14 @@ dialog::backdrop{background:rgba(0,0,0,.45)}
   const editor = $("#editor");
   const ed = { id: null, foto: null, colores: [], agotadas: new Set(), nombreAuto: "", creado: "", tocado: false, shopify: null, cambiando: false };
 
-  const autoNombre = () => [$("#ed-modelo").value.trim(), $("#ed-color").value.trim()].filter(Boolean).join(" ");
+  // Nombre completo propuesto: Línea (la marca, solo en Zazi) + Modelo + Color. La marca no se repite si el modelo ya la lleva.
+  const lineaEditor = () => $("#ed-linea").value === "__nueva" ? $("#ed-nueva").value.trim()
+    : (($("#ed-linea").selectedOptions[0] || {}).textContent || "").trim();
+  const autoNombre = () => {
+    const modelo = $("#ed-modelo").value.trim(), linea = CAT.marcaEnNombre ? lineaEditor() : "";
+    const marca = linea && !norm(modelo).split(/[^a-z0-9]+/).includes(norm(linea).replace(/[^a-z0-9]/g, "")) && !norm(modelo).startsWith(norm(linea)) ? linea : "";
+    return [marca, modelo, $("#ed-color").value.trim()].filter(Boolean).join(" ");
+  };
 
   function abrirEditor(p, titulo, pendiente) {
     const nuevo = !p.id;
@@ -707,8 +714,10 @@ dialog::backdrop{background:rgba(0,0,0,.45)}
 
     $("#ed-modelo").value = p.modelo || "";
     $("#ed-color").value = p.color || "";
-    $("#ed-nombre").value = p.nombre || autoNombre();
-    ed.nombreAuto = autoNombre();
+    // El nombre completo se genera una sola vez, cuando el producto aparece (nuevo o desde pendientes) y sigue
+    // a Línea, Modelo y Color hasta guardarlo; después es el que se ve en la tienda y ya no cambia solo.
+    $("#ed-nombre").value = nuevo ? autoNombre() : (p.nombre || autoNombre());
+    ed.nombreAuto = nuevo ? autoNombre() : null;
 
     $("#ed-c1").value = aHex(ed.colores[0]);
     $("#ed-c2").value = aHex(ed.colores[1] || "#FFFFFF");
@@ -1072,7 +1081,8 @@ dialog::backdrop{background:rgba(0,0,0,.45)}
     $("#ed-nueva-c").hidden = $("#ed-linea").value !== "__nueva";
     if (!$("#ed-nueva-c").hidden) $("#ed-nueva").focus();
   });
-  ["#ed-modelo", "#ed-color"].forEach((s) => $(s).addEventListener("input", () => {
+  ["#ed-modelo", "#ed-color", "#ed-linea", "#ed-nueva"].forEach((s) => $(s).addEventListener(s === "#ed-linea" ? "change" : "input", () => {
+    if (ed.nombreAuto === null) return;
     const nuevo = autoNombre();
     if ($("#ed-nombre").value.trim() === ed.nombreAuto) $("#ed-nombre").value = nuevo;
     ed.nombreAuto = nuevo;
