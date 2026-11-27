@@ -11,7 +11,7 @@
   const NUEVO = ["auto", "si", "no"];
   const GENEROS = ["mujer", "hombre", "unisex"];
   // Datos para clientes, iguales en todos los colores de un modelo (el admin los copia a todos)
-  const DE_MODELO = { estilo: "estilo", genero: "Mujer/Hombre" };
+  const DE_MODELO = { estilo: "estilo", genero: "Mujer/Hombre", pequeno: "\"modelo pequeño\"" };
   const norm = (t) => String(t || "").normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().trim();
   const hexOk = (h) => typeof h === "string" && /^#[0-9a-f]{3,8}$/i.test(h);
 
@@ -93,6 +93,7 @@
       // para clientes: Mujer/Hombre (bloquea) y estilo (avisa)
       if (p.genero !== undefined && !GENEROS.includes(p.genero)) err(p, "El valor de Mujer/Hombre no es válido (" + p.genero + ").");
       else if (p.genero === undefined && usaGenero) err(p, "Falta indicar si es para mujer, hombre o unisex.");
+      if (p.pequeno !== undefined && p.pequeno !== true) err(p, "El valor de \"modelo pequeño\" no es válido (" + p.pequeno + ").");
       if (p.estilo !== undefined && typeof p.estilo !== "string") err(p, "El estilo no es válido.");
       else if (usaEstilo && !String(p.estilo || "").trim()) aviso(p, "No tiene estilo (Running, Urbana…); no saldrá en el filtro de estilos.");
     });

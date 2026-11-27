@@ -19,7 +19,7 @@
 <script src="shopify.js" defer></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Oswald:wght@500;600;700&family=Figtree:wght@400;500;600&family=Playfair+Display:ital,wght@1,600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Oswald:wght@500;600;700&family=Figtree:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
 /* ============================================================
    ZAZI — estilos
@@ -39,7 +39,6 @@
   --alerta:#B3261E;
   --f-titulo:"Oswald","Arial Narrow","Helvetica Neue",Arial,sans-serif;
   --f-texto:"Figtree",system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif;
-  --f-vitrina:"Playfair Display",Georgia,serif;
   --ancho:1240px;
   --alto-cab:64px;
   --radio:4px;
@@ -101,8 +100,8 @@ h2{font-size:clamp(2rem,4.2vw,2.75rem)}
 .hero-foto{position:relative;margin:0;justify-self:end;width:100%;max-width:360px;aspect-ratio:1/1;background:var(--piedra);overflow:hidden}
 .hero-foto img{width:100%;height:100%;object-fit:cover}
 .hero-etiqueta{position:absolute;left:16px;bottom:16px;display:flex;flex-direction:column;align-items:flex-start;gap:3px;max-width:calc(100% - 32px);padding:12px 16px;background:#fff;border:0;border-radius:var(--radio);text-align:left;box-shadow:0 2px 10px rgba(0,0,0,.08)}
-.hero-etiqueta span{font-size:.66rem;letter-spacing:.14em;color:var(--fucsia);font-weight:600;text-transform:uppercase}
-.hero-etiqueta b{font-family:var(--f-vitrina);font-style:italic;font-weight:600;font-size:1.15rem;line-height:1.25}
+.hero-etiqueta span{font-size:.75rem;letter-spacing:.14em;color:var(--fucsia);font-weight:600;text-transform:uppercase}
+.hero-etiqueta b{font-family:var(--f-titulo);font-weight:600;font-size:1.05rem;line-height:1.2;text-transform:uppercase;letter-spacing:.02em}
 
 /* ---------- Secciones y catálogo ---------- */
 .seccion{max-width:var(--ancho);margin:0 auto;padding:88px 24px}
@@ -255,6 +254,18 @@ dialog::backdrop{background:rgba(0,0,0,.45)}
 .m-talla.verificando:not(.agotada):hover{border-color:var(--linea)}
 .m-tallas-ayuda{font-size:.875rem;color:var(--gris)}
 .m-tallas-ayuda a{color:var(--tinta);text-underline-offset:3px}
+/* Guía de tallas (debajo de "¿Dudas con tu talla?") */
+.m-guia{border:1px solid var(--linea);border-radius:var(--radio);padding:0 14px}
+.m-guia summary{cursor:pointer;list-style:none;display:flex;justify-content:space-between;align-items:center;min-height:44px;font-size:.9375rem;font-weight:500}
+.m-guia summary::-webkit-details-marker{display:none}
+.m-guia summary::after{content:"";width:8px;height:8px;border-right:1.5px solid currentColor;border-bottom:1.5px solid currentColor;transform:rotate(45deg) translateY(-3px);transition:transform .15s}
+.m-guia[open] summary::after{transform:rotate(225deg) translate(-2px,-1px)}
+.m-guia p{font-size:.875rem;color:var(--gris);padding-bottom:10px}
+.m-guia table{width:100%;border-collapse:collapse;font-size:.9375rem;font-variant-numeric:tabular-nums;margin-bottom:12px}
+.m-guia .m-tallas-ayuda{padding:2px 0 14px;color:var(--gris)}
+.m-guia th{text-align:left;font-weight:600;font-size:.8125rem;letter-spacing:.04em;text-transform:uppercase;padding:8px 0;border-bottom:1px solid var(--tinta)}
+.m-guia td{padding:8px 0;border-bottom:1px solid var(--linea)}
+.m-guia th:last-child,.m-guia td:last-child{text-align:right}
 .m-falta{font-size:.875rem;font-weight:500;color:var(--alerta)}
 .m-tallas.falta .m-talla:not(:disabled){border-color:var(--alerta)}
 
@@ -301,6 +312,30 @@ dialog::backdrop{background:rgba(0,0,0,.45)}
 .grupo{border:0;padding:0;margin:0;display:flex;flex-direction:column;gap:12px;min-width:0}
 .grupo h3,.grupo legend{font-family:var(--f-titulo);font-weight:600;text-transform:uppercase;letter-spacing:.03em;font-size:1.15rem;padding:0;margin-bottom:4px}
 .campo-f{display:flex;flex-direction:column;gap:6px;font-weight:500;font-size:.875rem}
+#campos-entrega{display:flex;flex-direction:column;gap:14px;margin-top:2px}
+/* Dato importante vacío: se marca en rojo, pero el pedido se envía igual (no se bloquea la venta) */
+.campo-f .input.falta-dato{border-color:var(--alerta);box-shadow:0 0 0 1px var(--alerta)}
+/* Resumen del pedido en el pago */
+.resumen{border:1px solid var(--linea);border-radius:8px;padding:0 14px}
+.resumen summary{cursor:pointer;list-style:none;display:flex;justify-content:space-between;align-items:center;min-height:48px;font-weight:600}
+.resumen summary::-webkit-details-marker{display:none}
+.resumen summary::after{content:"";width:9px;height:9px;border-right:1.5px solid currentColor;border-bottom:1.5px solid currentColor;transform:rotate(45deg) translateY(-3px);transition:transform .15s}
+.resumen[open] summary::after{transform:rotate(225deg) translate(-2px,-1px)}
+.resumen ul{display:flex;flex-direction:column;gap:10px;padding:12px 0 14px;border-top:1px solid var(--linea)}
+.resumen li{display:flex;justify-content:space-between;gap:12px;font-size:.9375rem}
+.resumen li span{min-width:0}
+.resumen li small{display:block;color:var(--gris);font-size:.875rem}
+.resumen li b{font-weight:500;white-space:nowrap;font-variant-numeric:tabular-nums}
+.c-envio{font-size:.875rem;color:var(--gris);margin-top:-4px}
+/* Pantalla final del pedido */
+.fin{display:flex;flex-direction:column;gap:14px;padding:8px 0}
+.fin-ico{width:52px;height:52px;border-radius:999px;background:var(--tinta);color:#fff;display:grid;place-items:center}
+.fin h3{font-family:var(--f-titulo);font-weight:600;text-transform:uppercase;font-size:1.6rem;letter-spacing:.02em;line-height:1.05}
+.fin p{color:var(--gris);line-height:1.55}
+.fin p b{color:var(--tinta);font-weight:600}
+/* Carrito: deshacer "Quitar" */
+.c-quitado{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:12px 14px;background:var(--piedra);border-radius:8px;font-size:.9375rem}
+.c-quitado button{background:none;border:0;font-weight:600;text-decoration:underline;text-underline-offset:3px;padding:6px 0;white-space:nowrap}
 .campo-f .input{font-weight:400}
 .opcion{display:flex;gap:12px;align-items:flex-start;padding:14px 16px;border:1px solid var(--linea);border-radius:8px;cursor:pointer}
 .opcion:has(input:checked){border-color:var(--tinta);background:var(--piedra)}
@@ -337,13 +372,16 @@ dialog::backdrop{background:rgba(0,0,0,.45)}
   .btn-carrito-txt{display:none}
   .franja{font-size:.75rem;padding:8px 12px}
   /* Celular: portada corta para que los modelos se vean en la primera pantalla */
-  .hero-in{grid-template-columns:1fr;padding:20px 16px 0}
+  .hero-in{grid-template-columns:1fr;padding:16px 16px 0}
   .hero-foto,.solo-escritorio{display:none}
-  .hero-texto h1{font-size:2rem;margin-bottom:10px}
-  .hero-texto .lead{font-size:.9375rem;line-height:1.5;margin-bottom:14px}
-  .hero-texto .btn{min-height:40px;padding:0 16px;font-size:.875rem}
+  .hero-texto .lead,.hero-texto .acciones{display:none}         /* el botón flotante ya lleva a WhatsApp */
+  .hero-texto h1{font-size:1.75rem;margin-bottom:0}
+  .mt{min-height:36px;min-width:40px;border-color:transparent;background:var(--piedra)}
+  .mt[aria-pressed="true"]{background:var(--tinta);border-color:var(--tinta)}
+  main{padding-bottom:72px}
+  html.filtros-abiertos .wa-flotante{display:none}
   .seccion{padding:64px 16px}
-  #catalogo{padding-top:24px}
+  #catalogo{padding-top:20px}
   #catalogo h2{font-size:1.75rem}
   #catalogo .sub{display:none}
   .cat-cabecera{margin-bottom:14px;align-items:baseline}
@@ -406,7 +444,7 @@ dialog::backdrop{background:rgba(0,0,0,.45)}
         <p class="lead">Cada par pasa por revisión antes de llegar a tus manos. Elige tu modelo y tu talla, y pide por WhatsApp.</p>
         <div class="acciones">
           <a class="btn btn-solid solo-escritorio" href="#catalogo">Ver catálogo</a>
-          <a class="btn btn-line" data-wa href="#contacto">Contactar por WhatsApp</a>
+          <a class="btn btn-line" data-wa href="#contacto">Escríbenos por WhatsApp</a>
         </div>
       </div>
 
@@ -450,7 +488,7 @@ dialog::backdrop{background:rgba(0,0,0,.45)}
     </div>
     <div class="vacio" id="catalogo-msg" hidden>
       <p></p>
-      <a class="btn btn-line" data-wa href="https://wa.me/51959161270" target="_blank" rel="noopener">Escribir por WhatsApp</a>
+      <a class="btn btn-line" data-wa href="https://wa.me/51959161270" target="_blank" rel="noopener">Escríbenos por WhatsApp</a>
     </div>
     <noscript><p class="vacio">Para ver el catálogo activa JavaScript, o escríbenos por <a href="https://wa.me/51959161270">WhatsApp</a>.</p></noscript>
   </section>
@@ -483,7 +521,7 @@ dialog::backdrop{background:rgba(0,0,0,.45)}
         <h2 id="t-contacto">¿Ya sabes qué modelo buscas?</h2>
         <p class="lead">Escríbenos el modelo, la talla y tu distrito. Te confirmamos la disponibilidad y coordinamos la entrega.</p>
         <div class="acciones">
-          <a class="btn btn-solid" data-wa href="https://wa.me/51959161270" target="_blank" rel="noopener">WhatsApp</a>
+          <a class="btn btn-solid" data-wa href="https://wa.me/51959161270" target="_blank" rel="noopener">Escríbenos por WhatsApp</a>
           <a class="btn btn-line" data-ig href="https://instagram.com/zazi.pe" target="_blank" rel="noopener">Instagram</a>
           <a class="btn btn-line" data-tiktok href="https://www.tiktok.com/@zazi.pe" target="_blank" rel="noopener">TikTok</a>
         </div>
@@ -532,6 +570,7 @@ dialog::backdrop{background:rgba(0,0,0,.45)}
   <form class="cajon-vista" id="vista-pago" hidden>
     <div class="cajon-lista">
       <button class="enlace" id="volver" type="button">← Volver al carrito</button>
+      <div id="p-resumen"></div>
 
       <div class="grupo">
         <h3>Datos de entrega</h3>
@@ -564,9 +603,17 @@ dialog::backdrop{background:rgba(0,0,0,.45)}
 
     <div class="cajon-pie">
       <div class="total"><span>Total a pagar</span><b id="p-total">S/ 0</b></div>
+      <p class="c-envio">Envío: se coordina por WhatsApp según tu distrito.</p>
       <button class="btn btn-solid btn-ancho" type="submit">Enviar pedido por WhatsApp</button>
     </div>
   </form>
+
+  <!-- Después de enviar: confirmación y enlace de respaldo (algunas apps bloquean la ventana de WhatsApp) -->
+  <div class="cajon-vista" id="vista-fin" hidden>
+    <div class="cajon-lista">
+      <div class="fin" id="fin"></div>
+    </div>
+  </div>
 </dialog>
 
 <div id="aviso" role="status" aria-live="polite" hidden></div>
@@ -592,8 +639,8 @@ const TIENDA = {
    grupo: nombre de la línea en "Filtros" (Marca en Zazi, Categoría en Modelos).
    tipo: palabras que la búsqueda acepta para todos los productos (en Zazi todo es zapatilla). */
 const SITIOS = {
-  "zazi":         { titulo: "ZAZI — Zapatillas Catálogo Oficial", carrito: "zazi-carrito-v1", precioEnFicha: false, descripciones: true,  grupo: "Marca",     tipo: "zapatilla zapatillas" },
-  "zazi-modelos": { carrito: "zazi-propios-carrito-v1", precioEnFicha: true,  descripciones: false, grupo: "Categoría", tipo: "" }
+  "zazi":         { titulo: "ZAZI — Zapatillas Catálogo Oficial", carrito: "zazi-carrito-v1", descripciones: true,  grupo: "Marca",     tipo: "zapatilla zapatillas" },
+  "zazi-modelos": { carrito: "zazi-propios-carrito-v1", descripciones: false, grupo: "Categoría", tipo: "" }
 };
 
 /* Los productos agregados en los últimos días llevan la etiqueta "Nuevo"
@@ -794,6 +841,7 @@ const DIAS_NUEVO = 14;
     }
     const quitar = $("#mas-filtros [data-quitar-filtros]");
     if (quitar) quitar.hidden = !activos;
+    document.documentElement.classList.toggle("filtros-abiertos", !$("#mas-filtros").hidden);
   }
 
   /* ---------- Búsqueda: sin tildes ni mayúsculas, "negra" encuentra "Negro", cada palabra en cualquier dato,
@@ -1053,6 +1101,21 @@ const DIAS_NUEVO = 14;
     return !c.length ? null : c.length === 1 ? c[0] : `linear-gradient(135deg, ${c[0]} 50%, ${c[1]} 50%)`;
   };
 
+  /* Guía de tallas: largo del pie por talla (35 = 21.5 cm, 1 cm más por talla). Si el modelo es pequeño (casilla
+     "Modelo pequeño" del admin, p.pequeno), cada talla corresponde a 1 cm menos: quien calza 25.5 cm pide 40, no 39. */
+  function guiaTallas(p, tallas) {
+    // dentro de la guía, al final: "¿Dudas con tu talla? Escríbenos" (WhatsApp con el modelo ya escrito)
+    const dudas = `<p class="m-tallas-ayuda">¿Dudas con tu talla? <a href="${esc(wa("Hola " + TIENDA.nombre + ", tengo una duda con la talla de " + conReferencia(p) + "."))}" target="_blank" rel="noopener">Escríbenos</a></p>`;
+    const nums = tallas.filter((t) => /^\d+$/.test(t)).map(Number);
+    if (!nums.length) return dudas;                     // sin tallas en números (talla única): solo la ayuda
+    const cm = (t) => (21.5 + (t - 35) - (p.pequeno ? 1 : 0)).toFixed(1);
+    return `<details class="m-guia"><summary>Guía de tallas</summary>
+      ${p.pequeno ? "<p>Este modelo es pequeño: la tabla ya está ajustada (pide una talla más que la de siempre).</p>" : ""}
+      <table><thead><tr><th>Talla</th><th>Largo del pie</th></tr></thead>
+      <tbody>${nums.map((t) => `<tr><td>${t}</td><td>${cm(t)} cm</td></tr>`).join("")}</tbody></table>
+      ${dudas}</details>`;
+  }
+
   function abrirProducto(id, opciones = {}) {
     const p = porId.get(Number(id));
     if (!p) return;
@@ -1100,7 +1163,7 @@ const DIAS_NUEVO = 14;
           }).join("")}
         </div>
         <p class="m-falta" id="m-falta" role="alert" hidden>Elige una talla para añadirla al carrito.</p>
-        <p class="m-tallas-ayuda">¿Dudas con tu talla? <a href="${esc(wa("Hola " + TIENDA.nombre + ", tengo una duda con la talla de " + conReferencia(p) + "."))}" target="_blank" rel="noopener">Escríbenos</a></p>
+        ${guiaTallas(p, tallas)}
       </div>`;
     const textoBoton = !puedeAgregar ? (p.estado === "agotado" ? "Agotado" : "Próximamente") : "Añadir al carrito";
     const bloqueOpciones = (bloqueColor || bloqueTallas) ? `<div class="m-opciones" id="m-opciones">${bloqueColor}${bloqueTallas}</div>` : "";
@@ -1116,8 +1179,8 @@ const DIAS_NUEVO = 14;
     if (!opciones.mantenerScroll) $("#m-cuerpo").style.paddingBottom = "";   // producto nuevo: sin espacio extra
     $("#m-cuerpo").innerHTML = `
       <h2 class="m-nombre" id="m-nombre">${esc(nombreVisible(p))}</h2>
-      <p class="m-marca">${esc(p.linea)}</p>
-      ${SITIO.precioEnFicha ? `<p class="m-precio">${precioTxt(p)}</p>` : ""}
+      <p class="m-marca">${esc(p.estilo || p.linea)}</p>
+      <p class="m-precio">${precioTxt(p)}</p>
       ${nota}
       ${bloqueOpciones}
       <div class="m-acciones">${selector}
@@ -1252,6 +1315,11 @@ const DIAS_NUEVO = 14;
 
   /* ---------- Carrito ---------- */
   const carrito = $("#carrito");
+  let quitado = null;                           // lo último que se quitó del carrito, para "Deshacer"
+  const filaQuitado = () => {
+    const p = quitado && porId.get(quitado.l.id);
+    return p ? `<div class="c-quitado"><span>Quitaste ${esc(nombreVisible(p))} · ${esc(p.color || "")}</span><button type="button" data-deshacer>Deshacer</button></div>` : "";
+  };
 
   function pintarCarrito() {
     const n = cantidadCarrito();
@@ -1260,12 +1328,12 @@ const DIAS_NUEVO = 14;
     $("#abrir-carrito").setAttribute("aria-label", `Abrir carrito, ${n} ${n === 1 ? "producto" : "productos"}`);
     const lista = $("#c-lista");
     if (!estado.carrito.length) {
-      lista.innerHTML = `<div class="c-vacio"><p>Tu carrito está vacío. Elige un modelo del catálogo y aparecerá aquí.</p>
+      lista.innerHTML = filaQuitado() + `<div class="c-vacio"><p>Tu carrito está vacío. Elige un modelo del catálogo y aparecerá aquí.</p>
         <button class="btn btn-line" type="button" data-ir-catalogo>Ver catálogo</button></div>`;
     } else {
       const aviso = `<p class="c-aviso"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><circle cx="12" cy="12" r="9.5"/><path d="M12 11v6M12 7.5v.5"/></svg>
         <span><b>Tus productos no están reservados,</b> confirma tu pedido pronto para no quedarte sin tu talla.</span></p>`;
-      lista.innerHTML = aviso + estado.carrito.map((l, i) => {
+      lista.innerHTML = filaQuitado() + aviso + estado.carrito.map((l, i) => {
         const p = porId.get(l.id);
         const foto = p.foto ? fotoProducto(p, "96px", `alt="" loading="lazy"`) : `<div class="sin-foto">${ICONO_ZAPATILLA}</div>`;
         return `<div class="c-item">
@@ -1286,6 +1354,11 @@ const DIAS_NUEVO = 14;
           </div></div>`;
       }).join("");
     }
+    $("#p-resumen").innerHTML = !estado.carrito.length ? "" : `<details class="resumen" open><summary>Tu pedido (${n} ${n === 1 ? "par" : "pares"})</summary><ul>` +
+      estado.carrito.map((l) => {
+        const p = porId.get(l.id);
+        return `<li><span>${l.cant} × ${esc(nombreVisible(p))}<small>${esc(p.color || "")} · ${l.talla === "Único" ? "Talla única" : "Talla " + esc(l.talla)}</small></span><b>${consultar(p) ? "Por confirmar" : soles(precioLinea(p, l.cant))}</b></li>`;
+      }).join("") + "</ul></details>";
     const t = soles(totalCarrito());
     $("#c-total").textContent = t;
     $("#p-total").textContent = t;
@@ -1306,7 +1379,8 @@ const DIAS_NUEVO = 14;
   function mostrarVista(v) {
     $("#vista-carrito").hidden = v !== "carrito";
     $("#vista-pago").hidden = v !== "pago";
-    $("#c-titulo").textContent = v === "pago" ? "Confirmar pedido" : "Tu carrito";
+    $("#vista-fin").hidden = v !== "fin";
+    $("#c-titulo").textContent = v === "pago" ? "Confirmar pedido" : v === "fin" ? "Pedido listo" : "Tu carrito";
   }
 
   $("#abrir-carrito").addEventListener("click", abrirCarrito);
@@ -1322,7 +1396,16 @@ const DIAS_NUEVO = 14;
     };
     if (d.mas !== undefined) cambiar(Number(d.mas), 1);
     if (d.menos !== undefined) cambiar(Number(d.menos), -1);
-    if (d.quitar !== undefined) { estado.carrito.splice(Number(d.quitar), 1); guardarCarrito(); pintarCarrito(); }
+    if (d.quitar !== undefined) {
+      const i = Number(d.quitar), [l] = estado.carrito.splice(i, 1);
+      quitado = l ? { l, i } : null;
+      guardarCarrito(); pintarCarrito(); return;
+    }
+    if (e.target.closest("[data-deshacer]") && quitado) {
+      estado.carrito.splice(Math.min(quitado.i, estado.carrito.length), 0, quitado.l);
+      quitado = null; guardarCarrito(); pintarCarrito(); return;
+    }
+    if (d.mas !== undefined || d.menos !== undefined) quitado = null;
   });
   carrito.addEventListener("close", () => {
     if (!modal.open) document.documentElement.classList.remove("bloqueado");
@@ -1354,13 +1437,18 @@ const DIAS_NUEVO = 14;
       { id: "f-nombre", label: "Tu nombre", type: "text", autocomplete: "name", placeholder: "Nombre y apellido" },
     ],
   };
+  // Datos que más se necesitan: si quedan vacíos se marcan en rojo, pero el pedido se puede enviar igual
+  const IMPORTANTES = { "f-nombre": "", "f-zona": "", "f-telefono": 'inputmode="tel"', "f-dni": 'inputmode="numeric"', "f-agencia": "" };
+  const marcarVacio = (el) => el.classList.toggle("falta-dato", !el.value.trim());
+  $("#campos-entrega").addEventListener("focusout", (e) => { if (e.target.matches("[data-importante]")) marcarVacio(e.target); });
+  $("#campos-entrega").addEventListener("input", (e) => { if (e.target.matches("[data-importante]") && e.target.value.trim()) e.target.classList.remove("falta-dato"); });
   function pintarCamposEntrega() {
     const anteriores = {};
     $$("#campos-entrega [id]").forEach((el) => { anteriores[el.id] = el.value; });
     const campos = CAMPOS_ENTREGA[$("#f-entrega").value] || [];
     $("#campos-entrega").innerHTML = campos.map((c) =>
       `<label class="campo-f">${esc(c.label)}
-        <input class="input" id="${c.id}" type="${c.type}" ${c.autocomplete ? `autocomplete="${c.autocomplete}"` : ""} placeholder="${esc(c.placeholder)}">
+        <input class="input" id="${c.id}" type="${c.type}" ${c.autocomplete ? `autocomplete="${c.autocomplete}"` : ""} placeholder="${esc(c.placeholder)}"${c.id in IMPORTANTES ? " data-importante " + IMPORTANTES[c.id] : ""}>
       </label>`
     ).join("");
     campos.forEach((c) => { if (anteriores[c.id]) $("#" + c.id).value = anteriores[c.id]; });
@@ -1388,6 +1476,7 @@ const DIAS_NUEVO = 14;
     e.preventDefault();
     if (!estado.carrito.length) return;
     if (estado.carrito.some((l) => verificando(porId.get(l.id)))) return;      // aún sin confirmar stock y precio
+    $$("#campos-entrega [data-importante]").forEach(marcarVacio);
     const pago = $("input[name=pago]:checked").value;
     const lineas = estado.carrito.map((l) => {
       const p = porId.get(l.id);
@@ -1404,7 +1493,19 @@ const DIAS_NUEVO = 14;
       if (el && el.value.trim()) partes.push(c.label + ": " + el.value.trim());
     });
     partes.push("Pago: " + (pago === "Yape" ? "Yape o Plin (adjunto mi comprobante)" : "Efectivo"));
-    window.open(wa(partes.join("\n")), "_blank", "noopener");
+    const enlace = wa(partes.join("\n"));
+    window.open(enlace, "_blank", "noopener");
+    $("#fin").innerHTML = `<span class="fin-ico"><svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></span>
+      <h3>Tu pedido está listo</h3>
+      <p>Se abrió WhatsApp con tu pedido. <b>Envía el mensaje</b> y te confirmamos el stock y la entrega.</p>
+      <a class="btn btn-solid btn-ancho" href="${esc(enlace)}" target="_blank" rel="noopener">¿No se abrió? Abrir WhatsApp</a>
+      <button class="btn btn-line btn-ancho" type="button" data-fin-vaciar>Ya lo envié: vaciar carrito</button>
+      <button class="enlace" type="button" data-fin-volver>← Volver al carrito</button>`;
+    mostrarVista("fin");
+  });
+  $("#vista-fin").addEventListener("click", (e) => {
+    if (e.target.closest("[data-fin-volver]")) mostrarVista("carrito");
+    if (e.target.closest("[data-fin-vaciar]")) { estado.carrito = []; quitado = null; guardarCarrito(); pintarCarrito(); carrito.close(); }
   });
 
   /* ---------- Eventos del catálogo ---------- */

@@ -275,6 +275,10 @@ dialog::backdrop{background:rgba(0,0,0,.45)}
         </div>
         <small>Marca los dos si es unisex: sale al filtrar Mujer y al filtrar Hombre. Estilo y Para se aplican a todos los colores de este modelo.</small>
       </fieldset>
+      <div class="campo">
+        <label class="check"><input type="checkbox" id="ed-pequeno"> Modelo pequeño (horma pequeña)</label>
+        <small>Si lo marcas, la guía de tallas de la tienda baja 1 cm cada talla (ej.: 40 = 25.5 cm), así el cliente pide una talla más. Se aplica a todos los colores de este modelo.</small>
+      </div>
 
       <div class="campo">
         <span>Color del cuadrito</span>
@@ -392,7 +396,7 @@ dialog::backdrop{background:rgba(0,0,0,.45)}
   const RAMA = "main";
   const CLAVE_TOKEN = "zazi-admin-token";        // el mismo token sirve para los dos catálogos
   const DIAS_NUEVO = 14;                          // igual que en index.html
-  const ORDEN = ["id", "shopify", "filtro", "linea", "nombre", "modelo", "estilo", "genero", "color", "colores", "precio", "tallas", "agotadas", "estado", "nuevo", "creado", "foto", "descripcion"];
+  const ORDEN = ["id", "shopify", "filtro", "linea", "nombre", "modelo", "estilo", "genero", "pequeno", "color", "colores", "precio", "tallas", "agotadas", "estado", "nuevo", "creado", "foto", "descripcion"];
   const ESTADOS = { disponible: "Disponible", agotado: "Agotado", proximamente: "Próximamente" };
 
   const $ = (s, el = document) => el.querySelector(s);
@@ -729,6 +733,7 @@ dialog::backdrop{background:rgba(0,0,0,.45)}
     const genero = deModelo("genero");
     // unisex = Mujer y Hombre marcados
     $$("input[name=ed-genero]").forEach((r) => { r.checked = genero === "unisex" || r.value === genero; });
+    $("#ed-pequeno").checked = deModelo("pequeno") === true;
     $("#ed-estilos").innerHTML = [...new Set(st.datos.productos.map((x) => x.estilo).filter(Boolean))].sort()
       .map((e) => `<option value="${esc(e)}"></option>`).join("");
     ed.shopify = p.shopify && p.shopify.id ? { id: String(p.shopify.id), color: p.shopify.color || "", sku: p.shopify.sku || undefined } : null;
@@ -893,6 +898,7 @@ dialog::backdrop{background:rgba(0,0,0,.45)}
     const genero = marcados.length === 2 ? "unisex" : marcados[0];
     if (!genero) return errorEditor("Marca Mujer, Hombre o los dos (unisex).");
     const estilo = $("#ed-estilo").value.trim() || undefined;
+    const pequeno = $("#ed-pequeno").checked || undefined;          // solo se guarda si está marcado
     if (ed.pendiente) {
       if (!ed.foto) return errorEditor("Agrega la foto para publicar.");
       if (ed.colores.length === 1 && ed.colores[0].toUpperCase() === "#E6E6E6") return errorEditor("Elige el color del cuadrito para publicar.");
@@ -927,7 +933,7 @@ dialog::backdrop{background:rgba(0,0,0,.45)}
       id: ed.id || nuevoId(filtro),
       sku: undefined,
       shopify: ed.shopify ? { id: ed.shopify.id, color: ed.shopify.color, sku: ed.shopify.sku || undefined } : undefined,
-      filtro, linea, nombre, modelo, estilo, genero, color,
+      filtro, linea, nombre, modelo, estilo, genero, pequeno, color,
       colores: ed.colores.slice(),
       ...valores,
       estado: ($("input[name=ed-estado]:checked") || {}).value || "disponible",
@@ -946,11 +952,11 @@ dialog::backdrop{background:rgba(0,0,0,.45)}
     }
     if (ed.pendiente) { publicarPendiente(p, ed.pendiente); return; }
     reemplazar(p);
-    // estilo y Mujer/Hombre son del modelo: se copian a sus otros colores
+    // estilo, Mujer/Hombre y "pequeño" son del modelo: se copian a sus otros colores
     st.datos.productos.forEach((x) => {
       if (x.id === p.id || x.filtro !== p.filtro || x.modelo !== p.modelo) return;
-      if (x.estilo !== p.estilo || x.genero !== p.genero)
-        reemplazar(ordenar({ ...x, estilo: p.estilo, genero: p.genero }));
+      if (x.estilo !== p.estilo || x.genero !== p.genero || x.pequeno !== p.pequeno)
+        reemplazar(ordenar({ ...x, estilo: p.estilo, genero: p.genero, pequeno: p.pequeno }));
     });
     if (deShopify) st.vivo.set(p.id, deShopify); else st.vivo.delete(p.id);
     editor.close();
@@ -1124,7 +1130,7 @@ dialog::backdrop{background:rgba(0,0,0,.45)}
   $("#ed-otro-color").addEventListener("click", () => {
     const p = porId(ed.id);
     if (!p) return;
-    abrirEditor({ filtro: p.filtro, linea: p.linea, modelo: p.modelo, estilo: p.estilo, genero: p.genero, precio: p.precio, tallas: p.tallas, estado: "disponible", colores: ["#E6E6E6"] },
+    abrirEditor({ filtro: p.filtro, linea: p.linea, modelo: p.modelo, estilo: p.estilo, genero: p.genero, pequeno: p.pequeno, precio: p.precio, tallas: p.tallas, estado: "disponible", colores: ["#E6E6E6"] },
       "Nuevo color de " + p.modelo);
   });
 
