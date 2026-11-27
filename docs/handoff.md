@@ -26,10 +26,12 @@ It replaces the older handoffs (`ZAZI_handoff.md`, `ZAZImodels-handoff.md` and t
 - **Language:** he writes to Claude in English. All site and admin copy is Spanish (Peru), and code identifiers and comments are in Spanish.
 - **Plan before building.** For big changes, propose a step-by-step plan and ask questions first.
 - **Don't add things he didn't ask for.** Copy and reuse existing code and design rather than reinventing.
-- **Tools:** since Nov 2026 he works with **Claude Code** (Code tab of the Claude desktop app, Environment: Local). The repos are cloned on his MacBook in `~/ClaudeCode/Zazi-pe/` (`Zazi/`, `Zazi-Modelos/`, `Etiquetas/`). Claude edits the files directly, runs the checks and tests, then commits and pushes with Git. The old chat workarounds (GitHub connector, zips to upload by hand, byte-for-byte checks against GitHub) are no longer needed.
+- **Tools:** since Nov 2026 he works with **Claude Code** (Code tab of the Claude desktop app, Environment: Local; since Nov 25 the `claude` CLI is also installed in `~/.local/bin`, on the PATH via `~/.zshrc`; start it from `~/ClaudeCode/Zazi-pe`, never from the home folder). Plugins/skills on his Mac: **claude-seo** (SEO audits; its Python runtime and Chromium live in `~/Library/Application Support/claude-seo/`) and **Impeccable** (design critique/polish; its design-check hook runs after UI edits). The repos are cloned on his MacBook in `~/ClaudeCode/Zazi-pe/` (`Zazi/`, `Zazi-Modelos/`, `Etiquetas/`). Claude edits the files directly, runs the checks and tests, then commits and pushes with Git. The old chat workarounds (GitHub connector, zips to upload by hand, byte-for-byte checks against GitHub) are no longer needed.
 - **Pushing:** small changes can be committed and pushed directly, no approval needed; he tests afterwards and asks for adjustments. Big changes: plan first and get his OK.
 - **Photos:** the admin adds product photos from the camera roll and names them itself. Stefano keeps his original photos on his laptop. If photo files are added another way, follow the naming rules in section 2.
 - **Testing:** he tests on his iPhone (Brave/Safari) and MacBook. Give short test checklists.
+- **Showcases / comparisons (Nov 26, his request):** when he asks for a *showcase* or a *comparison* ("show me how it would look", "compare before/after"), build the **local side-by-side phone showcase** described in section 7 and let him decide before anything is pushed. Not when he asks for changes to be pushed right away: then build, test and push as usual.
+- **Never block a sale:** nothing in the checkout is required; missing data is only marked in red (his rule, Nov 26). The Yape QR stays visible so customers can pay right away.
 - **Ideas he rejected earlier** (Modelos history; don't bring them back):
   - Blurred sold-out sizes; use the grey strike-through.
   - Photo thumbnails as color swatches.
@@ -73,6 +75,7 @@ img/                             favicon.png, logo-zazi.png, logo-zazi-blanco.pn
                                  compartir.jpg (link preview, 1200×630; DIFFERENT per repo)
 ```
 
+- **Local only (git-excluded via `.git/info/exclude`):** `Zazi/zazi-pe.github.io-audit/` (SEO audit report and raw data) and `.impeccable/` (design-checker ignores) in both repos.
 - **Zazi `fotos/`:** the original 23 photos in a flat folder, with legacy names such as `fotos/anda-260x-celeste.jpeg`. Some names have accents (`you-cápsula-blanco-rosa.jpeg`, `you-deportivo-blanco-marrón.jpeg`, `i-run-horizon-marrón-crema.jpeg`); they work, but don't rename them without updating `productos.json`.
 - **Modelos `fotos/`:** `fotos/botines/botin-pasador-marron.jpeg`.
 - **New photos from the admin** go to `fotos/<filtro>/<slug>.jpg` in both.
@@ -301,6 +304,9 @@ A full-screen dialog on phone, centered on desktop. It covers:
   - Use Playwright (Chromium) for phone (390×844) and desktop (1366×900) screenshots, and compare old and new pixel by pixel when a change should be invisible.
   - Test the admin with a fake GitHub API intercepted by Playwright `route("https://api.github.com/**")`, implementing refs, commits, recursive trees, contents, blobs, trees, commits and ref PATCH over an in-memory file map. Check the published result with `node validar.js`. Without Playwright: a test copy of `admin.html` with a fake `fetch` for `api.github.com` injected before the scripts, served from the scratchpad under a `/Zazi/` path and driven in the browser pane (done Nov 18).
   - `shopify.js` can be run in Node (`require("./shopify.js")`, then `globalThis.ZaziShopify`) against the real store: it's public and read-only.
+- **Showcase for comparisons (only when Stefano asks for one; he liked it on Nov 26):** never in the repos. Copy `index.html`, `productos.json`, `shopify.js` twice into a scratchpad folder (`muestra/Zazi/` = today, `muestra/propuesta/Zazi/` = proposal), symlink `fotos/` and `img/`, serve `muestra/` with `python3 -m http.server <port>` and open it in the browser pane. Each proposed change sits behind a class on `<html>` (`c-<name>`), chosen with `?cambios=a,b,c` (none = all on). The page: black header with a "Showcase only · not published" pill; a sticky left panel with Phone/Desktop toggle and one checkbox card per change (title, P0–P3 tag, why, "Try: …"), "All on / All off"; on the right two phone frames (375×740 iframes) "Today — live code" and "Proposal — with the switches on the left" (Desktop: two 1280×840 iframes scaled side by side); below, a summary (scores, what works, what isn't in the proposal). Both frames are fully usable and share the cart. Don't publish it as an Artifact (it imitates the real store). Delete the folder and stop the server when he's done.
+- **Speed measurements:** there's no Chrome or ffmpeg on the Mac. Use the Playwright install from claude-seo (`PLAYWRIGHT_BROWSERS_PATH="$HOME/Library/Application Support/claude-seo/ms-playwright" "$HOME/Library/Application Support/claude-seo/.venv/bin/python" script.py`) with an emulated iPhone, CPU ×4 and slow 4G (1.6 Mbps, 150 ms), 3 runs, measuring LCP/FCP/CLS and transfer. Reference (Nov 25, live): LCP 4.3 s, first view ~765 KB, whole catalog in the background by ~25 s; Gymshark's collection page on the same test: 7.8 s, 2.8 MB. Images (share image, video frames) can be made with small Swift/AppKit scripts.
+- **Design checks:** `~/.claude/skills/impeccable/scripts/impeccable detect index.html admin.html` (0 findings as of Nov 26). Local ignores in `.impeccable/config.local.json` (git-excluded, both repos): `cramped-padding` in `index.html` and `admin.html` (Stefano confirmed false alarms: Cómo comprar dividers, admin segmented buttons). For URL scans set `IMPECCABLE_BROWSER` to the claude-seo Chromium.
 - **After pushing:** the site updates in about 1–2 minutes; runs are visible in each repo's Actions tab. Then give Stefano a short test checklist (iPhone and MacBook).
 - **Workflow files** (`.github/workflows/*`) can be edited like any other file now. If GitHub rejects the push for missing permissions, run `gh auth refresh -s workflow` and push again. Make sure the first line of the YAML (a `#` comment or `name:`) is intact; a lost leading `#` once made the workflow invalid.
 
@@ -324,20 +330,23 @@ A full-screen dialog on phone, centered on desktop. It covers:
 
 **Not built / ideas (mention, don't build):** connecting I-RUN once it's in Shopify; the Shopify store's own design; showing exact stock counts (would need a Storefront token with inventory access or the worker).
 
-### Other
-- **Optional, not requested yet** (mention, don't do unasked):
-  - checkout fields aren't `required` (for example, a Shalom order can be sent without DNI)
-  - `#aviso` dead code
-- **SEO audit (Nov 25, claude-seo plugin, report in the local, git-ignored folder `Zazi/zazi-pe.github.io-audit/`):** score 45/100. Done since: photo loading fix, Zazi title. Open (not built yet, ask Stefano): canonical link + `og:url`/`og:locale`, `OnlineStore` JSON-LD from `TIENDA`, descriptive meta description/H1, product pages generated at deploy (`/p/<id>.html` with `Product`/`Offer` schema; also gives per-product link previews), `sitemap.xml` + Google Search Console (needs Stefano's Google account), trust footer, custom domain, Google Business Profile. The Claude Code CLI and the claude-seo plugin are installed on Stefano's Mac (Nov 25).
-- **Catalog redesign follow-ups (Nov 24):**
-  - **Done Nov 24 (approved by Stefano):** `estilo` and `genero` for every product in both catalogs (Zazi: Running for Anda; Urbana / Chunky / Plataforma for You; Trail / Urbana / Plataforma for I-RUN; Mujer except I-RUN Horizon unisex and STEP / RAVENX hombre. Modelos: Botín Pasador = Botín, mujer) and the 7 new descriptions (D268, D263, D269, D308 ×4). The Yape holder name was confirmed correct.
-  - **Impeccable critique (Nov 26):** a two-reviewer critique (score 28/40) was shown as a local side-by-side showcase; Stefano approved the checkout recap, red marks without blocking, final screen, phone top, product view style + price, consistency fixes and cart undo, and rejected required fields and the "pay after we confirm stock" note. Not done: size data beyond the chart, delivery prices (Stefano will send them).
-  - Etiquetas' Nuevos modelos sends `estilo` and `genero` in `pendientes.json` when the Excel has them (optional columns Estilo and Género, Nov 26), so a pending product opens in the admin already filled in. Without them, the admin takes them from another color of the same model, or asks for "Para".
-- **Model naming order (Nov 26, Stefano's decision):** full name = **Marca + Nombre (if it has one) + Código + Estilo + Color**, e.g. "Anda D268 Deportiva Blanco Verde". Gender never goes in the name (a customer of the other gender could be put off); it's only a filter tag. The Shopify product name / catalog `modelo` is the short form **Marca + Nombre (if any) + Código** ("Anda D268"); colors are variants. The full name isn't used anywhere yet (kept for future exports); the catalog keeps its short titles. Existing products are not renamed; the order applies to new models. Old example: I-RUN Bostep RAVENX had no code, so a name had to be invented; that's what this order avoids.
-  - Not built (mentioned only): preselecting Mi talla in the product view, a size guide, multiple photos per color (a gallery), per-product link previews (see section 4), delivery costs in the cart.
-  - Photos (consistent background, no other brands' boxes such as the red DXLU one, more angles) are Stefano's to redo later.
-- **Not discussed:** Culqi payment links. Stefano has a Culqi account; an on-site Culqi checkout was discussed once, never built. Never put a Culqi secret key in the site.
-- **Not discussed:** analytics, SEO, custom domain.
+### Next steps (open; ask Stefano before building)
+- **Delivery costs** in the checkout ("Total a pagar"): Stefano will send the prices. Today the checkout only says "Envío: se coordina por WhatsApp según tu distrito."
+- **SEO (from the Nov 25 audit, score 45/100; report in the local, git-ignored folder `Zazi/zazi-pe.github.io-audit/`):** done: photo loading, Zazi title. Open: canonical link + `og:url`/`og:locale`; `OnlineStore` JSON-LD built from `TIENDA`; descriptive meta description/H1; product pages generated at deploy (`/p/<id>.html` with `Product`/`Offer` schema, which also gives per-product WhatsApp previews); `sitemap.xml` + Google Search Console (needs Stefano's Google account); trust footer (legal name, pickup point, exchange policy); custom domain; Google Business Profile.
+- **Photos** (consistent background, no other brands' boxes such as the red DXLU one, more angles): Stefano's to redo. A gallery with several photos per color isn't built.
+- **I-RUN in Shopify:** connect each I-RUN product from the admin once the models are loaded in Shopify.
+- **Ideas mentioned, not requested:** preselecting Mi talla in the product view; a Zazi-Modelos `titulo` (it keeps "ZAZI — Catálogo Oficial"); the unused `#aviso` toast.
+
+### Decisions already made (don't reopen)
+- **Model naming order (Nov 26):** full name = **Marca + Nombre (if it has one) + Código + Estilo + Color**, e.g. "Anda D268 Deportiva Blanco Verde". Gender never goes in the name (a customer of the other gender could be put off); it's only a filter tag. The Shopify product name / catalog `modelo` is the short form **Marca + Nombre (if any) + Código** ("Anda D268"). The full name isn't used anywhere yet (kept for future exports); the catalog keeps its short titles. Existing products are not renamed. Old example: I-RUN Bostep RAVENX had no code, so a name had to be invented; that's what this order avoids.
+- **Our model names stay** as card titles (customer-facing renames and the `nombreCliente` field were rejected, Nov 24). Brand/category chips are the main filter row.
+- **Checkout never blocks a sale:** important fields are only marked red; the Yape QR stays visible ("pay after we confirm stock" was rejected).
+- **Impeccable critique (Nov 26):** score 28/40, shown as a showcase. Approved and built: checkout recap, red marks, "Tu pedido está listo" screen, short phone top, style + price in the product view, one font family / form spacing / one WhatsApp label, cart undo, size guide.
+- `estilo` and `genero` were filled for every product on Nov 24 (Zazi: Running for Anda; Urbana / Chunky / Plataforma for You; Trail / Urbana / Plataforma for I-RUN; Mujer except I-RUN Horizon unisex and STEP / RAVENX hombre. Modelos: Botín Pasador = Botín, mujer). Etiquetas' Nuevos modelos sends `estilo` and `genero` in `pendientes.json` when the Excel has them (optional columns Estilo and Género, Nov 26).
+- The Yape holder name ("Rosario Tapia Carrasco") was confirmed correct.
+
+### Not discussed yet
+- Culqi payment links (Stefano has a Culqi account; an on-site checkout was discussed once, never built; never put a Culqi secret key in the site). Analytics.
 
 ---
 
@@ -358,11 +367,13 @@ A full-screen dialog on phone, centered on desktop. It covers:
 5. **Shopify (Nov 18):** inventory moved from Bsale to Shopify. The label page's worker was rewritten for Shopify (Etiquetas repo). The catalogs got `shopify.js`, the `shopify` field (replacing `sku`), connect-by-SKU in the admin (a dropdown picker was tried first and replaced), and the 13 You/Pasador products linked. Bsale's catalog plan (worker-served stock, branches, price list 5) was dropped: the stores read Shopify's public API directly.
 6. **Nuevos modelos → catalog (Nov 19):** Etiquetas' Nuevos modelos can add the created models to a catalog as pending products (`pendientes.json`); the admin got the Pendientes section, the Publicar flow and "Quitar de pendientes". Anda 260X became Anda D318 in Shopify and was connected; D268, D263, D269 and D308 were published from Pendientes.
 7. **Performance (Nov 20):** after a review with the `modern-web-guidance` skill: render first with saved data plus the stock lock (Stefano's rule), WebP copies with `<picture>`, `fetchpriority` on the showcase, and the two-job deploy. Photo quality was raised the same day after Stefano saw pixelation on his iPhone.
-8. **Catalog redesign (Nov 24), "browse like Gymshark":** after an audit on an iPhone-sized screen (fast, but hard to tell styles, sizes and what each shoe is). One card per model with square swatches and swipe; no sizes on cards; "Mi talla"; "Filtros" (Para: Mujer / Hombre + Estilo); live model count; forgiving search; "Recomendados" by available sizes + "Nuevos"; no preselected size in the product view ("Elige tu talla") plus a size-help WhatsApp link; short neutral hero without the stats band; consistent payment copy; link preview image. New data fields `estilo` and `genero`. Same day, Stefano kept our model names (the proposed customer names and the `nombreCliente` field were dropped) and brought the brand/category chips back as the main row.
+8. **Catalog redesign (Nov 24), "browse like Gymshark":** after an audit on an iPhone-sized screen (fast, but hard to tell styles, sizes and what each shoe is). One card per model with square swatches and swipe; no sizes on cards; "Mi talla"; "Filtros" (Para: Mujer / Hombre + Estilo); live model count; forgiving search; "Recomendados" by available sizes + "Nuevos"; no preselected size in the product view ("Elige tu talla") plus a size-help WhatsApp link; short neutral hero without the stats band; consistent payment copy; link preview image. New data fields `estilo` and `genero`. Same day, Stefano kept our model names (the proposed customer names and the `nombreCliente` field were dropped) and brought the brand/category chips back as the main row. The card photo row was rebuilt as a native scroll-snap slider with Gymshark-size swatches and Figtree text after he compared it with Gymshark on his iPhone.
+9. **Speed, SEO and tools (Nov 25):** Claude Code CLI and the claude-seo plugin installed; SEO audit (45/100); Zazi title "ZAZI — Zapatillas Catálogo Oficial" (`SITIOS.titulo`, written into the HTML at deploy); card photos load in turns (visible first, the rest in the background) after measuring the slider's cost; the product view shows the card's photo instantly under the sharp one.
+10. **Naming, sizes and critique (Nov 26):** model naming order; admin "Para" as two checkboxes (both = unisex); Etiquetas template with optional Estilo / Género (dropdown) / Nombre completo columns; Impeccable critique shown as a side-by-side showcase, then the approved changes built; size guide window (35–47, cm only) with the admin's "Modelo pequeño" checkbox (`pequeno`), all current Anda models marked small; footer contrast and admin font fixed.
 
 ---
 
-## 10. Current data (as of Nov 20, 2026; the admin can change it at any time, so the repo is the truth)
+## 10. Current data (as of Nov 26, 2026; the admin can change it at any time, so the repo is the truth)
 
 ### Zazi: 37 products (18 models; Anda D307 and D315 were published from Pendientes), all with `estilo` and `genero`
 **Modelo pequeño (Nov 26):** every current Anda model (D318, D268, D263, D269, D308, D315, D307) has `pequeno: true`; every current You and I-RUN model is normal size. Stefano: this describes these specific models, not a rule per brand; new models are ticked (or not) one by one in the admin.
@@ -372,11 +383,12 @@ A full-screen dialog on phone, centered on desktop. It covers:
 |---|---|---|
 | 3001–3005 | Anda D318 Azul Rosa / Verde / Morado / Negro / Rosa (the old Anda 260X, renamed and recolored Nov 19) | **Shopify** (product 15520773570781): S/ 69.90 |
 | 3006–3012 | Anda D268 Blanco Verde, D263 Blanco Verde, D269 Azul, D308 Blanco / Blanco Morado / Morado Verde / Negro (`creado` 2026-11-19, published from Pendientes) | **Shopify**: S/ 69.90 |
+| 3013–3019 | Anda D315 Negro Morado / Rosa / Blanco Morado, Anda D307 Blanco Azul / Blanco Verde / Blanco Rosa / Azul Rosa (published from Pendientes) | **Shopify**: S/ 69.90 |
 | 4001–4012 | You Urbano Onda, Chunky Trazo, Deportivo, Cápsula, Urbano Marco, Chunky Relieve (2 colors each) | **Shopify**: S/ 59.90, tallas 35–40 |
 | 5001–5006 | I-RUN Horizon (2), STEP Gris Luna, Bostep Majesty Blanco, Urbanas Cloud Blanco Morado, Bostep RAVENX Crema Gris | **Manual** (not in Shopify yet): S/ 99.90, sizes per product |
 
-**Zazi `pendientes.json`: 7 waiting** for photo and swatch: Anda D307 Blanco Azul, Azul Rosa, Blanco Verde, Blanco Rosa; Anda D315 Blanco Morado, Rosa, Negro Morado.
+**Zazi `pendientes.json`:** empty (the 7 Anda D307/D315 colors were published).
 
 ### Zazi-Modelos: 1 product, no `pendientes.json`
-- **3001** Botín Pasador Marrón: linea Botines, modelo "Botín Pasador", color "Marrón", `#8B5A3C`, `creado` 2026-10-01, foto `fotos/botines/botin-pasador-marron.jpeg`, no description.
+- **3001** Botín Pasador Marrón: linea Botines, modelo "Botín Pasador", estilo "Botín", genero mujer, color "Marrón", `#8B5A3C`, `creado` 2026-10-01, foto `fotos/botines/botin-pasador-marron.jpeg`, no description.
 - **Linked to Shopify** "Pasador" / "Marron": S/ 79.00, tallas 35–39.

@@ -19,6 +19,7 @@ This site: categories sandalias / botas / botines / zapatillas / zapatos, no pro
 - Plan before building anything big: propose steps and ask the questions that matter first. Small changes can be committed and pushed directly; he tests afterwards.
 - Don't add things he didn't ask for. Mention optional ideas; don't build them. Reuse existing code and design rather than reinventing.
 - He tests on iPhone (Brave/Safari) and MacBook (Chrome). End changes with a short test checklist.
+- **Showcases / comparisons:** only when he asks for a showcase or a comparison (not when he asks to push changes), build the local side-by-side phone showcase (Today vs Proposal, each change switchable) described in the handoff, section 7. Never in the repos, never published; delete it when he's done.
 - Ideas he already rejected (don't bring back): blurred sold-out sizes (use grey strike-through), photo thumbnails as color swatches, color-name lists for parsing, store or contact data inside product data files, hiding the filter row when there's only one category, strong token permissions.
 
 ## Critical rules
