@@ -364,7 +364,8 @@ A full-screen dialog on phone, centered on desktop. It covers:
 
 ## 10. Current data (as of Nov 20, 2026; the admin can change it at any time, so the repo is the truth)
 
-### Zazi: 30 products (16 models), all `disponible`, all with `estilo` and `genero`
+### Zazi: 37 products (18 models; Anda D307 and D315 were published from Pendientes), all with `estilo` and `genero`
+**Modelo pequeño (Nov 26):** every current Anda model (D318, D268, D263, D269, D308, D315, D307) has `pequeno: true`; every current You and I-RUN model is normal size. Stefano: this describes these specific models, not a rule per brand; new models are ticked (or not) one by one in the admin.
 `filtros` also has an `intento` line ("Intento") with no products, a leftover from the first Nuevos modelos test; it doesn't show in the store (chips only appear with products). Ask Stefano before removing it.
 
 | ids | products | source of price and sizes |
